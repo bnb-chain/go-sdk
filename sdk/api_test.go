@@ -4,8 +4,7 @@ type fDexAPI struct{}
 
 func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 
-	if path == "/pairs" {
-
+	if path == "/markets" {
 		return []byte(`[
 		{
 			"base_asset_symbol": "BNB",

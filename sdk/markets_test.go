@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-func TestPairs(t *testing.T) {
+func TestMarkets(t *testing.T) {
 	sdk := &SDK{
 		dexAPI: &fDexAPI{},
 	}
 
-	pair, err := sdk.GetPairs(1)
+	pair, err := sdk.GetMarkets(1)
 	if err != nil {
-		t.Errorf("GetPairs failed, expected no error but got %v", err)
+		t.Errorf("GetMarkets failed, expected no error but got %v", err)
 	}
 
 	expected := []*SymbolPair{
@@ -26,7 +26,7 @@ func TestPairs(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expected, pair) {
-		t.Errorf("GetPairs wrong results, expected %s but got %s", expected, pair)
+		t.Errorf("GetMarkets wrong results, expected %s but got %s", expected, pair)
 	}
 
 }

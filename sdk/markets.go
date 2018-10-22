@@ -14,15 +14,15 @@ type SymbolPair struct {
 	LotSize    string `json:"lot_size"`
 }
 
-// GetPairs returns list of trading pairs
-func (sdk *SDK) GetPairs(limit int) ([]*SymbolPair, error) {
+// GetMarkets returns list of trading pairs
+func (sdk *SDK) GetMarkets(limit int) ([]*SymbolPair, error) {
 	qp := map[string]string{}
 
 	if limit > 0 {
 		qp["limit"] = strconv.Itoa(limit)
 	}
 
-	resp, err := sdk.dexAPI.Get("/pairs", qp)
+	resp, err := sdk.dexAPI.Get("/markets", qp)
 	if err != nil {
 		return nil, err
 	}
