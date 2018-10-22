@@ -52,6 +52,15 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
     }`), nil
 	}
 
+	if path == "/tx/52ECED0360605C1F3F336CA20B2C60535B0C72F0" {
+		return []byte(`{
+			"hash": "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
+			"log": "Msg 0: ",
+			"data": "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
+			"code": 0
+		}`), nil
+	}
+
 	return nil, nil
 }
 
