@@ -4,6 +4,8 @@ type fDexAPI struct{}
 
 func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 
+	// fmt.Println("qp: ", qp)
+
 	if path == "/markets" {
 		return []byte(`[
 		{
@@ -73,6 +75,50 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 			"timeinforce": "GTC",
 			"type": "LIMIT"
 		}`), nil
+	}
+
+	if path == "/orders/open" {
+		return []byte(`[{
+			"orderId": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623-240402",
+			"owner": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623",
+			"symbol": "NNB_BNB",
+			"price": "1600000000",
+			"quantity": "8900000000",
+			"executedQuantity": "8900000000",
+			"side": "SELL",
+			"status": "FULLY_FILLED",
+			"timeinforce": "GTC",
+			"type": "LIMIT"
+		}]`), nil
+	}
+
+	if path == "/orders/closed" {
+		return []byte(`[{
+			"orderId": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623-240402",
+			"owner": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623",
+			"symbol": "NNB_BNB",
+			"price": "1600000000",
+			"quantity": "8900000000",
+			"executedQuantity": "8900000000",
+			"side": "SELL",
+			"status": "FULLY_FILLED",
+			"timeinforce": "GTC",
+			"type": "LIMIT"
+		}]`), nil
+	}
+
+	if path == "/trades" {
+		return []byte(`[{
+			"buyerOrderId": "order-buy-1",
+			"buyFee": "0.50000000",
+			"price": "0.75000000",
+			"quantity": "1.00000000",
+			"sellerOrderId": "order-sell-1",
+			"sellFee": "0.50000000",
+			"symbol": "BNB_NNB",
+			"time": 1000000000,
+			"tradeId": "trade-1"
+		}]`), nil
 	}
 
 	return nil, nil
