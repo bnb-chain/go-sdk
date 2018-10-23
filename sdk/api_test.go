@@ -60,6 +60,21 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 		}`), nil
 	}
 
+	if path == "/orders/cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623" {
+		return []byte(`{
+			"orderId": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623-240402",
+			"owner": "cosmosaccaddr1q68phq7q6fyup5x25maglf9sxc2t4hy42pa623",
+			"symbol": "NNB_BNB",
+			"price": "1600000000",
+			"quantity": "8900000000",
+			"executedQuantity": "8900000000",
+			"side": "SELL",
+			"status": "FULLY_FILLED",
+			"timeinforce": "GTC",
+			"type": "LIMIT"
+		}`), nil
+	}
+
 	return nil, nil
 }
 
