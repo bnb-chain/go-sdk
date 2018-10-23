@@ -29,8 +29,8 @@ type Kline struct {
 	Volume           int64 `json:"volume"`
 }
 
-// GetKline returns transaction details
-func (sdk *SDK) GetKline(query *KlineQuery) (*Kline, error) {
+// GetKlines returns transaction details
+func (sdk *SDK) GetKlines(query *KlineQuery) ([]*Kline, error) {
 
 	if query.Symbol == "" {
 		return nil, fmt.Errorf("Query.Symbol is required")
@@ -41,15 +41,15 @@ func (sdk *SDK) GetKline(query *KlineQuery) (*Kline, error) {
 	}
 
 	qp := structs.Map(query)
-	resp, err := sdk.dexAPI.Get("/kline", ToMapStrStr(qp))
+	resp, err := sdk.dexAPI.Get("/klines", ToMapStrStr(qp))
 	if err != nil {
 		return nil, err
 	}
 
-	var Kline Kline
-	if err := json.Unmarshal(resp, &Kline); err != nil {
+	var klines []*Kline
+	if err := json.Unmarshal(resp, &klines); err != nil {
 		return nil, err
 	}
 
-	return &Kline, nil
+	return klines, nil
 }

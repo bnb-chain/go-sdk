@@ -121,8 +121,8 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 		}]`), nil
 	}
 
-	if path == "/kline" {
-		return []byte(`{
+	if path == "/klines" {
+		return []byte(`[{
 			"close": 50000000,       
 			"closeTime": 90000000,
 			"high": 150000000,
@@ -132,7 +132,7 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 			"openTime": 1000000,
 			"quoteAssetVolume": 800000000,
 			"volume": 2000000000
-		}`), nil
+		}]`), nil
 	}
 
 	return nil, nil
