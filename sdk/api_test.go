@@ -121,6 +121,20 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 		}]`), nil
 	}
 
+	if path == "/kline" {
+		return []byte(`{
+			"close": 50000000,       
+			"closeTime": 90000000,
+			"high": 150000000,
+			"low": 500000000,
+			"numberOfTrades": 150,
+			"open": 500000000,
+			"openTime": 1000000,
+			"quoteAssetVolume": 800000000,
+			"volume": 2000000000
+		}`), nil
+	}
+
 	return nil, nil
 }
 
