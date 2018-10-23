@@ -5,12 +5,23 @@ import (
 	"testing"
 )
 
+func TestDepthError(t *testing.T) {
+	sdk := &SDK{
+		dexAPI: &fDexAPI{},
+	}
+
+	_, err := sdk.GetDepth(&DepthQuery{})
+	if err == nil || err.Error() != "Query.Symbol is required" {
+		t.Errorf("GetDepth failed, expected `Error Query.Symbol is required` but got %v", err)
+	}
+}
+
 func TestDepth(t *testing.T) {
 	sdk := &SDK{
 		dexAPI: &fDexAPI{},
 	}
 
-	depth, err := sdk.GetDepth("BNB_NNB")
+	depth, err := sdk.GetDepth(&DepthQuery{Symbol: "BNB_NNB"})
 	if err != nil {
 		t.Errorf("GetDepth failed, expected no error but got %v", err)
 	}

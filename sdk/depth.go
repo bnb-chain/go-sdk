@@ -3,7 +3,15 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/fatih/structs"
 )
+
+// DepthQuery def
+type DepthQuery struct {
+	Symbol string
+	Limit  int32
+}
 
 // MarketDepth to be broadcasted to the user
 type MarketDepth struct {
@@ -14,15 +22,13 @@ type MarketDepth struct {
 }
 
 // GetDepth returns market depth records
-func (sdk *SDK) GetDepth(symbol string) (*MarketDepth, error) {
-	if symbol == "" || len(symbol) < 7 {
-		return nil, fmt.Errorf("Invalid symbol %s", symbol)
+func (sdk *SDK) GetDepth(query *DepthQuery) (*MarketDepth, error) {
+	if query.Symbol == "" {
+		return nil, fmt.Errorf("Query.Symbol is required")
 	}
 
-	qp := map[string]string{}
-	qp["symbol"] = symbol
-
-	resp, err := sdk.dexAPI.Get("/depth", qp)
+	qp := structs.Map(query)
+	resp, err := sdk.dexAPI.Get("/depth", ToMapStrStr(qp))
 	if err != nil {
 		return nil, err
 	}
