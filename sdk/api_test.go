@@ -135,6 +135,42 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 		}]`), nil
 	}
 
+	if path == "/ticker/24hr" {
+		return []byte(`{
+			"symbol":"BNB",
+			"askPrice":"1.0000000",
+			"askQuantity":"1.0000000",
+			"bidPrice":"1.0000000",
+			"bidQuantity":"1.0000000",
+			"closeTime":10000000,
+			"count":100,
+			"firstId":"order-1",
+			"highPrice":"1.0000000",
+			"lastId":"order-100",
+			"lastPrice":"1.0000000",
+			"lastQuantity":"1.0000000",
+			"lowPrice":"1.0000000",
+			"openPrice":"1.0000000",
+			"openTime":2000000,
+			"prevClosePrice":"1.0000000",
+			"priceChange":"1.0000000",
+			"priceChangePercent":"15",
+			"quoteVolume":"1.0000000",
+			"volume":"1.0000000",
+			"weightedAvgPrice":"1.0000000"
+	 }`), nil
+	}
+
+	if path == "/ticker/ticker" {
+		return []byte(`{
+			"symbol":"BNB",
+			"askPrice":"1.0000000",
+			"askQty":"1.0000000",
+			"bidPrice":"1.0000000",
+			"bidQty":"1.0000000"
+	 }`), nil
+	}
+
 	return nil, nil
 }
 
