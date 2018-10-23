@@ -171,6 +171,12 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 	 }`), nil
 	}
 
+	if path == "/time" {
+		return []byte(`{
+			"Time":"14:20:00T"
+	 }`), nil
+	}
+
 	return nil, nil
 }
 
