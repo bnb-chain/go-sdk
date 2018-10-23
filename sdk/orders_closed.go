@@ -26,6 +26,7 @@ func (sdk *SDK) GetClosedOrders(query *ClosedOrdersQuery) ([]*Order, error) {
 		return nil, fmt.Errorf("Invalid `Query.Side` param")
 	}
 
+<<<<<<< HEAD
 	dqj, err := json.Marshal(query)
 	if err != nil {
 		return nil, err
@@ -34,6 +35,10 @@ func (sdk *SDK) GetClosedOrders(query *ClosedOrdersQuery) ([]*Order, error) {
 	json.Unmarshal(dqj, &qp)
 
 	resp, err := sdk.dexAPI.Get("/orders/closed", qp)
+=======
+	qp := structs.Map(query)
+	resp, err := sdk.dexAPI.Get("/orders/closed", ToMapStrStr(qp))
+>>>>>>> add open/closed orders endpoints
 	if err != nil {
 		return nil, err
 	}

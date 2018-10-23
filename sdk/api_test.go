@@ -4,6 +4,8 @@ type fDexAPI struct{}
 
 func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 
+	// fmt.Println("qp: ", qp)
+
 	if path == "/markets" {
 		return []byte(`[
 		{
