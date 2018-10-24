@@ -7,23 +7,19 @@ import (
 
 // Account definition
 type Account struct {
-	Number    string    `json:"account_number"`
-	Address   string    `json:"address"`
-	Coins     []Coin    `json:"coins"`
-	PublicKey PublicKey `json:"public_key"`
-	Sequence  string    `json:"sequence"`
+	Number    string `json:"account_number"`
+	Address   string `json:"address"`
+	Balances  []Coin `json:"balances"`
+	PublicKey []int8 `json:"public_key"`
+	Sequence  string `json:"sequence"`
 }
 
 // Coin def
 type Coin struct {
-	Denom  string `json:"denom"` // ex: BNB
-	Amount string // in decimal, ex: 0.00000000
-}
-
-// PublicKey def
-type PublicKey struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
+	Symbol string `json:"symbol"` // ex: BNB
+	Free   string `json:"free"`   // in decimal, ex: 0.00000000
+	Locked string `json:"locked"` // in decimal, ex: 0.00000000
+	Frozen string `json:"frozen"` // in decimal, ex: 0.00000000
 }
 
 // GetAccount returns list of trading pairs

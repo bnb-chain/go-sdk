@@ -30,24 +30,21 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 	if path == "/account/cosmosaccaddr1hy2e872rqtd675sn72ny87cyyaaanmqeuvwrpc" {
 		return []byte(`{
       "address": "cosmosaccaddr1hy2e872rqtd675sn72ny87cyyaaanmqeuvwrpc",
-      "coins": [
+      "balances": [
         {
-          "denom": "BNB",
-          "amount": "18975020177895000"
+          "symbol": "BNB",
+					"free": "18975020177895000",
+					"locked": "000000000",
+					"frozen": "000000000"
         },
         {
-          "denom": "NNB",
-          "amount": "1737120240518526"
-        },
-        {
-          "denom": "ZCB",
-          "amount": "1887578172962946"
-        }
+          "symbol": "NNB",
+					"free": "828912912928291",
+					"locked": "000000000",
+					"frozen": "75000000"
+				}
       ],
-      "public_key": {
-        "type": "tendermint/PubKeySecp256k1",
-        "value": "A58TeSbC3MRQ1ig5heN/XPinu9kjZrK4gp60DD7czU8J"
-      },
+      "public_key": [1,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1],
       "account_number": "0",
       "sequence": "298113"
     }`), nil

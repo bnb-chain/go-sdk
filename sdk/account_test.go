@@ -29,29 +29,26 @@ func TestAccount(t *testing.T) {
 	expected := &Account{
 		Number:  "0",
 		Address: "cosmosaccaddr1hy2e872rqtd675sn72ny87cyyaaanmqeuvwrpc",
-		Coins: []Coin{
+		Balances: []Coin{
 			Coin{
-				Denom:  "BNB",
-				Amount: "18975020177895000",
+				Symbol: "BNB",
+				Free:   "18975020177895000",
+				Locked: "000000000",
+				Frozen: "000000000",
 			},
 			Coin{
-				Denom:  "NNB",
-				Amount: "1737120240518526",
-			},
-			Coin{
-				Denom:  "ZCB",
-				Amount: "1887578172962946",
+				Symbol: "NNB",
+				Free:   "828912912928291",
+				Locked: "000000000",
+				Frozen: "75000000",
 			},
 		},
-		PublicKey: PublicKey{
-			Type:  "tendermint/PubKeySecp256k1",
-			Value: "A58TeSbC3MRQ1ig5heN/XPinu9kjZrK4gp60DD7czU8J",
-		},
-		Sequence: "298113",
+		PublicKey: []int8{1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		Sequence:  "298113",
 	}
 
 	if !reflect.DeepEqual(expected, depth) {
-		t.Errorf("GetAccount wrong results, expected %v but got %v", expected, depth)
+		t.Errorf("GetAccount wrong results, expected \n%v but got \n%v", expected, depth)
 	}
 
 }
