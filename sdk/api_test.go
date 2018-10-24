@@ -174,6 +174,17 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 	 }`), nil
 	}
 
+	if path == "/tokens" {
+		return []byte(`[
+		{
+			"name": "ABC Token",
+			"symbol": "BNB",
+			"total_supply": "100000000",
+			"owner": "cosmosaccaddr1hy2e872rqtd675sn72ny87cyyaaanmqeuvwrpc"
+		}
+	]`), nil
+	}
+
 	return nil, nil
 }
 

@@ -3,6 +3,8 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
+
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
 // Tx def
@@ -31,4 +33,14 @@ func (sdk *SDK) GetTx(txHash string) (*Tx, error) {
 	}
 
 	return &tx, nil
+}
+
+// SignTx returns signature
+func (sdk *SDK) SignTx(priv tmcrypto.PrivKey, msg []byte) (sig []byte, pub tmcrypto.PubKey, err error) {
+	sig, err = priv.Sign(msg)
+	if err != nil {
+		return nil, nil, err
+	}
+	pub = priv.PubKey()
+	return sig, pub, nil
 }
