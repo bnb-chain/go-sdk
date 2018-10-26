@@ -10,7 +10,7 @@ type DexAPI struct {
 // IDexAPI methods
 type IDexAPI interface {
 	Get(path string, qp map[string]string) ([]byte, error)
-	Post(path string, qp map[string]string, body []byte) ([]byte, error)
+	Post(path string, body interface{}) ([]byte, error)
 }
 
 // Get generic method
@@ -24,8 +24,12 @@ func (api *DexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 }
 
 // Post generic method
-func (api *DexAPI) Post(path string, qp map[string]string, body []byte) ([]byte, error) {
-	resp, err := resty.R().SetQueryParams(qp).Post(api.baseURL + path)
+func (api *DexAPI) Post(path string, body interface{}) ([]byte, error) {
+	resp, err := resty.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(body).
+		Post(api.baseURL + path)
+
 	if err != nil {
 		return nil, err
 	}

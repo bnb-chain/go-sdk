@@ -188,6 +188,23 @@ func (api *fDexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 	return nil, nil
 }
 
-func (api *fDexAPI) Post(path string, qp map[string]string, body []byte) ([]byte, error) {
+func (api *fDexAPI) Post(path string, body interface{}) ([]byte, error) {
+	if path == "/tx" {
+		return []byte(`{
+			"Height": 1000,
+			"hash": "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
+			"deliver_tx": {
+				"log": "Deliver Msg 0: ",
+				"data": "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
+				"code": 0	
+			},
+			"check_tx": {
+				"log": "Check Msg 0: ",
+				"data": "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
+				"code": 0	
+			}
+		}`), nil
+	}
+
 	return nil, nil
 }
