@@ -224,39 +224,47 @@ func (msg CancelOrderMsg) GetSignBytes() []byte {
 
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly
 func (msg NewOrderMsg) ValidateBasic() error {
-	// if len(msg.Sender) == 0 {
-	// 	return sdk.ErrUnknownAddress(msg.Sender.String()).TraceSDK("")
-	// }
-	// // `-` is required in the compound order id: <address>-<sequence>
-	// if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
-	// 	return types.ErrInvalidOrderParam("Id", fmt.Sprintf("Invalid order ID:%s", msg.Id))
-	// }
-	// if msg.Quantity <= 0 {
-	// 	return types.ErrInvalidOrderParam("Quantity", fmt.Sprintf("Zero/Negative Number:%d", msg.Quantity))
-	// }
-	// if msg.Price <= 0 {
-	// 	return types.ErrInvalidOrderParam("Price", fmt.Sprintf("Zero/Negative Number:%d", msg.Quantity))
-	// }
-	// if !IsValidOrderType(msg.OrderType) {
-	// 	return types.ErrInvalidOrderParam("OrderType", fmt.Sprintf("Invalid order type:%d", msg.OrderType))
-	// }
-	// if !IsValidSide(msg.OrderSide) {
-	// 	return types.ErrInvalidOrderParam("OrderSide", fmt.Sprintf("Invalid side:%d", msg.OrderSide))
-	// }
-	// if !IsValidTimeInForce(msg.TimeInForce) {
-	// 	return types.ErrInvalidOrderParam("TimeInForce", fmt.Sprintf("Invalid TimeInForce:%d", msg.TimeInForce))
-	// }
+	if len(msg.Sender) == 0 {
+		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
+	}
+
+	// `-` is required in the compound order id: <address>-<sequence>
+	if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
+		return fmt.Errorf("Invalid order ID:%s", msg.Id)
+	}
+
+	if msg.Quantity <= 0 {
+		return fmt.Errorf("Invalid order Quantity, Zero/Negative Number:%d", msg.Quantity)
+	}
+
+	if msg.Price <= 0 {
+		return fmt.Errorf("Invalid order Price, Zero/Negative Number:%d", msg.Price)
+	}
+
+	if !IsValidOrderType(msg.OrderType) {
+		return fmt.Errorf("Invalid order type:%d", msg.OrderType)
+	}
+
+	if !IsValidSide(msg.OrderSide) {
+		return fmt.Errorf("Invalid side:%d", msg.OrderSide)
+	}
+
+	if !IsValidTimeInForce(msg.TimeInForce) {
+		return fmt.Errorf("Invalid TimeInForce:%d", msg.TimeInForce)
+	}
 
 	return nil
 }
 
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly
 func (msg CancelOrderMsg) ValidateBasic() error {
-	// if len(msg.Sender) == 0 {
-	// 	return sdk.ErrUnknownAddress(msg.Sender.String()).TraceSDK("")
-	// }
-	// if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
-	// 	return types.ErrInvalidOrderParam("Id", fmt.Sprintf("Invalid order ID:%s", msg.Id))
-	// }
+	if len(msg.Sender) == 0 {
+		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
+	}
+
+	if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
+		return fmt.Errorf("Invalid order ID:%s", msg.Id)
+	}
+
 	return nil
 }
