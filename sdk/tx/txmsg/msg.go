@@ -7,7 +7,15 @@ import (
 	"github.com/BiJie/BinanceChain/common/utils"
 )
 
-// Transactions messages must fulfill the Msg
+// constants
+const (
+	DotBSuffix           = ".B"
+	NativeToken          = "BNB"
+	Decimals       int8  = 8
+	MaxTotalSupply int64 = 9000000000000000000 // 90 billions with 8 decimal digits
+)
+
+// Msg interface must be fulfilled by transactions messages
 type Msg interface {
 
 	// Return the message type.
@@ -29,8 +37,6 @@ type Msg interface {
 
 // ValidateSymbol utility
 func ValidateSymbol(symbol string) error {
-	DotBSuffix := ".B"
-
 	if len(symbol) == 0 {
 		return fmt.Errorf("Token symbol cannot be empty")
 	}

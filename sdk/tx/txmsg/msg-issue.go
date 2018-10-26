@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-
-	"github.com/BiJie/BinanceChain/common/types"
 )
 
 // TokenIssueMsg def
@@ -41,8 +39,8 @@ func (msg TokenIssueMsg) ValidateBasic() error {
 		return fmt.Errorf("Token name should have 1~20 characters")
 	}
 
-	if msg.TotalSupply <= 0 || msg.TotalSupply > types.MaxTotalSupply {
-		return fmt.Errorf("Total supply should be <= " + string(types.MaxTotalSupply/int64(math.Pow10(int(types.Decimals)))))
+	if msg.TotalSupply <= 0 || msg.TotalSupply > MaxTotalSupply {
+		return fmt.Errorf("Total supply should be <= " + string(MaxTotalSupply/int64(math.Pow10(int(Decimals)))))
 	}
 
 	return nil
