@@ -5,34 +5,34 @@ import (
 	// "github.com/BiJie/BinanceChain/plugins/tokens/base"
 )
 
-// var _ sdk.Msg = (*FreezeMsg)(nil)
+// var _ sdk.Msg = (*TokenFreezeMsg)(nil)
 
-type FreezeMsg struct {
+type TokenFreezeMsg struct {
 	MsgBase
 }
 
-func NewFreezeMsg(from AccAddress, symbol string, amount int64) FreezeMsg {
-	return FreezeMsg{MsgBase{From: from, Symbol: symbol, Amount: amount}}
+func NewFreezeMsg(from AccAddress, symbol string, amount int64) TokenFreezeMsg {
+	return TokenFreezeMsg{MsgBase{From: from, Symbol: symbol, Amount: amount}}
 }
 
-func (msg FreezeMsg) Type() string { return "tokensFreeze" }
+func (msg TokenFreezeMsg) Type() string { return "tokensFreeze" }
 
-func (msg FreezeMsg) String() string {
+func (msg TokenFreezeMsg) String() string {
 	return fmt.Sprintf("Freeze{%v#%v}", msg.From, msg.Symbol)
 }
 
-// var _ sdk.Msg = (*UnfreezeMsg)(nil)
+// var _ sdk.Msg = (*TokenUnfreezeMsg)(nil)
 
-type UnfreezeMsg struct {
+type TokenUnfreezeMsg struct {
 	MsgBase
 }
 
-func NewUnfreezeMsg(from AccAddress, symbol string, amount int64) UnfreezeMsg {
-	return UnfreezeMsg{MsgBase{From: from, Symbol: symbol, Amount: amount}}
+func NewUnfreezeMsg(from AccAddress, symbol string, amount int64) TokenUnfreezeMsg {
+	return TokenUnfreezeMsg{MsgBase{From: from, Symbol: symbol, Amount: amount}}
 }
 
-func (msg UnfreezeMsg) Type() string { return "tokensFreeze" }
+func (msg TokenUnfreezeMsg) Type() string { return "tokensFreeze" }
 
-func (msg UnfreezeMsg) String() string {
+func (msg TokenUnfreezeMsg) String() string {
 	return fmt.Sprintf("Unfreeze{%v#%v%v}", msg.From, msg.Amount, msg.Symbol)
 }

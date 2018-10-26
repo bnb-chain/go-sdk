@@ -1,13 +1,11 @@
 package tx
 
 import (
-	"fmt"
-
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )
 
-// Sign message, prepare signatures and return marshaled stdtx
+// Sign message, prepare signatures and return HEX format marshalled stdtx
 func (tx *Tx) Sign(privKeyBytes []byte, signMsg StdSignMsg) ([]byte, error) {
 	priv, err := cryptoAmino.PrivKeyFromBytes(privKeyBytes)
 	if err != nil {
@@ -28,7 +26,10 @@ func (tx *Tx) Sign(privKeyBytes []byte, signMsg StdSignMsg) ([]byte, error) {
 
 	stdTx := NewStdTx(signMsg.Msgs, signMsg.Fee, sigs, signMsg.Memo)
 
-	fmt.Println("stdTx: ", stdTx)
+	stdTxBytes, err := Cdc.MarshalBinaryLengthPrefixed(stdTx)
+	if err != nil {
+		return nil, err
+	}
 
-	return Cdc.MarshalBinaryBare(stdTx) //MarshalBinaryLengthPrefixed(stdTx)
+	return EncodeHex(stdTxBytes), nil
 }
