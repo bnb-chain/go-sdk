@@ -3,21 +3,9 @@ package tx
 import (
 	"encoding/json"
 
-	"./msgs"
-	amino "github.com/tendermint/go-amino"
+	"./txmsg"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )
-
-type Codec = amino.Codec
-
-var Cdc *Codec
-
-func init() {
-	cdc := amino.NewCodec()
-	cryptoAmino.RegisterAmino(cdc)
-	Cdc = cdc.Seal()
-}
 
 type StdSignDoc struct {
 	ChainID       string            `json:"chain_id"`
@@ -29,12 +17,12 @@ type StdSignDoc struct {
 }
 
 type StdSignMsg struct {
-	ChainID       string
 	AccountNumber int64
-	Sequence      int64
-	Memo          string
+	ChainID       string
 	Fee           StdFee
-	Msgs          []msgs.Msg
+	Memo          string
+	Msgs          []txmsg.Msg
+	Sequence      int64
 }
 
 // Standard Signature
@@ -51,7 +39,7 @@ func (msg StdSignMsg) Bytes() []byte {
 }
 
 // StdSignBytes returns the bytes to sign for a transaction.
-func StdSignBytes(chainID string, accnum int64, sequence int64, fee StdFee, msgs []msgs.Msg, memo string) []byte {
+func StdSignBytes(chainID string, accnum int64, sequence int64, fee StdFee, msgs []txmsg.Msg, memo string) []byte {
 	var msgsBytes []json.RawMessage
 	for _, msg := range msgs {
 		msgsBytes = append(msgsBytes, json.RawMessage(msg.GetSignBytes()))
@@ -67,31 +55,5 @@ func StdSignBytes(chainID string, accnum int64, sequence int64, fee StdFee, msgs
 	if err != nil {
 		panic(err)
 	}
-	return bz //sdk.MustSortJSON(bz)
+	return MustSortJSON(bz)
 }
-
-type StdFee struct {
-	Amount Coins `json:"amount"`
-	Gas    int64 `json:"gas"`
-}
-
-// fee bytes for signing later
-func (fee StdFee) Bytes() []byte {
-	if len(fee.Amount) == 0 {
-		fee.Amount = Coins{}
-	}
-	bz, err := Cdc.MarshalJSON(fee)
-	if err != nil {
-		panic(err)
-	}
-	return bz
-}
-
-type Coin struct {
-	Denom  string `json:"denom"`
-	Amount int64  `json:"amount"`
-}
-
-type Coins []Coin
-
-type Tx struct{}

@@ -1,4 +1,4 @@
-package msgs
+package txmsg
 
 import (
 	"encoding/json"
@@ -40,7 +40,7 @@ func (msg MsgBase) Get(key interface{}) (value interface{}) {
 }
 
 func (msg MsgBase) GetSignBytes() []byte {
-	b, err := json.Marshal(msg) // XXX: ensure some canonical form
+	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
 	}

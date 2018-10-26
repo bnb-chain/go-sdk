@@ -1,17 +1,17 @@
 package tx
 
 import (
-	"./msgs"
+	"./txmsg"
 )
 
 type StdTx struct {
-	Msgs       []msgs.Msg     `json:"msg"`
+	Msgs       []txmsg.Msg    `json:"msg"`
 	Fee        StdFee         `json:"fee"`
 	Signatures []StdSignature `json:"signatures"`
 	Memo       string         `json:"memo"`
 }
 
-func NewStdTx(msgs []msgs.Msg, fee StdFee, sigs []StdSignature, memo string) StdTx {
+func NewStdTx(msgs []txmsg.Msg, fee StdFee, sigs []StdSignature, memo string) StdTx {
 	return StdTx{
 		Msgs:       msgs,
 		Fee:        fee,
@@ -20,11 +20,11 @@ func NewStdTx(msgs []msgs.Msg, fee StdFee, sigs []StdSignature, memo string) Std
 	}
 }
 func (tx StdTx) GetMemo() string               { return tx.Memo }
-func (tx StdTx) GetMsgs() []msgs.Msg           { return tx.Msgs }
+func (tx StdTx) GetMsgs() []txmsg.Msg          { return tx.Msgs }
 func (tx StdTx) GetSignatures() []StdSignature { return tx.Signatures }
-func (tx StdTx) GetSigners() []msgs.AccAddress {
+func (tx StdTx) GetSigners() []txmsg.AccAddress {
 	seen := map[string]bool{}
-	var signers []msgs.AccAddress
+	var signers []txmsg.AccAddress
 	for _, msg := range tx.GetMsgs() {
 		for _, addr := range msg.GetSigners() {
 			if !seen[addr.String()] {

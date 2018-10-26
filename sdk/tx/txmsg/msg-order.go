@@ -1,4 +1,4 @@
-package msgs
+package txmsg
 
 import (
 	"encoding/json"
@@ -12,9 +12,9 @@ const (
 	CancelOrder = "orderCancel"
 )
 
-// Side/TimeInForce/OrderType are const, following FIX protocol convention
+// OrderSide/TimeInForce/OrderType are const, following FIX protocol convention
 // Used as Enum
-var Side = struct {
+var OrderSide = struct {
 	BUY  int8
 	SELL int8
 }{1, 2}
@@ -26,9 +26,9 @@ var sideNames = map[string]int8{
 
 func IToSide(side int8) string {
 	switch side {
-	case Side.BUY:
+	case OrderSide.BUY:
 		return "BUY"
-	case Side.SELL:
+	case OrderSide.SELL:
 		return "SELL"
 	default:
 		return "UNKNOWN"
@@ -37,14 +37,14 @@ func IToSide(side int8) string {
 
 // GenerateOrderID generates an order ID
 func GenerateOrderID(sequence int64, from AccAddress) string {
-	id := fmt.Sprintf("%s-%d", string(from), sequence)
+	id := fmt.Sprintf("%s-%d", from.String(), sequence)
 	return id
 }
 
 // IsValidSide validates that a side is valid and supported by the matching engine
 func IsValidSide(side int8) bool {
 	switch side {
-	case Side.BUY, Side.SELL:
+	case OrderSide.BUY, OrderSide.SELL:
 		return true
 	default:
 		return false
@@ -146,7 +146,7 @@ type NewOrderMsg struct {
 	Id          string     `json:"id"`
 	Symbol      string     `json:"symbol"`
 	OrderType   int8       `json:"ordertype"`
-	Side        int8       `json:"side"`
+	OrderSide   int8       `json:"side"`
 	Price       int64      `json:"price"`
 	Quantity    int64      `json:"quantity"`
 	TimeInForce int8       `json:"timeinforce"`
@@ -159,7 +159,7 @@ func NewNewOrderMsg(sender AccAddress, id string, side int8, symbol string, pric
 		Id:          id,
 		Symbol:      symbol,
 		OrderType:   OrderType.LIMIT, // default
-		Side:        side,
+		OrderSide:   side,
 		Price:       price,
 		Quantity:    qty,
 		TimeInForce: TimeInForce.GTC, // default
@@ -173,7 +173,7 @@ func (msg NewOrderMsg) Type() string                            { return NewOrde
 func (msg NewOrderMsg) Get(key interface{}) (value interface{}) { return nil }
 func (msg NewOrderMsg) GetSigners() []AccAddress                { return []AccAddress{msg.Sender} }
 func (msg NewOrderMsg) String() string {
-	return fmt.Sprintf("NewOrderMsg{Sender: %v, Id: %v, Symbol: %v, Side: %v, Price: %v, Qty: %v}", msg.Sender, msg.Id, msg.Symbol, msg.Side, msg.Price, msg.Quantity)
+	return fmt.Sprintf("NewOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.Id, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
 }
 
 // NewCancelOrderMsg constructs a new CancelOrderMsg
@@ -240,8 +240,8 @@ func (msg NewOrderMsg) ValidateBasic() error {
 	// if !IsValidOrderType(msg.OrderType) {
 	// 	return types.ErrInvalidOrderParam("OrderType", fmt.Sprintf("Invalid order type:%d", msg.OrderType))
 	// }
-	// if !IsValidSide(msg.Side) {
-	// 	return types.ErrInvalidOrderParam("Side", fmt.Sprintf("Invalid side:%d", msg.Side))
+	// if !IsValidSide(msg.OrderSide) {
+	// 	return types.ErrInvalidOrderParam("OrderSide", fmt.Sprintf("Invalid side:%d", msg.OrderSide))
 	// }
 	// if !IsValidTimeInForce(msg.TimeInForce) {
 	// 	return types.ErrInvalidOrderParam("TimeInForce", fmt.Sprintf("Invalid TimeInForce:%d", msg.TimeInForce))

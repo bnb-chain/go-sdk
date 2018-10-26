@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"./msgs"
+	"./txmsg"
 )
 
 func TestSignTx(t *testing.T) {
 
-	acc := []byte(`cosmosaccaddr1hy2e872rqtd675sn72ny87cyyaaanmqeuvwrpc`)
-	newOrderMsg := msgs.NewNewOrderMsg(acc, msgs.GenerateOrderID(100, acc), msgs.Side.BUY, "BNB_NNB", 100000000, 5000000000)
+	priv, acc := PrivAndAddr()
+	newOrderMsg := txmsg.NewNewOrderMsg(acc, txmsg.GenerateOrderID(1, acc), txmsg.OrderSide.BUY, "BNB_NNB", 100000000, 5000000000)
 
 	fee := StdFee{
 		Amount: Coins{Coin{Denom: "BNB", Amount: 100000000}},
@@ -23,12 +23,22 @@ func TestSignTx(t *testing.T) {
 		Sequence:      1,
 		Memo:          "",
 		Fee:           fee,
-		Msgs:          []msgs.Msg{newOrderMsg},
+		Msgs:          []txmsg.Msg{newOrderMsg},
 	}
 
 	fmt.Println("signMsg: ", signMsg)
 
-	// if err == nil {
-	// 	t.Errorf("GetKlines failed, expected `Error` but got %v", err)
-	// }
+	tx := &Tx{}
+	privKey := priv.Bytes()
+	stdTx, err := tx.Sign(privKey, signMsg)
+
+	fmt.Println("stdTx: ", stdTx)
+
+	if err != nil {
+		t.Errorf("tx.Sign() failed, expected signed tx but got error: %v", err)
+	}
+
+	if len(stdTx) == 0 {
+		t.Errorf("tx.Sign() failed, expected signed tx but got empty data: %v", stdTx)
+	}
 }

@@ -1,4 +1,4 @@
-package msgs
+package txmsg
 
 import (
 	"encoding/json"

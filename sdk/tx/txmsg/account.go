@@ -1,4 +1,4 @@
-package msgs
+package txmsg
 
 import (
 	"encoding/hex"
@@ -8,26 +8,6 @@ import (
 
 	"github.com/tendermint/tendermint/libs/bech32"
 )
-
-// Transactions messages must fulfill the Msg
-type Msg interface {
-
-	// Return the message type.
-	// Must be alphanumeric or empty.
-	Type() string
-
-	// ValidateBasic does a simple validation check that
-	// doesn't require access to any other information.
-	ValidateBasic() error
-
-	// Get the canonical byte representation of the Msg.
-	GetSignBytes() []byte
-
-	// Signers returns the addrs of signers that must sign.
-	// CONTRACT: All signatures must be present to be valid.
-	// CONTRACT: Returns addrs in some deterministic order.
-	GetSigners() []AccAddress
-}
 
 // AccAddress a wrapper around bytes meant to represent an account address.
 // When marshaled to a string or JSON, it uses Bech32.
@@ -139,18 +119,4 @@ func NewTestMsg(addrs ...AccAddress) *TestMsg {
 	return &TestMsg{
 		signers: addrs,
 	}
-}
-
-//nolint
-func (msg *TestMsg) Type() string { return "TestMsg" }
-func (msg *TestMsg) GetSignBytes() []byte {
-	bz, err := json.Marshal(msg.signers)
-	if err != nil {
-		panic(err)
-	}
-	return bz
-}
-func (msg *TestMsg) ValidateBasic() error { return nil }
-func (msg *TestMsg) GetSigners() []AccAddress {
-	return msg.signers
 }
