@@ -7,12 +7,13 @@ import (
 	"strings"
 )
 
+// Order operations
 const (
 	NewOrder    = "orderNew"
 	CancelOrder = "orderCancel"
 )
 
-// OrderSide/TimeInForce/OrderType are const, following FIX protocol convention
+// OrderSide /TimeInForce /OrderType are const, following FIX protocol convention
 // Used as Enum
 var OrderSide = struct {
 	BUY  int8
@@ -24,6 +25,7 @@ var sideNames = map[string]int8{
 	"SELL": 2,
 }
 
+// IToSide conversion
 func IToSide(side int8) string {
 	switch side {
 	case OrderSide.BUY:
@@ -72,6 +74,7 @@ var OrderType = struct {
 	MARKET int8
 }{orderLimit, orderMarket}
 
+// IToOrderType conversion
 func IToOrderType(tpe int8) string {
 	switch tpe {
 	case OrderType.LIMIT:
@@ -121,6 +124,7 @@ func IsValidTimeInForce(tif int8) bool {
 	}
 }
 
+// IToTimeInForce conversion
 func IToTimeInForce(tif int8) string {
 	switch tif {
 	case TimeInForce.GTC:
@@ -141,9 +145,10 @@ func TifStringToTifCode(tif string) (int8, error) {
 	return -1, errors.New("tif `" + upperTif + "` not found or supported")
 }
 
+// NewOrderMsg def
 type NewOrderMsg struct {
 	Sender      AccAddress `json:"sender"`
-	Id          string     `json:"id"`
+	ID          string     `json:"id"`
 	Symbol      string     `json:"symbol"`
 	OrderType   int8       `json:"ordertype"`
 	OrderSide   int8       `json:"side"`
@@ -156,7 +161,7 @@ type NewOrderMsg struct {
 func NewNewOrderMsg(sender AccAddress, id string, side int8, symbol string, price int64, qty int64) NewOrderMsg {
 	return NewOrderMsg{
 		Sender:      sender,
-		Id:          id,
+		ID:          id,
 		Symbol:      symbol,
 		OrderType:   OrderType.LIMIT, // default
 		OrderSide:   side,
@@ -166,55 +171,22 @@ func NewNewOrderMsg(sender AccAddress, id string, side int8, symbol string, pric
 	}
 }
 
-// var _ sdk.Msg = NewOrderMsg{}
+// Type is part of Msg interface
+func (msg NewOrderMsg) Type() string { return NewOrder }
 
-// nolint
-func (msg NewOrderMsg) Type() string                            { return NewOrder }
+// Get is part of Msg interface
 func (msg NewOrderMsg) Get(key interface{}) (value interface{}) { return nil }
-func (msg NewOrderMsg) GetSigners() []AccAddress                { return []AccAddress{msg.Sender} }
+
+// GetSigners is part of Msg interface
+func (msg NewOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
+
+// String is part of Msg interface
 func (msg NewOrderMsg) String() string {
-	return fmt.Sprintf("NewOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.Id, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
-}
-
-// NewCancelOrderMsg constructs a new CancelOrderMsg
-func NewCancelOrderMsg(sender AccAddress, symbol, id, refId string) CancelOrderMsg {
-	return CancelOrderMsg{
-		Sender: sender,
-		Symbol: symbol,
-		Id:     id,
-		RefId:  refId,
-	}
-}
-
-// CancelOrderMsg represents a message to cancel an open order
-type CancelOrderMsg struct {
-	Sender AccAddress
-	Symbol string `json:"symbol"`
-	Id     string `json:"id"`
-	RefId  string `json:"refid"`
-}
-
-// var _ sdk.Msg = CancelOrderMsg{}
-
-// nolint
-func (msg CancelOrderMsg) Type() string                            { return CancelOrder }
-func (msg CancelOrderMsg) Get(key interface{}) (value interface{}) { return nil }
-func (msg CancelOrderMsg) GetSigners() []AccAddress                { return []AccAddress{msg.Sender} }
-func (msg CancelOrderMsg) String() string {
-	return fmt.Sprintf("CancelOrderMsg{Sender: %v}", msg.Sender)
+	return fmt.Sprintf("NewOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.ID, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
 }
 
 // GetSignBytes - Get the bytes for the message signer to sign on
 func (msg NewOrderMsg) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
-// GetSignBytes - Get the bytes for the message signer to sign on
-func (msg CancelOrderMsg) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -229,8 +201,8 @@ func (msg NewOrderMsg) ValidateBasic() error {
 	}
 
 	// `-` is required in the compound order id: <address>-<sequence>
-	if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
-		return fmt.Errorf("Invalid order ID:%s", msg.Id)
+	if len(msg.ID) == 0 || !strings.Contains(msg.ID, "-") {
+		return fmt.Errorf("Invalid order ID:%s", msg.ID)
 	}
 
 	if msg.Quantity <= 0 {
@@ -256,14 +228,55 @@ func (msg NewOrderMsg) ValidateBasic() error {
 	return nil
 }
 
+// NewCancelOrderMsg constructs a new CancelOrderMsg
+func NewCancelOrderMsg(sender AccAddress, symbol, id, refID string) CancelOrderMsg {
+	return CancelOrderMsg{
+		Sender: sender,
+		Symbol: symbol,
+		ID:     id,
+		RefID:  refID,
+	}
+}
+
+// CancelOrderMsg represents a message to cancel an open order
+type CancelOrderMsg struct {
+	Sender AccAddress
+	Symbol string `json:"symbol"`
+	ID     string `json:"id"`
+	RefID  string `json:"refid"`
+}
+
+// Type is part of Msg interface
+func (msg CancelOrderMsg) Type() string { return CancelOrder }
+
+// Get is part of Msg interface
+func (msg CancelOrderMsg) Get(key interface{}) (value interface{}) { return nil }
+
+// GetSigners is part of Msg interface
+func (msg CancelOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
+
+// String is part of Msg interface
+func (msg CancelOrderMsg) String() string {
+	return fmt.Sprintf("CancelOrderMsg{Sender: %v}", msg.Sender)
+}
+
+// GetSignBytes - Get the bytes for the message signer to sign on
+func (msg CancelOrderMsg) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly
 func (msg CancelOrderMsg) ValidateBasic() error {
 	if len(msg.Sender) == 0 {
 		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
 	}
 
-	if len(msg.Id) == 0 || !strings.Contains(msg.Id, "-") {
-		return fmt.Errorf("Invalid order ID:%s", msg.Id)
+	if len(msg.ID) == 0 || !strings.Contains(msg.ID, "-") {
+		return fmt.Errorf("Invalid order ID:%s", msg.ID)
 	}
 
 	return nil

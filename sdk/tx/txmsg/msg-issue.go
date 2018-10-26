@@ -3,10 +3,12 @@ package txmsg
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+
+	"github.com/BiJie/BinanceChain/common/types"
 )
 
-// var _ sdk.TokenIssueMsg = TokenIssueMsg{}
-
+// TokenIssueMsg def
 type TokenIssueMsg struct {
 	From        AccAddress `json:"from"`
 	Name        string     `json:"name"`
@@ -14,6 +16,7 @@ type TokenIssueMsg struct {
 	TotalSupply int64      `json:"total_supply"`
 }
 
+// NewTokenIssueMsg for instance creation
 func NewTokenIssueMsg(from AccAddress, name, symbol string, supply int64) TokenIssueMsg {
 	return TokenIssueMsg{
 		From:        from,
@@ -26,33 +29,40 @@ func NewTokenIssueMsg(from AccAddress, name, symbol string, supply int64) TokenI
 // ValidateBasic does a simple validation check that
 // doesn't require access to any other information.
 func (msg TokenIssueMsg) ValidateBasic() error {
-	// if msg.From == nil {
-	// 	return sdk.ErrInvalidAddress("sender address cannot be empty")
-	// }
+	if msg.From == nil {
+		return fmt.Errorf("sender address cannot be empty")
+	}
 
-	// if err := types.ValidateSymbol(msg.Symbol); err != nil {
-	// 	return sdk.ErrInvalidCoins(err.Error())
-	// }
+	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return fmt.Errorf("Invalid symbol %v", msg.Symbol)
+	}
 
-	// if len(msg.Name) == 0 || len(msg.Name) > 20 {
-	// 	return sdk.ErrInvalidCoins("token name should have 1~20 characters")
-	// }
+	if len(msg.Name) == 0 || len(msg.Name) > 20 {
+		return fmt.Errorf("Token name should have 1~20 characters")
+	}
 
-	// if msg.TotalSupply <= 0 || msg.TotalSupply > types.MaxTotalSupply {
-	// 	return sdk.ErrInvalidCoins("total supply should be <= " + string(types.MaxTotalSupply/int64(math.Pow10(int(types.Decimals)))))
-	// }
+	if msg.TotalSupply <= 0 || msg.TotalSupply > types.MaxTotalSupply {
+		return fmt.Errorf("Total supply should be <= " + string(types.MaxTotalSupply/int64(math.Pow10(int(types.Decimals)))))
+	}
 
 	return nil
 }
 
-// Implements TokenIssueMsg.
-func (msg TokenIssueMsg) Type() string                            { return "tokenIssue" }
-func (msg TokenIssueMsg) String() string                          { return fmt.Sprintf("IssueMsg{%#v}", msg) }
-func (msg TokenIssueMsg) Get(key interface{}) (value interface{}) { return nil }
-func (msg TokenIssueMsg) GetSigners() []AccAddress                { return []AccAddress{msg.From} }
+// Type part of Msg interface
+func (msg TokenIssueMsg) Type() string { return "tokenIssue" }
 
+// String part of Msg interface
+func (msg TokenIssueMsg) String() string { return fmt.Sprintf("IssueMsg{%#v}", msg) }
+
+// Get part of Msg interface
+func (msg TokenIssueMsg) Get(key interface{}) (value interface{}) { return nil }
+
+// GetSigners part of Msg interface
+func (msg TokenIssueMsg) GetSigners() []AccAddress { return []AccAddress{msg.From} }
+
+// GetSignBytes part of Msg interface
 func (msg TokenIssueMsg) GetSignBytes() []byte {
-	b, err := json.Marshal(msg) // XXX: ensure some canonical form
+	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
 	}

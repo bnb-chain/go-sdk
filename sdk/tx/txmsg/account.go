@@ -36,12 +36,12 @@ func (bz *AccAddress) Unmarshal(data []byte) error {
 	return nil
 }
 
-// Marshals to JSON using Bech32
+// MarshalJSON to Marshals to JSON using Bech32
 func (bz AccAddress) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bz.String())
 }
 
-// Unmarshals from JSON assuming Bech32 encoding
+// UnmarshalJSON to Unmarshal from JSON assuming Bech32 encoding
 func (bz *AccAddress) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)
@@ -57,7 +57,7 @@ func (bz *AccAddress) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// create an AccAddress from a hex string
+// AccAddressFromHex to create an AccAddress from a hex string
 func AccAddressFromHex(address string) (addr AccAddress, err error) {
 	if len(address) == 0 {
 		return addr, errors.New("decoding bech32 address failed: must provide an address")
@@ -69,7 +69,7 @@ func AccAddressFromHex(address string) (addr AccAddress, err error) {
 	return AccAddress(bz), nil
 }
 
-// create an AccAddress from a bech32 string
+// AccAddressFromBech32 to create an AccAddress from a bech32 string
 func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	bz, err := GetFromBech32(address, Bech32PrefixAccAddr)
 	if err != nil {
@@ -78,7 +78,7 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	return AccAddress(bz), nil
 }
 
-// decode a bytestring from a bech32-encoded string
+// GetFromBech32 to decode a bytestring from a bech32-encoded string
 func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 	if len(bech32str) == 0 {
 		return nil, errors.New("decoding bech32 address failed: must provide an address")
@@ -95,28 +95,16 @@ func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 	return bz, nil
 }
 
-// Allow it to fulfill various interfaces in light-client, etc...
+// Bytes allows it to fulfill various interfaces in light-client, etc...
 func (bz AccAddress) Bytes() []byte {
 	return bz
 }
 
+// String representation
 func (bz AccAddress) String() string {
 	bech32Addr, err := bech32.ConvertAndEncode(Bech32PrefixAccAddr, bz.Bytes())
 	if err != nil {
 		panic(err)
 	}
 	return bech32Addr
-}
-
-var _ Msg = (*TestMsg)(nil)
-
-// msg type for testing
-type TestMsg struct {
-	signers []AccAddress
-}
-
-func NewTestMsg(addrs ...AccAddress) *TestMsg {
-	return &TestMsg{
-		signers: addrs,
-	}
 }
