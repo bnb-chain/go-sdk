@@ -6,9 +6,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )
 
-// Tx def
-type Tx struct{}
-
 // Coin def
 type Coin struct {
 	Denom  string `json:"denom"`
@@ -31,7 +28,7 @@ func init() {
 
 	cdc.RegisterInterface((*txmsg.Msg)(nil), nil)
 
-	cdc.RegisterConcrete(txmsg.NewOrderMsg{}, "dex/NewOrder", nil)
+	cdc.RegisterConcrete(txmsg.CreateOrderMsg{}, "dex/NewOrder", nil)
 	cdc.RegisterConcrete(txmsg.CancelOrderMsg{}, "dex/CancelOrder", nil)
 	cdc.RegisterConcrete(txmsg.TokenIssueMsg{}, "tokens/IssueMsg", nil)
 	cdc.RegisterConcrete(txmsg.TokenBurnMsg{}, "tokens/BurnMsg", nil)

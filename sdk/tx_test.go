@@ -44,7 +44,7 @@ func TestPostTx(t *testing.T) {
 		dexAPI: &fDexAPI{},
 	}
 
-	txResult, err := sdk.PostTx("eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19")
+	txResult, err := sdk.PostTx([]byte("eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19"))
 	if err != nil {
 		t.Errorf("PostTx failed, expected no error but got %v", err)
 	}

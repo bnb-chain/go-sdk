@@ -42,12 +42,12 @@ func (sdk *SDK) GetTx(txHash string) (*TxResult, error) {
 }
 
 // PostTx returns transaction details
-func (sdk *SDK) PostTx(hexTx string) (*TxCommitResult, error) {
+func (sdk *SDK) PostTx(hexTx []byte) (*TxCommitResult, error) {
 	if len(hexTx) == 0 {
 		return nil, fmt.Errorf("Invalid tx  %s", hexTx)
 	}
 
-	body := map[string]interface{}{"tx": hexTx}
+	body := map[string]interface{}{"tx": string(hexTx)}
 	resp, err := sdk.dexAPI.Post("/tx", body)
 	if err != nil {
 		return nil, err

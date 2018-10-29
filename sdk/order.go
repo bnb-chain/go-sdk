@@ -18,10 +18,7 @@ var OrderSide = struct {
 var TimeInForce = struct {
 	GTC string
 	IOC string
-}{
-	"GTC",
-	"IOC",
-}
+}{"GTC", "IOC"}
 
 // OrderStatus enum
 var OrderStatus = struct {
@@ -76,13 +73,13 @@ type Order struct {
 }
 
 // GetOrder returns transaction details
-func (sdk *SDK) GetOrder(orderId string) (*Order, error) {
-	if orderId == "" {
-		return nil, fmt.Errorf("Invalid order ID %s", orderId)
+func (sdk *SDK) GetOrder(orderID string) (*Order, error) {
+	if orderID == "" {
+		return nil, fmt.Errorf("Invalid order ID %s", orderID)
 	}
 
 	qp := map[string]string{}
-	resp, err := sdk.dexAPI.Get("/orders/"+orderId, qp)
+	resp, err := sdk.dexAPI.Get("/orders/"+orderID, qp)
 	if err != nil {
 		return nil, err
 	}

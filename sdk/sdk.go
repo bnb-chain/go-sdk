@@ -9,8 +9,8 @@ type SDK struct {
 	dexAPI IDexAPI
 }
 
-// NewSDK init
-func NewSDK(baseURL string) (*SDK, error) {
+// NewBncSDK init
+func NewBncSDK(baseURL string) (*SDK, error) {
 	if baseURL == "" {
 		return nil, fmt.Errorf("Invalid baseURL %s", baseURL)
 	}
