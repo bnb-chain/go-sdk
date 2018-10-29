@@ -6,17 +6,22 @@ import (
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )
 
+// Tx def
 type Tx struct{}
 
+// Coin def
 type Coin struct {
 	Denom  string `json:"denom"`
 	Amount int64  `json:"amount"`
 }
 
+// Coins def
 type Coins []Coin
 
+// Codec def
 type Codec = amino.Codec
 
+// Cdc global variable
 var Cdc *Codec
 
 func init() {

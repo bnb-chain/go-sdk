@@ -1,10 +1,12 @@
 package tx
 
+// StdFee def
 type StdFee struct {
 	Amount Coins `json:"amount"`
 	Gas    int64 `json:"gas"`
 }
 
+// NewStdFee to instantiate an instance
 func NewStdFee(gas int64, amount ...Coin) StdFee {
 	return StdFee{
 		Amount: amount,
@@ -12,7 +14,7 @@ func NewStdFee(gas int64, amount ...Coin) StdFee {
 	}
 }
 
-// fee bytes for signing later
+// Bytes representation
 func (fee StdFee) Bytes() []byte {
 	if len(fee.Amount) == 0 {
 		fee.Amount = Coins{}

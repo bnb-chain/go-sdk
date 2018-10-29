@@ -7,6 +7,7 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
+// StdSignDoc def
 type StdSignDoc struct {
 	ChainID       string            `json:"chain_id"`
 	AccountNumber int64             `json:"account_number"`
@@ -16,6 +17,7 @@ type StdSignDoc struct {
 	Msgs          []json.RawMessage `json:"msgs"`
 }
 
+// StdSignMsg def
 type StdSignMsg struct {
 	AccountNumber int64
 	ChainID       string
@@ -25,7 +27,7 @@ type StdSignMsg struct {
 	Sequence      int64
 }
 
-// Standard Signature
+// StdSignature def
 type StdSignature struct {
 	tmcrypto.PubKey `json:"pub_key"` // optional
 	Signature       []byte           `json:"signature"`

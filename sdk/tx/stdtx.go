@@ -4,6 +4,7 @@ import (
 	"./txmsg"
 )
 
+// StdTx def
 type StdTx struct {
 	Msgs       []txmsg.Msg    `json:"msg"`
 	Fee        StdFee         `json:"fee"`
@@ -11,6 +12,7 @@ type StdTx struct {
 	Memo       string         `json:"memo"`
 }
 
+// NewStdTx to instantiate an instance
 func NewStdTx(msgs []txmsg.Msg, fee StdFee, sigs []StdSignature, memo string) StdTx {
 	return StdTx{
 		Msgs:       msgs,
@@ -19,9 +21,17 @@ func NewStdTx(msgs []txmsg.Msg, fee StdFee, sigs []StdSignature, memo string) St
 		Memo:       memo,
 	}
 }
-func (tx StdTx) GetMemo() string               { return tx.Memo }
-func (tx StdTx) GetMsgs() []txmsg.Msg          { return tx.Msgs }
+
+// GetMemo def
+func (tx StdTx) GetMemo() string { return tx.Memo }
+
+// GetMsgs def
+func (tx StdTx) GetMsgs() []txmsg.Msg { return tx.Msgs }
+
+// GetSignatures def
 func (tx StdTx) GetSignatures() []StdSignature { return tx.Signatures }
+
+// GetSigners def
 func (tx StdTx) GetSigners() []txmsg.AccAddress {
 	seen := map[string]bool{}
 	var signers []txmsg.AccAddress

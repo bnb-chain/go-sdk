@@ -33,7 +33,7 @@ func NewUnfreezeMsg(from AccAddress, symbol string, amount int64) TokenUnfreezeM
 }
 
 // Type is part of Msg interface
-func (msg TokenUnfreezeMsg) Type() string { return "tokensFreeze" }
+func (msg TokenUnfreezeMsg) Type() string { return "tokensUnfreeze" }
 
 // String is part of Msg interface
 func (msg TokenUnfreezeMsg) String() string {

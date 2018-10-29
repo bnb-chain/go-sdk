@@ -10,7 +10,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
-// SortedJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
+// SortJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
 // are removed.
 // This method can be used to canonicalize JSON to be returned by GetSignBytes,
 // e.g. for the ledger integration.
