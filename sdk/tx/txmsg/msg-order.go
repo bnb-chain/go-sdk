@@ -145,8 +145,8 @@ func TifStringToTifCode(tif string) (int8, error) {
 	return -1, errors.New("tif `" + upperTif + "` not found or supported")
 }
 
-// NewOrderMsg def
-type NewOrderMsg struct {
+// CreateOrderMsg def
+type CreateOrderMsg struct {
 	Sender      AccAddress `json:"sender"`
 	ID          string     `json:"id"`
 	Symbol      string     `json:"symbol"`
@@ -157,9 +157,9 @@ type NewOrderMsg struct {
 	TimeInForce int8       `json:"timeinforce"`
 }
 
-// NewNewOrderMsg constructs a new NewOrderMsg
-func NewNewOrderMsg(sender AccAddress, id string, side int8, symbol string, price int64, qty int64) NewOrderMsg {
-	return NewOrderMsg{
+// NewCreateOrderMsg constructs a new CreateOrderMsg
+func NewCreateOrderMsg(sender AccAddress, id string, side int8, symbol string, price int64, qty int64) CreateOrderMsg {
+	return CreateOrderMsg{
 		Sender:      sender,
 		ID:          id,
 		Symbol:      symbol,
@@ -172,21 +172,21 @@ func NewNewOrderMsg(sender AccAddress, id string, side int8, symbol string, pric
 }
 
 // Type is part of Msg interface
-func (msg NewOrderMsg) Type() string { return NewOrder }
+func (msg CreateOrderMsg) Type() string { return NewOrder }
 
 // Get is part of Msg interface
-func (msg NewOrderMsg) Get(key interface{}) (value interface{}) { return nil }
+func (msg CreateOrderMsg) Get(key interface{}) (value interface{}) { return nil }
 
 // GetSigners is part of Msg interface
-func (msg NewOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
+func (msg CreateOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
 
 // String is part of Msg interface
-func (msg NewOrderMsg) String() string {
-	return fmt.Sprintf("NewOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.ID, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
+func (msg CreateOrderMsg) String() string {
+	return fmt.Sprintf("CreateOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.ID, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
 }
 
 // GetSignBytes - Get the bytes for the message signer to sign on
-func (msg NewOrderMsg) GetSignBytes() []byte {
+func (msg CreateOrderMsg) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -195,7 +195,7 @@ func (msg NewOrderMsg) GetSignBytes() []byte {
 }
 
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly
-func (msg NewOrderMsg) ValidateBasic() error {
+func (msg CreateOrderMsg) ValidateBasic() error {
 	if len(msg.Sender) == 0 {
 		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
 	}

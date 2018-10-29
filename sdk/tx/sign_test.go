@@ -10,7 +10,7 @@ import (
 func TestSign(t *testing.T) {
 
 	priv, acc := PrivAndAddr()
-	newOrderMsg := txmsg.NewNewOrderMsg(
+	newOrderMsg := txmsg.NewCreateOrderMsg(
 		acc,
 		txmsg.GenerateOrderID(1, acc),
 		txmsg.OrderSide.BUY,
@@ -28,8 +28,7 @@ func TestSign(t *testing.T) {
 		Msgs:          []txmsg.Msg{newOrderMsg},
 	}
 
-	tx := &Tx{}
-	hexTx, err := tx.Sign(priv.Bytes(), signMsg)
+	hexTx, err := Sign(priv.Bytes(), signMsg)
 
 	// fmt.Println("stdTx: ", string(stdTx))
 

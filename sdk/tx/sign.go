@@ -6,7 +6,7 @@ import (
 )
 
 // Sign message, prepare signatures and return HEX format marshalled stdtx
-func (tx *Tx) Sign(privKeyBytes []byte, signMsg StdSignMsg) (hexSignedStdTx []byte, err error) {
+func Sign(privKeyBytes []byte, signMsg StdSignMsg) (hexSignedStdTx []byte, err error) {
 	// validate all messages
 	for _, msg := range signMsg.Msgs {
 		err = msg.ValidateBasic()
