@@ -116,7 +116,7 @@ type CancelOrderMsg struct {
 }
 ```
 
-### TokenIssueMsg
+#### TokenIssueMsg
 
 ```GO
 type TokenIssueMsg struct {
@@ -127,7 +127,7 @@ type TokenIssueMsg struct {
 }
 ```
 
-### TokenBurnMsg
+#### TokenBurnMsg
 
 ```GO
 type TokenBurnMsg struct {
@@ -137,7 +137,7 @@ type TokenBurnMsg struct {
 }
 ```
 
-### TokenFreezeMsg
+#### TokenFreezeMsg
 
 ```GO
 type TokenFreezeMsg struct {
@@ -147,7 +147,7 @@ type TokenFreezeMsg struct {
 }
 ```
 
-### TokenUnfreezeMsg
+#### TokenUnfreezeMsg
 
 ```GO
 type TokenUnfreezeMsg struct {
@@ -157,7 +157,7 @@ type TokenUnfreezeMsg struct {
 }
 ```
 
-### DexListMsg
+#### DexListMsg
 
 ```GO
 type DexListMsg struct {
