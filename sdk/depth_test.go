@@ -14,6 +14,11 @@ func TestDepthError(t *testing.T) {
 	if err == nil || err.Error() != "Query.Symbol is required" {
 		t.Errorf("GetDepth failed, expected `Error Query.Symbol is required` but got %v", err)
 	}
+
+	_, err = sdk.GetDepth(&DepthQuery{Symbol: "BNB", Limit: 21})
+	if err == nil || err.Error() != "Query.Limit can't be greater than 20" {
+		t.Errorf("GetDepth failed, expected error `Query.Limit can't be greater than 20` but got %v", err)
+	}
 }
 
 func TestDepth(t *testing.T) {
