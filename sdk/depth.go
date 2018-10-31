@@ -3,8 +3,6 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/fatih/structs"
 )
 
 // DepthQuery def
@@ -27,8 +25,14 @@ func (sdk *SDK) GetDepth(query *DepthQuery) (*MarketDepth, error) {
 		return nil, fmt.Errorf("Query.Symbol is required")
 	}
 
-	qp := structs.Map(query)
-	resp, err := sdk.dexAPI.Get("/depth", ToMapStrStr(qp))
+	dqj, err := json.Marshal(query)
+	if err != nil {
+		return nil, err
+	}
+	var qp map[string]string
+	json.Unmarshal(dqj, &qp)
+
+	resp, err := sdk.dexAPI.Get("/depth", qp)
 	if err != nil {
 		return nil, err
 	}

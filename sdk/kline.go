@@ -3,8 +3,6 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/fatih/structs"
 )
 
 // KlineQuery def
@@ -40,8 +38,14 @@ func (sdk *SDK) GetKlines(query *KlineQuery) ([]*Kline, error) {
 		return nil, fmt.Errorf("Query.Interval is required")
 	}
 
-	qp := structs.Map(query)
-	resp, err := sdk.dexAPI.Get("/klines", ToMapStrStr(qp))
+	dqj, err := json.Marshal(query)
+	if err != nil {
+		return nil, err
+	}
+	var qp map[string]string
+	json.Unmarshal(dqj, &qp)
+
+	resp, err := sdk.dexAPI.Get("/klines", qp)
 	if err != nil {
 		return nil, err
 	}

@@ -2,8 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-
-	"github.com/fatih/structs"
 )
 
 // TradesQuery def
@@ -24,8 +22,14 @@ type Trade struct {
 
 // GetTrades returns transaction details
 func (sdk *SDK) GetTrades(query *TradesQuery) ([]*Trade, error) {
-	qp := structs.Map(query)
-	resp, err := sdk.dexAPI.Get("/trades", ToMapStrStr(qp))
+	dqj, err := json.Marshal(query)
+	if err != nil {
+		return nil, err
+	}
+	var qp map[string]string
+	json.Unmarshal(dqj, &qp)
+
+	resp, err := sdk.dexAPI.Get("/trades", qp)
 	if err != nil {
 		return nil, err
 	}

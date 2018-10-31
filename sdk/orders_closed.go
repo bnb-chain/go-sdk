@@ -3,8 +3,6 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/fatih/structs"
 )
 
 // ClosedOrdersQuery def
@@ -28,8 +26,14 @@ func (sdk *SDK) GetClosedOrders(query *ClosedOrdersQuery) ([]*Order, error) {
 		return nil, fmt.Errorf("Invalid `Query.Side` param")
 	}
 
-	qp := structs.Map(query)
-	resp, err := sdk.dexAPI.Get("/orders/closed", ToMapStrStr(qp))
+	dqj, err := json.Marshal(query)
+	if err != nil {
+		return nil, err
+	}
+	var qp map[string]string
+	json.Unmarshal(dqj, &qp)
+
+	resp, err := sdk.dexAPI.Get("/orders/closed", qp)
 	if err != nil {
 		return nil, err
 	}
