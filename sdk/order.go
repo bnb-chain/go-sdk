@@ -63,16 +63,16 @@ var OrderType = struct {
 
 // Order def
 type Order struct {
-	ID               string `json:"orderId"`
-	Owner            string `json:"owner"`
-	Symbol           string `json:"symbol"`
-	Price            string `json:"price"`
-	Quantity         string `json:"quantity"`
-	ExecutedQuantity string `json:"executedQuantity"`
-	Side             string `json:"side"` // BUY or SELL
-	Status           string `json:"status"`
-	TimeInForce      string `json:"timeInForce"`
-	Type             string `json:"type"`
+	ID               string  `json:"orderId"`
+	Owner            string  `json:"owner"`
+	Symbol           string  `json:"symbol"`
+	Price            float64 `json:"price,string"`
+	Quantity         float64 `json:"quantity,string"`
+	ExecutedQuantity float64 `json:"executedQuantity,string"`
+	Side             string  `json:"side"` // BUY or SELL
+	Status           string  `json:"status"`
+	TimeInForce      string  `json:"timeInForce"`
+	Type             string  `json:"type"`
 }
 
 // GetOrder returns transaction details

@@ -9,7 +9,7 @@ import (
 type KlineQuery struct {
 	Symbol    string // required
 	Interval  string // required, interval (5m, 1h, 1d, 1w, etc.)
-	Limit     int32
+	Limit     uint32
 	StartTime int64
 	EndTime   int64
 }

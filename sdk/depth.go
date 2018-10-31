@@ -8,7 +8,7 @@ import (
 // DepthQuery def
 type DepthQuery struct {
 	Symbol string
-	Limit  uint32
+	Limit  int32
 }
 
 // MarketDepth to be broadcasted to the user
@@ -29,7 +29,7 @@ func (sdk *SDK) GetDepth(query *DepthQuery) (*MarketDepth, error) {
 		return nil, fmt.Errorf("Query.Limit can't be greater than 20")
 	}
 
-	if query.Limit == 0 {
+	if query.Limit <= 0 {
 		query.Limit = 20
 	}
 
