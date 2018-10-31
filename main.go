@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"./sdk"
+	"github.com/BiJie/bnc-go-sdk/sdk"
 )
 
 func main() {
 	sdk, _ := sdk.NewSDK("http://localhost:8080/api/v1")
-	pairs, _ := sdk.GetPairs(100)
-	fmt.Println("pairs: ", pairs)
+	markets, _ := sdk.GetMarkets(100)
+	fmt.Println("markets: ", markets)
 }
