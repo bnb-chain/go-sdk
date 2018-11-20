@@ -4,8 +4,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log"
+	"regexp"
 
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
@@ -61,4 +62,12 @@ func DecodeHex(h []byte) []byte {
 	}
 
 	return b
+}
+
+var (
+	isAlphaNumFunc = regexp.MustCompile(`^[[:alnum:]]+$`).MatchString
+)
+
+func IsAlphaNum(s string) bool {
+	return isAlphaNumFunc(s)
 }

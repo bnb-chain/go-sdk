@@ -3,7 +3,7 @@ package tx
 import (
 	"encoding/json"
 
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
@@ -27,12 +27,12 @@ type StdSignMsg struct {
 	Sequence      int64
 }
 
-// StdSignature def
+// StdSignature Signature
 type StdSignature struct {
-	tmcrypto.PubKey `json:"pub_key"` // optional
-	Signature       []byte           `json:"signature"`
-	AccountNumber   int64            `json:"account_number"`
-	Sequence        int64            `json:"sequence"`
+	tmcrypto.PubKey    `json:"pub_key"` // optional
+	tmcrypto.Signature `json:"signature"`
+	AccountNumber      int64 `json:"account_number"`
+	Sequence           int64 `json:"sequence"`
 }
 
 // Bytes gets message bytes

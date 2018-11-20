@@ -1,7 +1,7 @@
 package tx
 
 import (
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 )
 
 // StdTx def
