@@ -15,10 +15,11 @@ type TxResult struct {
 
 // TxCommitResult for POST tx results
 type TxCommitResult struct {
-	Height    int64    `json:"height"`
-	Hash      string   `json:"hash"`
-	DeliverTx TxResult `json:"deliver_tx"`
-	CheckTx   TxResult `json:"check_tx"`
+	Ok   bool   `json:"ok"`
+	Code int32  `json:"code"`
+	Data string `json:"data"`
+	Log  string `json:"log"`
+	Hash string `json:"hash"`
 }
 
 // GetTx returns transaction details
@@ -42,7 +43,7 @@ func (sdk *SDK) GetTx(txHash string) (*TxResult, error) {
 }
 
 // PostTx returns transaction details
-func (sdk *SDK) PostTx(hexTx []byte) (*TxCommitResult, error) {
+func (sdk *SDK) PostTx(hexTx []byte) ([]*TxCommitResult, error) {
 	if len(hexTx) == 0 {
 		return nil, fmt.Errorf("Invalid tx  %s", hexTx)
 	}
@@ -53,10 +54,10 @@ func (sdk *SDK) PostTx(hexTx []byte) (*TxCommitResult, error) {
 		return nil, err
 	}
 
-	var txResult TxCommitResult
+	var txResult []*TxCommitResult
 	if err := json.Unmarshal(resp, &txResult); err != nil {
 		return nil, err
 	}
 
-	return &txResult, nil
+	return txResult, nil
 }

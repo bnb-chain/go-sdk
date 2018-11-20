@@ -49,18 +49,13 @@ func TestPostTx(t *testing.T) {
 		t.Errorf("PostTx failed, expected no error but got %v", err)
 	}
 
-	expected := &TxCommitResult{
-		Hash:   "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
-		Height: 1000,
-		DeliverTx: TxResult{
-			Log:  "Deliver Msg 0: ",
-			Data: "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
+	expected := []*TxCommitResult{
+		&TxCommitResult{
+			Ok:   true,
 			Code: 0,
-		},
-		CheckTx: TxResult{
-			Log:  "Check Msg 0: ",
 			Data: "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
-			Code: 0,
+			Log:  "logABC",
+			Hash: "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
 		},
 	}
 
