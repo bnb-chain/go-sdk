@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 )
 
 func TestSign(t *testing.T) {

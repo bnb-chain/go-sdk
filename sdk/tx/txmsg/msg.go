@@ -3,8 +3,6 @@ package txmsg
 import (
 	"fmt"
 	"strings"
-
-	"github.com/BiJie/BinanceChain/common/utils"
 )
 
 // constants
@@ -49,9 +47,9 @@ func ValidateSymbol(symbol string) error {
 		symbol = strings.TrimSuffix(symbol, DotBSuffix)
 	}
 
-	if !utils.IsAlphaNum(symbol) {
-		return fmt.Errorf("Token symbol should be alphanumeric")
-	}
+	// if !tx.IsAlphaNum(symbol) {
+	// 	return fmt.Errorf("Token symbol should be alphanumeric")
+	// }
 
 	return nil
 }

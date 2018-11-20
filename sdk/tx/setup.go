@@ -1,7 +1,7 @@
 package tx
 
 import (
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )

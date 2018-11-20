@@ -3,7 +3,7 @@ package tx
 import (
 	"testing"
 
-	"./txmsg"
+	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 )

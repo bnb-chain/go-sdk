@@ -19,17 +19,3 @@ func NewBncSDK(baseURL string) (*SDK, error) {
 		dexAPI: &DexAPI{baseURL},
 	}, nil
 }
-
-// ToMapStrStr conversion
-func ToMapStrStr(m map[string]interface{}) map[string]string {
-	mStrStr := make(map[string]string)
-	for k, v := range m {
-		strValue := fmt.Sprintf("%v", v)
-
-		// skip empty values
-		if strValue != "" && strValue != "0" {
-			mStrStr[k] = strValue
-		}
-	}
-	return mStrStr
-}
