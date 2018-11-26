@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// Order operations
+// Order routes
 const (
-	NewOrder    = "orderNew"
-	CancelOrder = "orderCancel"
+	RouteNewOrder    = "orderNew"
+	RouteCancelOrder = "orderCancel"
 )
 
 // OrderSide /TimeInForce /OrderType are const, following FIX protocol convention
@@ -151,7 +151,7 @@ type CreateOrderMsg struct {
 	ID          string     `json:"id"`
 	Symbol      string     `json:"symbol"`
 	OrderType   int8       `json:"ordertype"`
-	OrderSide   int8       `json:"side"`
+	Side        int8       `json:"side"`
 	Price       int64      `json:"price"`
 	Quantity    int64      `json:"quantity"`
 	TimeInForce int8       `json:"timeinforce"`
@@ -164,25 +164,25 @@ func NewCreateOrderMsg(sender AccAddress, id string, side int8, symbol string, p
 		ID:          id,
 		Symbol:      symbol,
 		OrderType:   OrderType.LIMIT, // default
-		OrderSide:   side,
+		Side:        side,
 		Price:       price,
 		Quantity:    qty,
 		TimeInForce: TimeInForce.GTC, // default
 	}
 }
 
-// Type is part of Msg interface
-func (msg CreateOrderMsg) Type() string { return NewOrder }
+// Route is part of Msg interface
+func (msg CreateOrderMsg) Route() string { return RouteNewOrder }
 
-// Get is part of Msg interface
-func (msg CreateOrderMsg) Get(key interface{}) (value interface{}) { return nil }
+// Type is part of Msg interface
+func (msg CreateOrderMsg) Type() string { return RouteNewOrder }
 
 // GetSigners is part of Msg interface
 func (msg CreateOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
 
 // String is part of Msg interface
 func (msg CreateOrderMsg) String() string {
-	return fmt.Sprintf("CreateOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.ID, msg.Symbol, msg.OrderSide, msg.Price, msg.Quantity)
+	return fmt.Sprintf("CreateOrderMsg{Sender: %v, Id: %v, Symbol: %v, OrderSide: %v, Price: %v, Qty: %v}", msg.Sender, msg.ID, msg.Symbol, msg.Side, msg.Price, msg.Quantity)
 }
 
 // GetSignBytes - Get the bytes for the message signer to sign on
@@ -192,6 +192,11 @@ func (msg CreateOrderMsg) GetSignBytes() []byte {
 		panic(err)
 	}
 	return b
+}
+
+// GetInvolvedAddresses as part of the Msg interface
+func (msg CreateOrderMsg) GetInvolvedAddresses() []AccAddress {
+	return msg.GetSigners()
 }
 
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly
@@ -217,8 +222,8 @@ func (msg CreateOrderMsg) ValidateBasic() error {
 		return fmt.Errorf("Invalid order type:%d", msg.OrderType)
 	}
 
-	if !IsValidSide(msg.OrderSide) {
-		return fmt.Errorf("Invalid side:%d", msg.OrderSide)
+	if !IsValidSide(msg.Side) {
+		return fmt.Errorf("Invalid side:%d", msg.Side)
 	}
 
 	if !IsValidTimeInForce(msg.TimeInForce) {
@@ -226,6 +231,14 @@ func (msg CreateOrderMsg) ValidateBasic() error {
 	}
 
 	return nil
+}
+
+// CancelOrderMsg represents a message to cancel an open order
+type CancelOrderMsg struct {
+	Sender AccAddress `json:"sender"`
+	Symbol string     `json:"symbol"`
+	ID     string     `json:"id"`
+	RefID  string     `json:"refid"`
 }
 
 // NewCancelOrderMsg constructs a new CancelOrderMsg
@@ -238,19 +251,11 @@ func NewCancelOrderMsg(sender AccAddress, symbol, id, refID string) CancelOrderM
 	}
 }
 
-// CancelOrderMsg represents a message to cancel an open order
-type CancelOrderMsg struct {
-	Sender AccAddress
-	Symbol string `json:"symbol"`
-	ID     string `json:"id"`
-	RefID  string `json:"refid"`
-}
+// Route is part of Msg interface
+func (msg CancelOrderMsg) Route() string { return RouteCancelOrder }
 
 // Type is part of Msg interface
-func (msg CancelOrderMsg) Type() string { return CancelOrder }
-
-// Get is part of Msg interface
-func (msg CancelOrderMsg) Get(key interface{}) (value interface{}) { return nil }
+func (msg CancelOrderMsg) Type() string { return RouteCancelOrder }
 
 // GetSigners is part of Msg interface
 func (msg CancelOrderMsg) GetSigners() []AccAddress { return []AccAddress{msg.Sender} }
@@ -267,6 +272,11 @@ func (msg CancelOrderMsg) GetSignBytes() []byte {
 		panic(err)
 	}
 	return b
+}
+
+// GetInvolvedAddresses as part of Msg interface
+func (msg CancelOrderMsg) GetInvolvedAddresses() []AccAddress {
+	return msg.GetSigners()
 }
 
 // ValidateBasic is used to quickly disqualify obviously invalid messages quickly

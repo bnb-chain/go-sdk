@@ -15,11 +15,8 @@ type TxResult struct {
 
 // TxCommitResult for POST tx results
 type TxCommitResult struct {
-	Ok   bool   `json:"ok"`
-	Code int32  `json:"code"`
-	Data string `json:"data"`
-	Log  string `json:"log"`
-	Hash string `json:"hash"`
+	Ok bool `json:"ok"`
+	TxResult
 }
 
 // GetTx returns transaction details

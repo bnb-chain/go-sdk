@@ -13,11 +13,15 @@ const (
 	MaxTotalSupply int64 = 9000000000000000000 // 90 billions with 8 decimal digits
 )
 
-// Msg interface must be fulfilled by transactions messages
+// Msg - Transactions messages must fulfill the Msg
 type Msg interface {
 
 	// Return the message type.
 	// Must be alphanumeric or empty.
+	Route() string
+
+	// Returns a human-readable string for the message, intended for utilization
+	// within tags
 	Type() string
 
 	// ValidateBasic does a simple validation check that
@@ -31,6 +35,9 @@ type Msg interface {
 	// CONTRACT: All signatures must be present to be valid.
 	// CONTRACT: Returns addrs in some deterministic order.
 	GetSigners() []AccAddress
+
+	// Get involved addresses of this msg so that we can publish account balance change
+	GetInvolvedAddresses() []AccAddress
 }
 
 // ValidateSymbol utility
