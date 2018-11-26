@@ -23,14 +23,14 @@ func NewDexListMsg(from AccAddress, baseAssetSymbol string, quoteAssetSymbol str
 	}
 }
 
+// Route part of Msg interface
+func (msg DexListMsg) Route() string { return "dexList" }
+
 // Type part of Msg interface
 func (msg DexListMsg) Type() string { return "dexList" }
 
 // String part of Msg interface
 func (msg DexListMsg) String() string { return fmt.Sprintf("MsgList{%#v}", msg) }
-
-// Get part of Msg interface
-func (msg DexListMsg) Get(key interface{}) (value interface{}) { return nil }
 
 // GetSigners part of Msg interface
 func (msg DexListMsg) GetSigners() []AccAddress { return []AccAddress{msg.From} }
@@ -42,6 +42,11 @@ func (msg DexListMsg) GetSignBytes() []byte {
 		panic(err)
 	}
 	return b
+}
+
+// GetInvolvedAddresses part of Msg interface
+func (msg DexListMsg) GetInvolvedAddresses() []AccAddress {
+	return msg.GetSigners()
 }
 
 // ValidateBasic part of Msg interface

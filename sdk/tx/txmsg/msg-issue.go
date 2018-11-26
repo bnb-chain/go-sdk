@@ -46,14 +46,14 @@ func (msg TokenIssueMsg) ValidateBasic() error {
 	return nil
 }
 
+// Route part of Msg interface
+func (msg TokenIssueMsg) Route() string { return "tokenIssue" }
+
 // Type part of Msg interface
 func (msg TokenIssueMsg) Type() string { return "tokenIssue" }
 
 // String part of Msg interface
 func (msg TokenIssueMsg) String() string { return fmt.Sprintf("IssueMsg{%#v}", msg) }
-
-// Get part of Msg interface
-func (msg TokenIssueMsg) Get(key interface{}) (value interface{}) { return nil }
 
 // GetSigners part of Msg interface
 func (msg TokenIssueMsg) GetSigners() []AccAddress { return []AccAddress{msg.From} }
@@ -65,4 +65,9 @@ func (msg TokenIssueMsg) GetSignBytes() []byte {
 		panic(err)
 	}
 	return b
+}
+
+// GetInvolvedAddresses part of Msg interface
+func (msg TokenIssueMsg) GetInvolvedAddresses() []AccAddress {
+	return msg.GetSigners()
 }

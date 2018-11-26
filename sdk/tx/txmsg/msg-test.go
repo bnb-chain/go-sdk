@@ -2,6 +2,7 @@ package txmsg
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // TestMsg type for testing
@@ -15,6 +16,9 @@ func NewTestMsg(addrs ...AccAddress) *TestMsg {
 		signers: addrs,
 	}
 }
+
+// Route is part of Msg interface
+func (msg *TestMsg) Route() string { return "TestMsg" }
 
 // Type is part of Msg interface
 func (msg *TestMsg) Type() string { return "TestMsg" }
@@ -31,6 +35,16 @@ func (msg *TestMsg) GetSignBytes() []byte {
 // GetSigners is part of Msg interface
 func (msg *TestMsg) GetSigners() []AccAddress {
 	return msg.signers
+}
+
+// GetInvolvedAddresses as part of the Msg interface
+func (msg *TestMsg) GetInvolvedAddresses() []AccAddress {
+	return msg.GetSigners()
+}
+
+// String is part of Msg interface
+func (msg *TestMsg) String() string {
+	return fmt.Sprintf("TestMsg")
 }
 
 // ValidateBasic is part of Msg interface

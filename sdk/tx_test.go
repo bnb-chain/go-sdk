@@ -51,11 +51,13 @@ func TestPostTx(t *testing.T) {
 
 	expected := []*TxCommitResult{
 		&TxCommitResult{
-			Ok:   true,
-			Code: 0,
-			Data: "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
-			Log:  "logABC",
-			Hash: "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
+			Ok: true,
+			TxResult: TxResult{
+				Code: 0,
+				Data: "eyJ0eXBlIjoiZGV4L05ld09yZGVyUmVzcG9uc2UiLCJ2YWx1ZSI6eyJvcmRlcl9pZCI6ImNvc21vc2FjY2FkZHIxcTY4cGhxN3E2Znl1cDV4MjVtYWdsZjlzeGMydDRoeTQycGE2MjMtMjQwNDAyIn19",
+				Log:  "logABC",
+				Hash: "52ECED0360605C1F3F336CA20B2C60535B0C72F0",
+			},
 		},
 	}
 
