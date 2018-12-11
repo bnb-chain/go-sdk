@@ -13,7 +13,6 @@ type StdSignDoc struct {
 	AccountNumber int64             `json:"account_number"`
 	Sequence      int64             `json:"sequence"`
 	Memo          string            `json:"memo"`
-	Fee           json.RawMessage   `json:"fee"`
 	Msgs          []json.RawMessage `json:"msgs"`
 }
 
@@ -21,7 +20,6 @@ type StdSignDoc struct {
 type StdSignMsg struct {
 	AccountNumber int64
 	ChainID       string
-	Fee           StdFee
 	Memo          string
 	Msgs          []txmsg.Msg
 	Sequence      int64
@@ -37,11 +35,11 @@ type StdSignature struct {
 
 // Bytes gets message bytes
 func (msg StdSignMsg) Bytes() []byte {
-	return StdSignBytes(msg.ChainID, msg.AccountNumber, msg.Sequence, msg.Fee, msg.Msgs, msg.Memo)
+	return StdSignBytes(msg.ChainID, msg.AccountNumber, msg.Sequence, msg.Msgs, msg.Memo)
 }
 
 // StdSignBytes returns the bytes to sign for a transaction.
-func StdSignBytes(chainID string, accnum int64, sequence int64, fee StdFee, msgs []txmsg.Msg, memo string) []byte {
+func StdSignBytes(chainID string, accnum int64, sequence int64, msgs []txmsg.Msg, memo string) []byte {
 	var msgsBytes []json.RawMessage
 	for _, msg := range msgs {
 		msgsBytes = append(msgsBytes, json.RawMessage(msg.GetSignBytes()))
@@ -51,7 +49,6 @@ func StdSignBytes(chainID string, accnum int64, sequence int64, fee StdFee, msgs
 		AccountNumber: accnum,
 		Sequence:      sequence,
 		Memo:          memo,
-		Fee:           json.RawMessage(fee.Bytes()),
 		Msgs:          msgsBytes,
 	})
 	if err != nil {

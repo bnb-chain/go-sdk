@@ -24,7 +24,6 @@ func TestSign(t *testing.T) {
 		AccountNumber: 100,
 		Sequence:      1,
 		Memo:          "",
-		Fee:           NewStdFee(5000, Coin{Denom: "BNB", Amount: 100000000}),
 		Msgs:          []txmsg.Msg{newOrderMsg},
 	}
 

@@ -7,16 +7,14 @@ import (
 // StdTx def
 type StdTx struct {
 	Msgs       []txmsg.Msg    `json:"msg"`
-	Fee        StdFee         `json:"fee"`
 	Signatures []StdSignature `json:"signatures"`
 	Memo       string         `json:"memo"`
 }
 
 // NewStdTx to instantiate an instance
-func NewStdTx(msgs []txmsg.Msg, fee StdFee, sigs []StdSignature, memo string) StdTx {
+func NewStdTx(msgs []txmsg.Msg, sigs []StdSignature, memo string) StdTx {
 	return StdTx{
 		Msgs:       msgs,
-		Fee:        fee,
 		Signatures: sigs,
 		Memo:       memo,
 	}
