@@ -12,10 +12,9 @@ func TestStdTx(t *testing.T) {
 	priv := ed25519.GenPrivKey()
 	addr := txmsg.AccAddress(priv.PubKey().Address())
 	msgs := []txmsg.Msg{txmsg.NewTestMsg(addr)}
-	fee := NewStdFee(100, Coin{"BNB", 500})
 	sigs := []StdSignature{}
 
-	tx := NewStdTx(msgs, fee, sigs, "")
+	tx := NewStdTx(msgs, sigs, "")
 	require.Equal(t, msgs, tx.GetMsgs())
 	require.Equal(t, sigs, tx.GetSignatures())
 

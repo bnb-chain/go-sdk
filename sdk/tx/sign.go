@@ -32,7 +32,7 @@ func Sign(privKeyBytes []byte, signMsg StdSignMsg) (hexSignedStdTx []byte, err e
 		Signature:     sig,
 	}}
 
-	stdTx := NewStdTx(signMsg.Msgs, signMsg.Fee, sigs, signMsg.Memo)
+	stdTx := NewStdTx(signMsg.Msgs, sigs, signMsg.Memo)
 
 	stdTxBytes, err := Cdc.MarshalBinaryLengthPrefixed(stdTx)
 	if err != nil {
