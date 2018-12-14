@@ -2,20 +2,19 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/BiJie/bnc-go-sdk/sdk/api"
+	"github.com/BiJie/bnc-go-sdk/sdk/keys"
 )
 
 // SDK wrapper
 type SDK struct {
-	dexAPI IDexAPI
+	api.IDexAPI
 }
 
 // NewBncSDK init
-func NewBncSDK(baseURL string) (*SDK, error) {
+func NewBncSDK(baseURL, chainid string, keyManager keys.KeyManager) (*SDK, error) {
 	if baseURL == "" {
-		return nil, fmt.Errorf("Invalid baseURL %s", baseURL)
+		return nil, fmt.Errorf("Invalid base url %s. ", baseURL)
 	}
-
-	return &SDK{
-		dexAPI: &DexAPI{baseURL},
-	}, nil
+	return &SDK{api.NewDefaultDexApi(baseURL, chainid, keyManager)}, nil
 }

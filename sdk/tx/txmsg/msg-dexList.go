@@ -8,15 +8,17 @@ import (
 // DexListMsg def
 type DexListMsg struct {
 	From             AccAddress `json:"from"`
+	ProposalId       int64      `json:"proposal_id"`
 	BaseAssetSymbol  string     `json:"base_asset_symbol"`
 	QuoteAssetSymbol string     `json:"quote_asset_symbol"`
 	InitPrice        int64      `json:"init_price"`
 }
 
 // NewDexListMsg for instance creation
-func NewDexListMsg(from AccAddress, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64) DexListMsg {
+func NewDexListMsg(from AccAddress, proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64) DexListMsg {
 	return DexListMsg{
 		From:             from,
+		ProposalId:       proposalId,
 		BaseAssetSymbol:  baseAssetSymbol,
 		QuoteAssetSymbol: quoteAssetSymbol,
 		InitPrice:        initPrice,

@@ -10,7 +10,7 @@ type TokenBurnMsg struct {
 }
 
 // NewMsg for instance creation
-func NewMsg(from AccAddress, symbol string, amount int64) TokenBurnMsg {
+func NewTokenBurnMsg(from AccAddress, symbol string, amount int64) TokenBurnMsg {
 	return TokenBurnMsg{MsgBase{From: from, Symbol: symbol, Amount: amount}}
 }
 

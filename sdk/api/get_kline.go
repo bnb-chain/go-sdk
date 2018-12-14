@@ -1,0 +1,94 @@
+package api
+
+import (
+	"encoding/json"
+)
+
+const defaultKlineLimit = 100
+
+// KlineQuery def
+type KlineQuery struct {
+	Symbol    string  `json:"symbol"`   // required
+	Interval  string  `json:"interval"` // required, interval (5m, 1h, 1d, 1w, etc.)
+	Limit     *uint32 `json:"limit,omitempty,string"`
+	StartTime *int64  `json:"start_time,omitempty,string"`
+	EndTime   *int64  `json:"end_time,omitempty,string"`
+}
+
+func NewKlineQuery(baseAssetSymbol, quoteAssetSymbol, interval string) *KlineQuery {
+	return &KlineQuery{Symbol: CombineSymbol(baseAssetSymbol, quoteAssetSymbol), Interval: interval}
+}
+
+func (param *KlineQuery) WithStartTime(start int64) *KlineQuery {
+	param.StartTime = &start
+	return param
+}
+
+func (param *KlineQuery) WithEndTime(end int64) *KlineQuery {
+	param.EndTime = &end
+	return param
+}
+
+func (param *KlineQuery) WithLimit(limit uint32) *KlineQuery {
+	param.Limit = &limit
+	return param
+}
+
+func (param *KlineQuery) Check() error {
+	if param.Symbol == "" {
+		return SymbolMissingError
+	}
+	if param.Interval == "" {
+		return IntervalMissingError
+	}
+	if param.Limit != nil && *param.Limit <= 0 {
+		return LimitOutOfRangeError
+	}
+	if param.StartTime != nil && *param.StartTime <= 0 {
+		return StartTimeOutOfRangeError
+	}
+	if param.EndTime != nil && *param.EndTime <= 0 {
+		return EndTimeOutOfRangeError
+	}
+	if param.StartTime != nil && param.EndTime != nil && *param.StartTime > *param.EndTime {
+		return EndTimeLessThanStartTimeError
+	}
+	return nil
+}
+
+// Kline def
+type Kline struct {
+	Close            float64 `json:"close"`
+	CloseTime        int64   `json:"closeTime"`
+	High             float64 `json:"high"`
+	Low              float64 `json:"low"`
+	NumberOfTrades   int32   `json:"numberOfTrades"`
+	Open             float64 `json:"open"`
+	OpenTime         int64   `json:"openTime"`
+	QuoteAssetVolume float64 `json:"quoteAssetVolume"`
+	Volume           float64 `json:"volume"`
+}
+
+// GetKlines returns transaction details
+func (dex *dexAPI) GetKlines(query *KlineQuery) ([]Kline, error) {
+	err := query.Check()
+	if err != nil {
+		return nil, err
+	}
+	qp, err := QueryParamToMap(*query)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := dex.Get("/klines", qp)
+	if err != nil {
+		return nil, err
+	}
+
+	klines := []Kline{}
+	if err := json.Unmarshal(resp, &klines); err != nil {
+		return nil, err
+	}
+
+	return klines, nil
+}
