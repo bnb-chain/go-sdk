@@ -2,7 +2,6 @@ package tx
 
 import (
 	"encoding/json"
-
 	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
@@ -13,46 +12,52 @@ type StdSignDoc struct {
 	AccountNumber int64             `json:"account_number"`
 	Sequence      int64             `json:"sequence"`
 	Memo          string            `json:"memo"`
+	Source        int64             `json:"source"`
 	Msgs          []json.RawMessage `json:"msgs"`
+	Data          []byte            `json:"data"`
 }
 
 // StdSignMsg def
 type StdSignMsg struct {
-	AccountNumber int64
-	ChainID       string
-	Memo          string
-	Msgs          []txmsg.Msg
-	Sequence      int64
+	ChainID       string      `json:"chain_id"`
+	AccountNumber int64       `json:"account_number"`
+	Sequence      int64       `json:"sequence"`
+	Msgs          []txmsg.Msg `json:"msgs"`
+	Memo          string      `json:"memo"`
+	Source        int64       `json:"source"`
+	Data          []byte      `json:"data"`
 }
 
 // StdSignature Signature
 type StdSignature struct {
-	tmcrypto.PubKey    `json:"pub_key"` // optional
-	tmcrypto.Signature `json:"signature"`
-	AccountNumber      int64 `json:"account_number"`
-	Sequence           int64 `json:"sequence"`
+	tmcrypto.PubKey `json:"pub_key"` // optional
+	Signature       []byte           `json:"signature"`
+	AccountNumber   int64            `json:"account_number"`
+	Sequence        int64            `json:"sequence"`
 }
 
 // Bytes gets message bytes
 func (msg StdSignMsg) Bytes() []byte {
-	return StdSignBytes(msg.ChainID, msg.AccountNumber, msg.Sequence, msg.Msgs, msg.Memo)
+	return StdSignBytes(msg.ChainID, msg.AccountNumber, msg.Sequence, msg.Msgs, msg.Memo, msg.Source, msg.Data)
 }
 
 // StdSignBytes returns the bytes to sign for a transaction.
-func StdSignBytes(chainID string, accnum int64, sequence int64, msgs []txmsg.Msg, memo string) []byte {
+func StdSignBytes(chainID string, accnum int64, sequence int64, msgs []txmsg.Msg, memo string, source int64, data []byte) []byte {
 	var msgsBytes []json.RawMessage
 	for _, msg := range msgs {
 		msgsBytes = append(msgsBytes, json.RawMessage(msg.GetSignBytes()))
 	}
 	bz, err := Cdc.MarshalJSON(StdSignDoc{
-		ChainID:       chainID,
 		AccountNumber: accnum,
-		Sequence:      sequence,
+		ChainID:       chainID,
 		Memo:          memo,
 		Msgs:          msgsBytes,
+		Sequence:      sequence,
+		Source:        source,
+		Data:          data,
 	})
 	if err != nil {
 		panic(err)
 	}
-	return MustSortJSON(bz)
+	return txmsg.MustSortJSON(bz)
 }

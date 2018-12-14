@@ -39,7 +39,7 @@ func IToSide(side int8) string {
 
 // GenerateOrderID generates an order ID
 func GenerateOrderID(sequence int64, from AccAddress) string {
-	id := fmt.Sprintf("%s-%d", from.String(), sequence)
+	id := fmt.Sprintf("%X-%d", from.Bytes(), sequence)
 	return id
 }
 

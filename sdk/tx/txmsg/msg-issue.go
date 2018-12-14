@@ -12,15 +12,17 @@ type TokenIssueMsg struct {
 	Name        string     `json:"name"`
 	Symbol      string     `json:"symbol"`
 	TotalSupply int64      `json:"total_supply"`
+	Mintable    bool       `json:"mintable"`
 }
 
 // NewTokenIssueMsg for instance creation
-func NewTokenIssueMsg(from AccAddress, name, symbol string, supply int64) TokenIssueMsg {
+func NewTokenIssueMsg(from AccAddress, name, symbol string, supply int64, mintable bool) TokenIssueMsg {
 	return TokenIssueMsg{
 		From:        from,
 		Name:        name,
 		Symbol:      symbol,
 		TotalSupply: supply,
+		Mintable:    mintable,
 	}
 }
 

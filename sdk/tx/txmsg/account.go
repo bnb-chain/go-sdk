@@ -19,10 +19,10 @@ const (
 	AddrLen = 20
 
 	// Bech32 prefixes
-	Bech32PrefixAccAddr = "cosmosaccaddr"
-	Bech32PrefixAccPub  = "cosmosaccpub"
-	Bech32PrefixValAddr = "cosmosvaladdr"
-	Bech32PrefixValPub  = "cosmosvalpub"
+	Bech32PrefixAccAddr = "bnc"
+	Bech32PrefixAccPub  = "bncp"
+	Bech32PrefixValAddr = "bva"
+	Bech32PrefixValPub  = "bvap"
 )
 
 // Marshal needed for protobuf compatibility
