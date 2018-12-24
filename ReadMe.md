@@ -131,9 +131,9 @@ and for the optional parameters, you can use `WithXXX` to add it.
 
 There is one most important point you should notice that we use int64 to represent a decimal.
 The decimal length is fix 8, which means:
-`100000000` == `1`
-`150000000` == `1.5`
-`1050000000` == `10.5`
+`100000000` is equal to `1`
+`150000000` is equal to `1.5`
+`1050000000` is equal to `10.5`
 
 ```GO
 mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
