@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
-	"github.com/BiJie/bnc-go-sdk/sdk/keys"
-	"github.com/BiJie/bnc-go-sdk/sdk/tx"
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/keys"
+	"github.com/binance-chain/go-sdk/sdk/tx"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	resty "gopkg.in/resty.v1"
 	"net/http"
 )

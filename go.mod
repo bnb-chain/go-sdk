@@ -1,4 +1,4 @@
-module github.com/BiJie/bnc-go-sdk
+module github.com/binance-chain/go-sdk
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20181013004428-67e573d211ac

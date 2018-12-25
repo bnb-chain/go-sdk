@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 )
 
 type CreateOrderResult struct {

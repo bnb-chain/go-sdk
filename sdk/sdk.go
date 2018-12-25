@@ -2,8 +2,8 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/BiJie/bnc-go-sdk/sdk/api"
-	"github.com/BiJie/bnc-go-sdk/sdk/keys"
+	"github.com/binance-chain/go-sdk/sdk/api"
+	"github.com/binance-chain/go-sdk/sdk/keys"
 )
 
 // SDK wrapper

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 )
 
 type VoteProposalResult struct {
