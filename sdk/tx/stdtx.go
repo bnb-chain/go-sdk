@@ -1,7 +1,7 @@
 package tx
 
 import (
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 )
 
 const Source int64 = 2

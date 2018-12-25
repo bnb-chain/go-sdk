@@ -2,7 +2,7 @@ package tx
 
 import (
 	"encoding/json"
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/BiJie/bnc-go-sdk/sdk/tx"
-	"github.com/BiJie/bnc-go-sdk/sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/sdk/tx"
+	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	"github.com/stretchr/testify/assert"
 )
 
