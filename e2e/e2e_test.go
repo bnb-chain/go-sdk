@@ -7,11 +7,11 @@ import (
 
 	"github.com/binance-chain/go-sdk/sdk"
 	"github.com/binance-chain/go-sdk/sdk/api"
+	"github.com/binance-chain/go-sdk/sdk/common/crypto"
+	"github.com/binance-chain/go-sdk/sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/sdk/keys"
 	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	"github.com/stretchr/testify/assert"
-	tmcrypto "github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -153,7 +153,6 @@ func TestAllProcess(t *testing.T) {
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
-
 	//---  check submit proposal success ---
 	//time2.Sleep(2 * time2.Second)
 	//submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
@@ -174,7 +173,7 @@ func TestAllProcess(t *testing.T) {
 
 }
 
-func PrivAndAddr() (tmcrypto.PrivKey, txmsg.AccAddress) {
+func PrivAndAddr() (crypto.PrivKey, txmsg.AccAddress) {
 	priv := secp256k1.GenPrivKey()
 	addr := txmsg.AccAddress(priv.PubKey().Address())
 	return priv, addr

@@ -2,8 +2,8 @@ package tx
 
 import (
 	"encoding/json"
+	"github.com/binance-chain/go-sdk/sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
-	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
 // StdSignDoc def
@@ -30,10 +30,10 @@ type StdSignMsg struct {
 
 // StdSignature Signature
 type StdSignature struct {
-	tmcrypto.PubKey `json:"pub_key"` // optional
-	Signature       []byte           `json:"signature"`
-	AccountNumber   int64            `json:"account_number"`
-	Sequence        int64            `json:"sequence"`
+	crypto.PubKey `json:"pub_key"` // optional
+	Signature     []byte           `json:"signature"`
+	AccountNumber int64            `json:"account_number"`
+	Sequence      int64            `json:"sequence"`
 }
 
 // Bytes gets message bytes
