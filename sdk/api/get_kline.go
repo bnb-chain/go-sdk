@@ -2,9 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 )
-
-const defaultKlineLimit = 100
 
 // KlineQuery def
 type KlineQuery struct {
@@ -58,15 +57,15 @@ func (param *KlineQuery) Check() error {
 
 // Kline def
 type Kline struct {
-	Close            float64 `json:"close"`
+	Close            float64 `json:"close,string"`
 	CloseTime        int64   `json:"closeTime"`
-	High             float64 `json:"high"`
-	Low              float64 `json:"low"`
+	High             float64 `json:"high,string"`
+	Low              float64 `json:"low,string"`
 	NumberOfTrades   int32   `json:"numberOfTrades"`
-	Open             float64 `json:"open"`
+	Open             float64 `json:"open,string"`
 	OpenTime         int64   `json:"openTime"`
-	QuoteAssetVolume float64 `json:"quoteAssetVolume"`
-	Volume           float64 `json:"volume"`
+	QuoteAssetVolume float64 `json:"quoteAssetVolume,string"`
+	Volume           float64 `json:"volume,string"`
 }
 
 // GetKlines returns transaction details
@@ -85,10 +84,37 @@ func (dex *dexAPI) GetKlines(query *KlineQuery) ([]Kline, error) {
 		return nil, err
 	}
 
-	klines := []Kline{}
-	if err := json.Unmarshal(resp, &klines); err != nil {
+	iklines := [][]interface{}{}
+	if err := json.Unmarshal(resp, &iklines); err != nil {
 		return nil, err
 	}
-
+	klines := make([]Kline, len(iklines))
+	// Todo
+	for index, ikline := range iklines {
+		kl := Kline{}
+		imap := make(map[string]interface{}, 9)
+		if len(ikline) >= 9 {
+			imap["openTime"] = ikline[0]
+			imap["open"] = ikline[1]
+			imap["high"] = ikline[2]
+			imap["low"] = ikline[3]
+			imap["close"] = ikline[4]
+			imap["volume"] = ikline[5]
+			imap["closeTime"] = ikline[6]
+			imap["quoteAssetVolume"] = ikline[7]
+			imap["NumberOfTrades"] = ikline[8]
+		} else {
+			return nil, fmt.Errorf("Receive kline scheme is unexpected ")
+		}
+		bz, err := json.Marshal(imap)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(bz, &kl)
+		if err != nil {
+			return nil, err
+		}
+		klines[index] = kl
+	}
 	return klines, nil
 }
