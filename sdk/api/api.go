@@ -59,6 +59,9 @@ type IDexAPI interface {
 	VoteProposal(proposalID int64, option txmsg.VoteOption, sync bool) (*VoteProposalResult, error)
 }
 
+func init() {
+	resty.DefaultClient.SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
+}
 func NewDefaultDexApi(baseUrl string, chainId string, keyManager keys.KeyManager) IDexAPI {
 	return &dexAPI{apiUrl: baseUrl + defaultAPIVersionPrefix, chainId: chainId, keyManager: keyManager}
 }
@@ -69,8 +72,7 @@ func (dex *dexAPI) Get(path string, qp map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(resp.Body()))
-	if resp.StatusCode() >= http.StatusMultipleChoices {
+	if resp.StatusCode() >= http.StatusMultipleChoices || resp.StatusCode() < http.StatusOK {
 		err = fmt.Errorf("bad response, status code %d, response: %s", resp.StatusCode(), string(resp.Body()))
 	}
 	return resp.Body(), err
