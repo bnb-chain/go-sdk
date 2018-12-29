@@ -32,11 +32,9 @@ func (dex *dexAPI) SubmitProposal(title string, description string, proposalType
 		return nil, err
 	}
 	var proposalId int64
-	if commit.Ok {
-		err := tx.Cdc.UnmarshalBinaryBare([]byte(commit.Data), &proposalId)
-		if err != nil {
-			return nil, err
-		}
+	if commit.Ok && sync{
+		// Todo since ap do not return proposal id now, do not return err
+		tx.Cdc.UnmarshalBinaryBare([]byte(commit.Data), &proposalId)
 	}
 	return &SubmitProposalResult{*commit, proposalId}, err
 
