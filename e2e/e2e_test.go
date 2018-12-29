@@ -5,13 +5,14 @@ import (
 	"testing"
 	time2 "time"
 
-	"github.com/binance-chain/go-sdk/sdk"
-	"github.com/binance-chain/go-sdk/sdk/api"
-	"github.com/binance-chain/go-sdk/sdk/common/crypto"
-	"github.com/binance-chain/go-sdk/sdk/common/crypto/secp256k1"
-	"github.com/binance-chain/go-sdk/sdk/keys"
-	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	"github.com/stretchr/testify/assert"
+
+	sdk "github.com/binance-chain/go-sdk"
+	"github.com/binance-chain/go-sdk/api"
+	"github.com/binance-chain/go-sdk/common/crypto"
+	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
+	"github.com/binance-chain/go-sdk/keys"
+	"github.com/binance-chain/go-sdk/tx/txmsg"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -24,7 +25,7 @@ func TestAllProcess(t *testing.T) {
 	_, testAccount2 := PrivAndAddr()
 
 	//-----   Init sdk  -------------
-	client, _ := sdk.NewBncCLient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
+	client, _ := sdk.NewBncClient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
 	nativeSymbol := txmsg.NativeToken
 	//-----  Get account  -----------
 
@@ -138,7 +139,7 @@ func TestAllProcess(t *testing.T) {
 	fmt.Printf("Unfreeze token: %v\n", unfreeze)
 
 	//----   issue token ---------
-	issue, err := client.IssueToken("Client-Token", "sdk", 10000000000000000, true, false)
+	issue, err := client.IssueToken("Client-Token", "sdk", 10000000000000000, true, true)
 	assert.NoError(t, err)
 	fmt.Printf("Issue token: %v\n", issue)
 
@@ -147,6 +148,11 @@ func TestAllProcess(t *testing.T) {
 	issueresult, err := client.GetTx(issue.Hash)
 	assert.NoError(t, err)
 	assert.True(t, issueresult.Code == api.CodeOk)
+
+	//--- mint token -----------
+	mint,err:=client.MintToken(issue.Symbol,100000000, true)
+	assert.NoError(t,err)
+	fmt.Printf("Mint token: %v\n", mint)
 
 	//---- Submit Proposal ------
 	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", txmsg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
