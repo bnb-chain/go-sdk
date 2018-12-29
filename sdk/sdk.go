@@ -6,15 +6,15 @@ import (
 	"github.com/binance-chain/go-sdk/sdk/keys"
 )
 
-// SDK wrapper
-type SDK struct {
+// Client wrapper
+type Client struct {
 	api.IDexAPI
 }
 
-// NewBncSDK init
-func NewBncSDK(baseURL, chainid string, keyManager keys.KeyManager) (*SDK, error) {
+// NewBncCLient init
+func NewBncCLient(baseURL, chainid string, keyManager keys.KeyManager) (*Client, error) {
 	if baseURL == "" {
 		return nil, fmt.Errorf("Invalid base url %s. ", baseURL)
 	}
-	return &SDK{api.NewDefaultDexApi(baseURL, chainid, keyManager)}, nil
+	return &Client{api.NewDefaultDexApi(baseURL, chainid, keyManager)}, nil
 }

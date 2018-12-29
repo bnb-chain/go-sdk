@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 )
@@ -9,15 +8,6 @@ import (
 type CreateOrderResult struct {
 	TxCommitResult
 	OrderId string
-}
-
-type CreateOrderData struct {
-	Type  string `json:"type"`
-	Value CreateOrderValue
-}
-
-type CreateOrderValue struct {
-	OrderId string `json:"order_id"`
 }
 
 func (dex *dexAPI) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool) (*CreateOrderResult, error) {
@@ -48,13 +38,5 @@ func (dex *dexAPI) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8
 	if err != nil {
 		return nil, err
 	}
-	var orderData CreateOrderData
-	if commit.Ok {
-		err := json.Unmarshal([]byte(commit.Data), &orderData)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &CreateOrderResult{*commit, orderData.Value.OrderId}, nil
-
+	return &CreateOrderResult{*commit, orderId}, nil
 }

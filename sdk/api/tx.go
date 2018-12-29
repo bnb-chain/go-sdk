@@ -57,8 +57,7 @@ func (dex *dexAPI) PostTx(hexTx []byte, param map[string]string) ([]TxCommitResu
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(resp))
-	var txResult []TxCommitResult
+	txResult := make([]TxCommitResult, 0)
 	if err := json.Unmarshal(resp, &txResult); err != nil {
 		return nil, err
 	}
