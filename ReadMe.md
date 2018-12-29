@@ -4,23 +4,60 @@
 
 Bnc-Go-SDK provides a thin wrapper around the BNC Chain API for readonly endpoints, in addition to creating and submitting different transactions.
 
-## Usage
+## Install
 
-### Init
+### Use go mod(recommend)
 
-```GO
-mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
-//-----   Init KeyManager  -------------
-keyManager, _ := keys.NewMnemonicKeyManager(mnemonic)
-//-----   Init sdk  -------------
-client, _ := sdk.NewBncClient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
-
+Add "github.com/binance-chain/go-sdk" dependency into your go.mod file. Example:
+```go
+require (
+	github.com/binance-chain/go-sdk latest
+)
 ```
-For sdk init, you should know the famous api address and chain id of bnbchain, it is "http://dex-api.fdgahl.cn" and "chain-bnb" in the above example.
 
-If you want broadcast some transactions, like send coins, create orders or cancel orders, you should init a key manager to keep and use you private key.
+### Use go get
 
-There are three ways to get a key manager: from mnemonic, from key base file, from raw private key string.
+Use go get to install sdk into your `GOPATH`:
+```bash
+go get github.com/binance-chain/go-sdk
+```
+
+## Use dep
+Add dependency to your Gopkg.toml file. Example:
+```bash
+[[override]]
+  name = "github.com/binance-chain/go-sdk"
+```
+
+## API 
+
+### Key Manager
+
+Before start using API, you should construct a Key Manager to help sign the transaction msg or verify signature.
+Key Manager is an Identity Manger to define who you are in the bnbchain. It provide following interface:
+
+```go
+type KeyManager interface {
+	Sign(tx.StdSignMsg) ([]byte, error)
+	GetPrivKey() crypto.PrivKey
+	GetAddr() txmsg.AccAddress
+}
+```
+
+We provide three construct functions to generate Key Manger:
+```go
+NewMnemonicKeyManager(mnemonic string) (KeyManager, error)
+
+NewKeyStoreKeyManager(file string, auth string) (KeyManager, error)
+
+NewPrivateKeyManager(wifKey string) (KeyManager, error) 
+```
+
+- NewMnemonicKeyManager. You should provide your mnemonic, usually is a string of 24 words.
+- NewKeyStoreKeyManager. You should provide a keybase json file and you password, you can download the key base json file when your create a wallet account.
+- NewPrivateKeyManager. You should provide a Hex encoded string of your private key.
+
+Examples:
 
 From mnemonic:
 ```Go
@@ -40,6 +77,22 @@ From raw private key string:
 priv := "9579fff0cab07a4379e845a890105004ba4c8276f8ad9d22082b2acbf02d884b"
 keyManager, err := NewPrivateKeyManager(priv)
 ```
+
+
+
+### Init Client
+
+```GO
+mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
+//-----   Init KeyManager  -------------
+keyManager, _ := keys.NewMnemonicKeyManager(mnemonic)
+//-----   Init sdk  -------------
+client, _ := sdk.NewBncClient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
+
+```
+For sdk init, you should know the famous api address and chain id of bnbchain, it is "http://dex-api.fdgahl.cn" and "chain-bnb" in the above example.
+
+If you want broadcast some transactions, like send coins, create orders or cancel orders, you should construct a key manager.
 
 
 ### Read Operations
