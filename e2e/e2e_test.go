@@ -171,6 +171,9 @@ func TestAllProcess(t *testing.T) {
 	//assert.NoError(t, err)
 	//fmt.Printf("Vote: %v\n", vote)
 
+	//--- List trade pair ------
+	//client.ListPair(listTradingProposal.ProposalId,  issue.Symbol,  nativeSymbol, 1000000000, true)
+
 	//---- Get new markets
 	//time2.Sleep(1 * time2.Minute)
 	//markets, err = client.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})

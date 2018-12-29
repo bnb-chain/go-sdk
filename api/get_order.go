@@ -65,7 +65,6 @@ type Order struct {
 	Price                float64 `json:"price"`
 	Quantity             float64 `json:"quantity"`
 	CumulateQuantity     float64 `json:"cumulateQuantity"`
-	ExecutedQuantity     float64 `json:"executedQuantity"`
 	Fee                  string  `json:"fee"`
 	Side                 string  `json:"side"` // BUY or SELL
 	Status               string  `json:"status"`
