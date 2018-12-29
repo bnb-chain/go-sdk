@@ -17,25 +17,25 @@ import (
 // After bnbchain integration_test.sh has runned
 func TestAllProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
+	mnemonic := "mutual peasant quote avoid mandate current timber pipe prize wheel snow tattoo surround method weasel annual laundry evidence ecology cage medal perfect trial misery"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
 	_, testAccount2 := PrivAndAddr()
 
-
 	//-----   Init sdk  -------------
-	bnc, _ := sdk.NewBncSDK("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
+	client, _ := sdk.NewBncCLient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
 	nativeSymbol := txmsg.NativeToken
 	//-----  Get account  -----------
 
-	account, err := bnc.GetAccount(testAccount1.String())
+	account, err := client.GetAccount(testAccount1.String())
+	fmt.Println(err)
 	assert.NoError(t, err)
 	assert.NotNil(t, account)
 	assert.True(t, len(account.Balances) > 0)
 
 	//----- Get Markets  ------------
-	markets, err := bnc.GetMarkets(api.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(api.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].TradeAsset
@@ -44,79 +44,80 @@ func TestAllProcess(t *testing.T) {
 	}
 
 	//-----  Get Depth  -----------
-	depth, err := bnc.GetDepth(api.NewDepthQuery(tradeSymbol, nativeSymbol))
+	depth, err := client.GetDepth(api.NewDepthQuery(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, depth.Height > 0)
 
 	//----- Get Kline
-	kline, err := bnc.GetKlines(api.NewKlineQuery(tradeSymbol, nativeSymbol, "1h").WithLimit(1))
+	kline, err := client.GetKlines(api.NewKlineQuery(tradeSymbol, nativeSymbol, "1h").WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(kline))
 
 	//-----  Get Ticker 24h  -----------
-	ticker24h, err := bnc.GetTicker24h(api.NewTicker24hQuery().WithSymbol(tradeSymbol, nativeSymbol))
+	ticker24h, err := client.GetTicker24h(api.NewTicker24hQuery().WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, len(ticker24h) > 0)
 
 	//-----  Get Tokens  -----------
-	tokens, err := bnc.GetTokens()
+	tokens, err := client.GetTokens()
 	assert.NoError(t, err)
 	fmt.Printf("GetTokens: %v \n", tokens)
 
 	//-----  Get Trades  -----------
 	fmt.Println(testAccount1.String())
-	trades, err := bnc.GetTrades(api.NewTradesQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
+	trades, err := client.GetTrades(api.NewTradesQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	fmt.Printf("GetTrades: %v \n", trades)
 
 	//-----  Get Time    -----------
-	time, err := bnc.GetTime()
+	time, err := client.GetTime()
 	assert.NoError(t, err)
 	fmt.Printf("Get time: %v \n", time)
 
 	//----- Create order -----------
-	createOrderResult, err := bnc.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 100000000, 100000000, true)
+	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 10000, 100000000, true)
+	fmt.Println(err)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
-	//---- Get Order    ------------
-	order, err := bnc.GetOrder(createOrderResult.OrderId)
-	assert.NoError(t, err)
-	assert.Equal(t, createOrderResult.OrderId, order.ID)
-	assert.Equal(t, api.CombineSymbol(tradeSymbol, nativeSymbol), order.Symbol)
-
 	//---- Get Open Order ---------
-	openOrders, err := bnc.GetOpenOrders(api.NewOpenOrdersQuery(testAccount1.String()))
+	openOrders, err := client.GetOpenOrders(api.NewOpenOrdersQuery(testAccount1.String()))
 	assert.NoError(t, err)
 	assert.True(t, len(openOrders.Order) > 0)
+	orderId := openOrders.Order[0].ID
 	fmt.Printf("GetOpenOrders:  %v \n", openOrders)
 
+	//---- Get Order    ------------
+	order, err := client.GetOrder(orderId)
+	assert.NoError(t, err)
+	assert.Equal(t, api.CombineSymbol(tradeSymbol, nativeSymbol), order.Symbol)
+
 	//---- Cancle Order  ---------
-	cancleOrderResult, err := bnc.CancelOrder(tradeSymbol, nativeSymbol, createOrderResult.OrderId, createOrderResult.OrderId, true)
+	cancleOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, orderId, true)
 	assert.NoError(t, err)
 	assert.True(t, cancleOrderResult.Ok)
 	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)
 
 	//---- Get Close Order---------
-	closedOrders, err := bnc.GetClosedOrders(api.NewClosedOrdersQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
+	closedOrders, err := client.GetClosedOrders(api.NewClosedOrdersQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, len(closedOrders.Order) > 0)
 	fmt.Printf("GetClosedOrders: %v \n", closedOrders)
 
 	//----    Get tx      ---------
-	tx, err := bnc.GetTx(openOrders.Order[0].TransactionHash)
+	tx, err := client.GetTx(openOrders.Order[0].TransactionHash)
 	assert.NoError(t, err)
 	assert.NotNil(t, tx)
 	fmt.Printf("GetTx: %v\n", tx)
 
 	//----   Send tx  -----------
-	send, err := bnc.SendToken(testAccount2, nativeSymbol, 10000000000, true)
+	send, err := client.SendToken(testAccount2, nativeSymbol, 10000000000, true)
 	assert.NoError(t, err)
 	assert.True(t, send.Ok)
 	fmt.Printf("Send token: %v\n", send)
 
 	//---    Get test2 account-----
-	newTestAccout2, err := bnc.GetAccount(testAccount2.String())
+	newTestAccout2, err := client.GetAccount(testAccount2.String())
 	assert.NoError(t, err)
 	for _, c := range newTestAccout2.Balances {
 		if c.Symbol == nativeSymbol {
@@ -125,43 +126,49 @@ func TestAllProcess(t *testing.T) {
 	}
 
 	//----   Freeze Token ---------
-	freeze, err := bnc.FreezeToken(nativeSymbol, 100000000, true)
+	freeze, err := client.FreezeToken(nativeSymbol, 100000000, true)
 	assert.NoError(t, err)
 	assert.True(t, freeze.Ok)
 	fmt.Printf("freeze token: %v\n", freeze)
 
 	//----   Unfreeze Token ---------
-	unfreeze, err := bnc.UnfreezeToken(nativeSymbol, 100000000, true)
+	unfreeze, err := client.UnfreezeToken(nativeSymbol, 100000000, true)
 	assert.NoError(t, err)
 	assert.True(t, unfreeze.Ok)
 	fmt.Printf("Unfreeze token: %v\n", unfreeze)
 
 	//----   issue token ---------
-	issue, err := bnc.IssueToken("SDK-Token", "sdk", 10000000000000000, true, false)
+	issue, err := client.IssueToken("Client-Token", "sdk", 10000000000000000, true, false)
 	assert.NoError(t, err)
 	fmt.Printf("Issue token: %v\n", issue)
 
 	//---  check issue success ---
 	time2.Sleep(2 * time2.Second)
-	issueresult, err := bnc.GetTx(issue.Hash)
+	issueresult, err := client.GetTx(issue.Hash)
 	assert.NoError(t, err)
 	assert.True(t, issueresult.Code == api.CodeOk)
 
 	//---- Submit Proposal ------
-	listTradingProposal, err := bnc.SubmitListPairProposal("New trading pair", txmsg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
-	fmt.Println(err)
+	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", txmsg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
+
+	//---  check submit proposal success ---
+	//time2.Sleep(2 * time2.Second)
+	//submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
+	//assert.NoError(t, err)
+	//assert.True(t, submitPorposalStatus.Code == api.CodeOk)
+
 	//---- Vote Proposal  -------
-	time2.Sleep(10 * time2.Second)
-	vote, err := bnc.VoteProposal(listTradingProposal.ProposalId, txmsg.OptionYes, true)
-	assert.NoError(t, err)
-	fmt.Printf("Vote: %v\n", vote)
+	//time2.Sleep(10 * time2.Second)
+	//vote, err := client.VoteProposal(listTradingProposal.ProposalId, txmsg.OptionYes, true)
+	//assert.NoError(t, err)
+	//fmt.Printf("Vote: %v\n", vote)
 
 	//---- Get new markets
 	//time2.Sleep(1 * time2.Minute)
-	//markets, err = bnc.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})
+	//markets, err = client.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})
 	//assert.NoError(t, err)
 	//fmt.Printf("New markets: %v \n ", markets)
 
