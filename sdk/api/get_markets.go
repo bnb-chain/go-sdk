@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type MarketsQuery struct {
@@ -50,7 +49,6 @@ func (dex *dexAPI) GetMarkets(query *MarketsQuery) ([]SymbolPair, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("%v\n", qp)
 	resp, err := dex.Get("/markets", qp)
 	if err != nil {
 		return nil, err
