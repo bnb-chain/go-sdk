@@ -1,8 +1,8 @@
 package txmsg
 
 import (
+	"github.com/binance-chain/go-sdk/sdk/common/crypto/encoding/amino"
 	amino "github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto/encoding/amino"
 )
 
 var MsgCdc = amino.NewCodec()

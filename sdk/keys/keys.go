@@ -4,11 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/binance-chain/go-sdk/sdk/common/crypto"
+	"github.com/binance-chain/go-sdk/sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/sdk/tx"
 	"github.com/binance-chain/go-sdk/sdk/tx/txmsg"
 	"github.com/cosmos/go-bip39"
-	tmcrypto "github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"io/ioutil"
 	"strings"
 )
@@ -19,7 +19,7 @@ const (
 
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
-	GetPrivKey() tmcrypto.PrivKey
+	GetPrivKey() crypto.PrivKey
 	GetAddr() txmsg.AccAddress
 }
 
@@ -43,7 +43,7 @@ func NewPrivateKeyManager(wifKey string) (KeyManager, error) {
 
 type keyManager struct {
 	recoverType string
-	privKey     tmcrypto.PrivKey
+	privKey     crypto.PrivKey
 	addr        txmsg.AccAddress
 }
 
@@ -133,7 +133,7 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 	return []byte(hex.EncodeToString(bz)), nil
 }
 
-func (m *keyManager) GetPrivKey() tmcrypto.PrivKey {
+func (m *keyManager) GetPrivKey() crypto.PrivKey {
 	return m.privKey
 }
 
