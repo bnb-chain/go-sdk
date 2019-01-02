@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"strconv"
 
-	"github.com/binance-chain/go-sdk/tx"
 	"github.com/binance-chain/go-sdk/tx/txmsg"
 )
 
@@ -33,9 +33,12 @@ func (dex *dexAPI) SubmitProposal(title string, description string, proposalType
 		return nil, err
 	}
 	var proposalId int64
-	if commit.Ok && sync{
+	if commit.Ok && sync {
 		// Todo since ap do not return proposal id now, do not return err
-		tx.Cdc.UnmarshalBinaryBare([]byte(commit.Data), &proposalId)
+		proposalId, err = strconv.ParseInt(string(commit.Data), 10, 64)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &SubmitProposalResult{*commit, proposalId}, err
 

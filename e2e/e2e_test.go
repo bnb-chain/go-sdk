@@ -18,7 +18,7 @@ import (
 // After bnbchain integration_test.sh has runned
 func TestAllProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "mutual peasant quote avoid mandate current timber pipe prize wheel snow tattoo surround method weasel annual laundry evidence ecology cage medal perfect trial misery"
+	mnemonic := "time shoulder juice segment art walk tattoo quiz recall weasel very squeeze vanish congress fetch panda scrap claw charge involve glory risk error quarter"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
@@ -77,7 +77,6 @@ func TestAllProcess(t *testing.T) {
 
 	//----- Create order -----------
 	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 10000, 100000000, true)
-	fmt.Println(err)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
@@ -150,30 +149,33 @@ func TestAllProcess(t *testing.T) {
 	assert.True(t, issueresult.Code == api.CodeOk)
 
 	//--- mint token -----------
-	mint,err:=client.MintToken(issue.Symbol,100000000, true)
-	assert.NoError(t,err)
+	mint, err := client.MintToken(issue.Symbol, 100000000, true)
+	assert.NoError(t, err)
 	fmt.Printf("Mint token: %v\n", mint)
 
 	//---- Submit Proposal ------
 	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", txmsg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
+	fmt.Println(err)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
 	//---  check submit proposal success ---
-	//time2.Sleep(2 * time2.Second)
-	//submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
-	//assert.NoError(t, err)
-	//assert.True(t, submitPorposalStatus.Code == api.CodeOk)
+	time2.Sleep(2 * time2.Second)
+	submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
+	assert.NoError(t, err)
+	assert.True(t, submitPorposalStatus.Code == api.CodeOk)
 
 	//---- Vote Proposal  -------
-	//time2.Sleep(10 * time2.Second)
-	//vote, err := client.VoteProposal(listTradingProposal.ProposalId, txmsg.OptionYes, true)
-	//assert.NoError(t, err)
-	//fmt.Printf("Vote: %v\n", vote)
+	time2.Sleep(2 * time2.Second)
+	vote, err := client.VoteProposal(listTradingProposal.ProposalId, txmsg.OptionYes, true)
+	fmt.Println(err)
+	assert.NoError(t, err)
+	fmt.Printf("Vote: %v\n", vote)
 
 	//--- List trade pair ------
-	//client.ListPair(listTradingProposal.ProposalId,  issue.Symbol,  nativeSymbol, 1000000000, true)
-
+	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
+	assert.NoError(t, err)
+	fmt.Printf("List trading pair: %v\n", l)
 	//---- Get new markets
 	//time2.Sleep(1 * time2.Minute)
 	//markets, err = client.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})
