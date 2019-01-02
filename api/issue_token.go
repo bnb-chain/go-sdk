@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/binance-chain/go-sdk/tx/txmsg"
 )
 
@@ -45,17 +43,11 @@ func (dex *dexAPI) IssueToken(name, symbol string, supply int64, sync bool, mint
 	var issueTokenValue IssueTokenValue
 	issueSymbol := symbol
 	if commit.Ok && sync {
-		// Do no return error here, we get no data for now.
 		err = json.Unmarshal([]byte(commit.Data), &issueTokenValue)
-		if err == nil {
-			issueSymbol = issueTokenValue.Symbol
-		} else {
-			// Todo Try to find symbol in log, delete this code when chain fix
-			resLogs := strings.Split(commit.Log, " ")
-			if len(resLogs) > 0 {
-				issueSymbol = resLogs[len(resLogs)-1]
-			}
+		if err != nil {
+			return nil, err
 		}
+		issueSymbol = issueTokenValue.Symbol
 	}
 
 	return &IssueTokenResult{*commit, issueSymbol}, nil
