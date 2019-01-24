@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/binance-chain/go-sdk/types"
 	"io/ioutil"
 	"strings"
 
@@ -11,8 +12,7 @@ import (
 
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
-	"github.com/binance-chain/go-sdk/tx"
-	"github.com/binance-chain/go-sdk/tx/txmsg"
+	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
-	GetAddr() txmsg.AccAddress
+	GetAddr() types.AccAddress
 }
 
 func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
@@ -46,7 +46,7 @@ func NewPrivateKeyManager(wifKey string) (KeyManager, error) {
 type keyManager struct {
 	recoverType string
 	privKey     crypto.PrivKey
-	addr        txmsg.AccAddress
+	addr        types.AccAddress
 }
 
 func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
@@ -65,7 +65,7 @@ func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
 		return err
 	}
 	priKey := secp256k1.PrivKeySecp256k1(derivedPriv)
-	addr := txmsg.AccAddress(priKey.PubKey().Address())
+	addr := types.AccAddress(priKey.PubKey().Address())
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (m *keyManager) recoveryFromKeyStore(keystoreFile string, auth string) erro
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], keyBytes[:32])
 	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
-	addr := txmsg.AccAddress(priKey.PubKey().Address())
+	addr := types.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
 	return nil
@@ -115,7 +115,7 @@ func (m *keyManager) recoveryFromPrivateKey(privateKey string) error {
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], priBytes[:32])
 	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
-	addr := txmsg.AccAddress(priKey.PubKey().Address())
+	addr := types.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
 	return nil
@@ -139,7 +139,7 @@ func (m *keyManager) GetPrivKey() crypto.PrivKey {
 	return m.privKey
 }
 
-func (m *keyManager) GetAddr() txmsg.AccAddress {
+func (m *keyManager) GetAddr() types.AccAddress {
 	return m.addr
 }
 
