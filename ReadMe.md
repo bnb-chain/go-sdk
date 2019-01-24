@@ -83,14 +83,24 @@ keyManager, err := NewPrivateKeyManager(priv)
 ### Init Client
 
 ```GO
+import sdk "github.com/binance-chain/go-sdk/client"
+
 mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
 //-----   Init KeyManager  -------------
 keyManager, _ := keys.NewMnemonicKeyManager(mnemonic)
+
 //-----   Init sdk  -------------
-client, _ := sdk.NewBncClient("http://dex-api.fdgahl.cn", "chain-bnb", keyManager)
+client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNetwork, keyManager)
 
 ```
-For sdk init, you should know the famous api address and chain id of bnbchain, it is "http://dex-api.fdgahl.cn" and "chain-bnb" in the above example.
+For sdk init, you should know the famous api address. Besides, you should know what kind of network the api gateway is in, since we have different configurations for 
+test network and production network.
+TestNetwork ChainNetwork = iota
+
+|  ChainNetwork |  ApiAddr | 
+|-------------- |----------------------------------|
+|   TestNetwork | https://testnet-dex.binance.org  |  
+|   ProdNetwork | https://dex.binance.org          |                                |
 
 If you want broadcast some transactions, like send coins, create orders or cancel orders, you should construct a key manager.
 
@@ -250,8 +260,8 @@ trades, err := client.GetTrades(api.NewTradesQuery(testAccount1.String()).WithSy
     - BuyerOrderID  **string**, the order id of the buyer, which is combination of address and sequence.
     - BuyFee        **string**, the buy fee charged.
     - BuyerId       **string**, the buyer id.
-    - Price         **float64**, the trade price.
-    - Quantity      **float64**, the quantity of the trade.
+    - Price         **string**, the trade price.
+    - Quantity      **string**, the quantity of the trade.
     - SellFee       **string**,  the sell fee charged.
     - SellerId      **string**, the seller id.
     - SellerOrderID **string**, the order id of the buyer, which is combination of address and sequence.
@@ -261,7 +271,7 @@ trades, err := client.GetTrades(api.NewTradesQuery(testAccount1.String()).WithSy
     - BlockHeight   **int64**, in what height of the chain the trade happened.  
     - BaseAsset     **string**
     - QuoteAsset    **string**
-  - Total **string**, the total num of trades.
+  - Total **int**, the total num of trades.
 
 
 
@@ -291,17 +301,17 @@ order, err := client.GetOrder("Your Order Id")
   - ID                   **string**, the order id.
   -	Owner                **string**, the account address who set the order.
   -	Symbol               **string**, the combination of trade symbol and quote symbol.
-  -	Price                **float64**, the sell price or buy price.
-  -	Quantity             **float64**, the quantity of this order.
-  -	CumulateQuantity     **float64**, the total executed quantity.
+  -	Price                **string**, the sell price or buy price.
+  -	Quantity             **string**, the quantity of this order.
+  -	CumulateQuantity     **string**, the total executed quantity.
   -	Fee                  **string**, the fee charged.
-  -	Side                 **string**, the side of this order, "SELL" or "BUY"
+  -	Side                 **int**, 1 for buy and 2 for sell
   -	Status               **string**, options is [ ACK, PARTIALLY_FILLED, IOC_NO_FILL, FULLY_FILLED, CANCELED, EXPIRED, FAIL_BLOCKING, FAIL_MATCH, UNKNOWN ]
-  -	TimeInForce          **string**, options is [ GTC, IOC, UNKNOWN ]
-  -	Type                 **string**, options is [LIMIT]
+  -	TimeInForce          **int**, 1 for Good Till Expire(GTE) order and 3 for Immediate Or Cancel (IOC)
+  -	Type                 **int**, only 2 is available for now, meaning limit order
   -	TradeId              **string**
-  -	LastExecutedPrice    **float64**, the price of last executed.
-  -	LastExecutedQuantity **float64**, the quantity of last execution.
+  -	LastExecutedPrice    **string**, the price of last executed.
+  -	LastExecutedQuantity **string**, the quantity of last execution.
   -	TransactionHash      **string** 
   -	TransactionTime      **string**
 
