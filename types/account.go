@@ -25,9 +25,9 @@ var Network = ProdNetwork
 func (this ChainNetwork) Bech32Prefixes() string {
 	switch this {
 	case TestNetwork:
-		return "bnc"
+		return "tbnb"
 	case ProdNetwork:
-		return "bnc"
+		return "bnb"
 	default:
 		panic("Unknown network type")
 	}
