@@ -97,7 +97,7 @@ func TestAllProcess(t *testing.T) {
 
 	//---- Cancle Order  ---------
 	time2.Sleep(2 * time2.Second)
-	cancleOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, orderId, true)
+	cancleOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true)
 	assert.NoError(t, err)
 	assert.True(t, cancleOrderResult.Ok)
 	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)

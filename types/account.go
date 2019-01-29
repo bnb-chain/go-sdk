@@ -18,6 +18,7 @@ type ChainNetwork uint8
 const (
 	TestNetwork ChainNetwork = iota
 	ProdNetwork
+	UnitTestNetwork
 )
 
 var Network = ProdNetwork
@@ -28,6 +29,8 @@ func (this ChainNetwork) Bech32Prefixes() string {
 		return "tbnb"
 	case ProdNetwork:
 		return "bnb"
+	case UnitTestNetwork:
+		return "bnc"
 	default:
 		panic("Unknown network type")
 	}

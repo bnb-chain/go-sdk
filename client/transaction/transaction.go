@@ -13,7 +13,7 @@ import (
 
 type TransactionClient interface {
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool) (*CreateOrderResult, error)
-	CancelOrder(baseAssetSymbol, quoteAssetSymbol, id, refId string, sync bool) (*CancelOrderResult, error)
+	CancelOrder(baseAssetSymbol, quoteAssetSymbol,refId string, sync bool) (*CancelOrderResult, error)
 	BurnToken(symbol string, amount int64, sync bool) (*BurnTokenResult, error)
 	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool) (*ListPairResult, error)
 	FreezeToken(symbol string, amount int64, sync bool) (*FreezeTokenResult, error)

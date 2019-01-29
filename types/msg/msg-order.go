@@ -239,16 +239,14 @@ func (msg CreateOrderMsg) ValidateBasic() error {
 type CancelOrderMsg struct {
 	Sender types.AccAddress `json:"sender"`
 	Symbol string           `json:"symbol"`
-	ID     string           `json:"id"`
 	RefID  string           `json:"refid"`
 }
 
 // NewCancelOrderMsg constructs a new CancelOrderMsg
-func NewCancelOrderMsg(sender types.AccAddress, symbol, id, refID string) CancelOrderMsg {
+func NewCancelOrderMsg(sender types.AccAddress, symbol, refID string) CancelOrderMsg {
 	return CancelOrderMsg{
 		Sender: sender,
 		Symbol: symbol,
-		ID:     id,
 		RefID:  refID,
 	}
 }
@@ -286,9 +284,8 @@ func (msg CancelOrderMsg) ValidateBasic() error {
 	if len(msg.Sender) == 0 {
 		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
 	}
-
-	if len(msg.ID) == 0 || !strings.Contains(msg.ID, "-") {
-		return fmt.Errorf("Invalid order ID:%s", msg.ID)
+	if len(msg.RefID) == 0 || !strings.Contains(msg.RefID, "-") {
+		return fmt.Errorf("Invalid order RefID:%s", msg.RefID)
 	}
 
 	return nil

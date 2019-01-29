@@ -12,17 +12,17 @@ type CancelOrderResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, id, refId string, sync bool) (*CancelOrderResult, error) {
+func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool) (*CancelOrderResult, error) {
 	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
 	}
-	if id == "" || refId == "" {
+	if refId == "" {
 		return nil, fmt.Errorf("OrderId or Order RefId is missing. ")
 	}
 
 	fromAddr := c.keyManager.GetAddr()
 
-	cancelOrderMsg := msg.NewCancelOrderMsg(fromAddr, common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol), id, refId)
+	cancelOrderMsg := msg.NewCancelOrderMsg(fromAddr, common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol), refId)
 	err := cancelOrderMsg.ValidateBasic()
 	if err != nil {
 		return nil, err

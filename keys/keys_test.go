@@ -10,7 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func setup(){
+	types.Network = types.UnitTestNetwork
+}
+
 func TestRecoveryFromKeyWordsNoError(t *testing.T) {
+	setup()
 	mnemonic := "bottom quick strong ranch section decide pepper broken oven demand coin run jacket curious business achieve mule bamboo remain vote kid rigid bench rubber"
 	keyManger, err := NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
@@ -25,6 +30,7 @@ func TestRecoveryFromKeyWordsNoError(t *testing.T) {
 }
 
 func TestRecoveryFromKeyBaseNoError(t *testing.T) {
+	setup()
 	file := "testkeystore.json"
 	planText := []byte("Test msg")
 	keyManager, err := NewKeyStoreKeyManager(file, "Zjubfd@123")
@@ -36,6 +42,7 @@ func TestRecoveryFromKeyBaseNoError(t *testing.T) {
 }
 
 func TestRecoveryPrivateKeyNoError(t *testing.T) {
+	setup()
 	planText := []byte("Test msg")
 	priv := "9579fff0cab07a4379e845a890105004ba4c8276f8ad9d22082b2acbf02d884b"
 	keyManager, err := NewPrivateKeyManager(priv)
@@ -47,6 +54,7 @@ func TestRecoveryPrivateKeyNoError(t *testing.T) {
 }
 
 func TestSignTxNoError(t *testing.T) {
+	setup()
 	test1Mnemonic := "swift slam quote sail high remain mandate sample now stamp title among fiscal captain joy puppy ghost arrow attract ozone situate install gain mean"
 	test2Mnemonic := "bottom quick strong ranch section decide pepper broken oven demand coin run jacket curious business achieve mule bamboo remain vote kid rigid bench rubber"
 
@@ -112,11 +120,11 @@ func TestSignTxNoError(t *testing.T) {
 			"Create order sign error",
 		},
 		{
-			msg.NewCancelOrderMsg(test1Addr, "BTC-86A_BNB", "1D0E3086E8E4E0A53C38A90D55BD58B34D57D2FA-5", "1D0E3086E8E4E0A53C38A90D55BD58B34D57D2FA-5"),
+			msg.NewCancelOrderMsg(test1Addr, "BTC-86A_BNB", "1D0E3086E8E4E0A53C38A90D55BD58B34D57D2FA-5"),
 			test1KeyManger,
 			0,
 			5,
-			"f301f0625dee0a7f166e681b0a141d0e3086e8e4e0a53c38a90d55bd58b34d57d2fa120b4254432d3836415f424e421a2a314430453330383645384534453041353343333841393044353542443538423334443537443246412d35222a314430453330383645384534453041353343333841393044353542443538423334443537443246412d35126c0a26eb5ae98721027e69d96640300433654e016d218a8d7ffed751023d8efe81e55dedbd6754c97112408ab86cb8a06db80bb7ed59e8371ff633919e0b642ae0609c44759b7cd1f4d0bf2d9f1230234dd6c02bb75d787afd37db9a6594feb93c7797569960b393d71b6b200a",
+			"c701f0625dee0a53166e681b0a141d0e3086e8e4e0a53c38a90d55bd58b34d57d2fa120b4254432d3836415f424e421a2a314430453330383645384534453041353343333841393044353542443538423334443537443246412d35126c0a26eb5ae98721027e69d96640300433654e016d218a8d7ffed751023d8efe81e55dedbd6754c971124026fc44b689f3e8b4abbd58a4ae9440cef2d650db191f99d2b50ff69abd5340675feb98644f64a16e5d842236b3976e17c4ba2db842bed7f4f6c4548d468977fa200a",
 			"Cancel order sign error",
 		},
 		{
