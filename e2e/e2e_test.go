@@ -2,26 +2,26 @@ package e2e
 
 import (
 	"fmt"
-	sdk "github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/client/query"
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/types"
-	"github.com/binance-chain/go-sdk/types/msg"
-	tx2 "github.com/binance-chain/go-sdk/types/tx"
 	"testing"
 	time2 "time"
 
 	"github.com/stretchr/testify/assert"
 
+	sdk "github.com/binance-chain/go-sdk/client"
+	"github.com/binance-chain/go-sdk/client/query"
+	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/keys"
+	"github.com/binance-chain/go-sdk/types"
+	"github.com/binance-chain/go-sdk/types/msg"
+	tx2 "github.com/binance-chain/go-sdk/types/tx"
 )
 
 // After bnbchain integration_test.sh has runned
 func TestAllProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "ghost ranch desert van bleak parent leisure garden tenant hawk panel image later raccoon pave original artwork ridge snake spare food such baby thank"
+	mnemonic := "this is a test mnemonic"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
@@ -80,6 +80,7 @@ func TestAllProcess(t *testing.T) {
 
 	//----- Create order -----------
 	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 10000000000000, true)
+	fmt.Println(err)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 

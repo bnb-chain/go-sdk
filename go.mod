@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.2.2
 	github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f
 	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9 // indirect
-	github.com/tendermint/go-amino v0.12.0
+	github.com/tendermint/go-amino v0.14.1
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
 	gopkg.in/resty.v1 v1.10.3

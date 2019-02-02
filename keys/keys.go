@@ -127,7 +127,7 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 		return nil, err
 	}
 	newTx := tx.NewStdTx(msg.Msgs, []tx.StdSignature{sig}, msg.Memo, msg.Source, msg.Data)
-	bz, err := tx.Cdc.MarshalBinary(&newTx)
+	bz, err := tx.Cdc.MarshalBinaryLengthPrefixed(&newTx)
 	if err != nil {
 		return nil, err
 	}
