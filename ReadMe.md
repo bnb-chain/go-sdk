@@ -35,7 +35,7 @@ Add dependency to your Gopkg.toml file. Example:
   name = "github.com/binance-chain/go-sdk"
 ```
 
-## API 
+## Usage 
 
 ### Key Manager
 
@@ -129,7 +129,6 @@ client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNet
 ```
 For sdk init, you should know the famous api address. Besides, you should know what kind of network the api gateway is in, since we have different configurations for 
 test network and production network.
-TestNetwork ChainNetwork = iota
 
 |  ChainNetwork |  ApiAddr | 
 |-------------- |----------------------------------|

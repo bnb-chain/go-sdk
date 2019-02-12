@@ -12,10 +12,15 @@ type OpenOrdersQuery struct {
 	Symbol        string  `json:"symbol,omitempty"`
 	Offset        *uint32 `json:"offset,omitempty,string"`
 	Limit         *uint32 `json:"limit,omitempty,string"`
+	Total         int     `json:"total,string"` //0 for not required and 1 for required; default not required, return total=-1 in response
 }
 
-func NewOpenOrdersQuery(senderAddress string) *OpenOrdersQuery {
-	return &OpenOrdersQuery{SenderAddress: senderAddress}
+func NewOpenOrdersQuery(senderAddress string, withTotal bool) *OpenOrdersQuery {
+	totalQuery := 0
+	if withTotal {
+		totalQuery = 1
+	}
+	return &OpenOrdersQuery{SenderAddress: senderAddress, Total: totalQuery}
 }
 
 func (param *OpenOrdersQuery) WithSymbol(symbol string) *OpenOrdersQuery {

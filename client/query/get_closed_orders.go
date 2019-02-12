@@ -19,11 +19,17 @@ type ClosedOrdersQuery struct {
 	Start         *int64  `json:"start,omitempty,string"`  //option
 	End           *int64  `json:"end,omitempty,string"`    //option
 	Side          string  `json:"side,omitempty"`          //option
+	Total         int     `json:"total,string"`                   //0 for not required and 1 for required; default not required, return total=-1 in response
 }
 
-func NewClosedOrdersQuery(senderAddress string) *ClosedOrdersQuery {
-	return &ClosedOrdersQuery{SenderAddress: senderAddress}
+func NewClosedOrdersQuery(senderAddress string, withTotal bool) *ClosedOrdersQuery {
+	totalQuery := 0
+	if withTotal {
+		totalQuery = 1
+	}
+	return &ClosedOrdersQuery{SenderAddress: senderAddress, Total: totalQuery}
 }
+
 func (param *ClosedOrdersQuery) Check() error {
 	if param.SenderAddress == "" {
 		return AddressMissingError

@@ -14,8 +14,8 @@ type Trades struct {
 	Total int     `json:"total"`
 }
 
-func NewTradesQuery(senderAddres string) *TradesQuery {
-	return NewClosedOrdersQuery(senderAddres)
+func NewTradesQuery(senderAddres string, withTotal bool) *TradesQuery {
+	return NewClosedOrdersQuery(senderAddres, withTotal)
 }
 
 // Trade def

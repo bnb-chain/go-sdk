@@ -19,7 +19,7 @@ import (
 // After bnbchain integration_test.sh has runned
 func TestAllProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "this is a test mnemonic"
+	mnemonic := "scout direct ten visa useless concert spray method focus ensure album weasel decline panic crane caught off brown deer welcome mimic lady ring play"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
@@ -30,8 +30,8 @@ func TestAllProcess(t *testing.T) {
 	client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNetwork, keyManager)
 	assert.NoError(t, err)
 	nativeSymbol := msg.NativeToken
-	//-----  Get account  -----------
 
+	//-----  Get account  -----------
 	account, err := client.GetAccount(testAccount1.String())
 	assert.NoError(t, err)
 	assert.NotNil(t, account)
@@ -68,8 +68,9 @@ func TestAllProcess(t *testing.T) {
 
 	//-----  Get Trades  -----------
 	fmt.Println(testAccount1.String())
-	trades, err := client.GetTrades(query.NewTradesQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
+	trades, err := client.GetTrades(query.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
+	fmt.Println(err)
 	fmt.Printf("GetTrades: %v \n", trades)
 
 	//-----  Get Time    -----------
@@ -79,12 +80,11 @@ func TestAllProcess(t *testing.T) {
 
 	//----- Create order -----------
 	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 10000000000000, true)
-	fmt.Println(err)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
 	//---- Get Open Order ---------
-	openOrders, err := client.GetOpenOrders(query.NewOpenOrdersQuery(testAccount1.String()))
+	openOrders, err := client.GetOpenOrders(query.NewOpenOrdersQuery(testAccount1.String(), true))
 	assert.NoError(t, err)
 	assert.True(t, len(openOrders.Order) > 0)
 	orderId := openOrders.Order[0].ID
@@ -103,7 +103,7 @@ func TestAllProcess(t *testing.T) {
 	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)
 
 	//---- Get Close Order---------
-	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String()).WithSymbol(tradeSymbol, nativeSymbol))
+	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, len(closedOrders.Order) > 0)
 	fmt.Printf("GetClosedOrders: %v \n", closedOrders)
