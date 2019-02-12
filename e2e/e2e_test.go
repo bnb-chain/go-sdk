@@ -2,6 +2,8 @@ package e2e
 
 import (
 	"fmt"
+	"github.com/binance-chain/go-sdk/common/crypto"
+	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"testing"
 	time2 "time"
 
@@ -10,8 +12,6 @@ import (
 	sdk "github.com/binance-chain/go-sdk/client"
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/common/crypto"
-	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"

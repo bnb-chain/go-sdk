@@ -2,6 +2,9 @@ package keys
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/binance-chain/go-sdk/types"
@@ -168,4 +171,65 @@ func TestSignTxNoError(t *testing.T) {
 		expectHexTx := c.expectHexTx
 		assert.True(t, bytes.Equal(signResult, []byte(expectHexTx)), c.errMsg)
 	}
+}
+
+func TestExportAsKeyStoreNoError(t *testing.T) {
+	defer os.Remove("TestGenerateKeyStoreNoError.json")
+	km, err := NewRawKeyManager()
+	assert.NoError(t, err)
+	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	keyJSONV1, err := km.ExportAsKeyStore("testpassword")
+	assert.NoError(t, err)
+	bz, err := json.Marshal(keyJSONV1)
+	assert.NoError(t, err)
+	err = ioutil.WriteFile("TestGenerateKeyStoreNoError.json", bz, 0660)
+	assert.NoError(t, err)
+	newkm, err := NewKeyStoreKeyManager("TestGenerateKeyStoreNoError.json", "testpassword")
+	assert.NoError(t, err)
+	encryPlain2, err := newkm.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
+}
+
+func TestExportAsMnemonicNoError(t *testing.T) {
+	km, err := NewRawKeyManager()
+	assert.NoError(t, err)
+	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	mnemonic, err := km.ExportAsMnemonic()
+	assert.NoError(t, err)
+	newkm, err := NewMnemonicKeyManager(mnemonic)
+	assert.NoError(t, err)
+	encryPlain2, err := newkm.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
+	_, err = newkm.ExportAsMnemonic()
+	assert.NoError(t, err)
+}
+
+func TestExportAsPrivateKeyNoError(t *testing.T) {
+	km, err := NewRawKeyManager()
+	assert.NoError(t, err)
+	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	pk, err := km.ExportAsPrivateKey()
+	assert.NoError(t, err)
+	newkm, err := NewPrivateKeyManager(pk)
+	assert.NoError(t, err)
+	encryPlain2, err := newkm.GetPrivKey().Sign([]byte("test plain"))
+	assert.NoError(t, err)
+	assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
+}
+
+func TestExportAsMnemonicyError(t *testing.T) {
+	km, err := NewPrivateKeyManager("9579fff0cab07a4379e845a890105004ba4c8276f8ad9d22082b2acbf02d884b")
+	assert.NoError(t, err)
+	_, err = km.ExportAsMnemonic()
+	assert.Error(t, err)
+	file := "testkeystore.json"
+	km, err = NewKeyStoreKeyManager(file, "Zjubfd@123")
+	assert.NoError(t, err)
+	_, err = km.ExportAsMnemonic()
+	assert.Error(t, err)
 }

@@ -1,17 +1,22 @@
 package keys
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/binance-chain/go-sdk/types"
+
 	"io/ioutil"
 	"strings"
 
 	"github.com/cosmos/go-bip39"
+	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
+	"github.com/binance-chain/go-sdk/common/uuid"
+	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
@@ -19,10 +24,20 @@ const (
 	defaultBIP39Passphrase = ""
 )
 
+const (
+	Save = iota
+	DomainGroup
+	DomainOrg
+)
+
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
 	GetAddr() types.AccAddress
+
+	ExportAsMnemonic() (string, error)
+	ExportAsPrivateKey() (string, error)
+	ExportAsKeyStore(password string) (*EncryptedKeyJSONV1, error)
 }
 
 func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
@@ -37,16 +52,47 @@ func NewKeyStoreKeyManager(file string, auth string) (KeyManager, error) {
 	return &k, err
 }
 
-func NewPrivateKeyManager(wifKey string) (KeyManager, error) {
+func NewPrivateKeyManager(priKey string) (KeyManager, error) {
 	k := keyManager{}
-	err := k.recoveryFromPrivateKey(wifKey)
+	err := k.recoveryFromPrivateKey(priKey)
 	return &k, err
 }
 
 type keyManager struct {
-	recoverType string
-	privKey     crypto.PrivKey
-	addr        types.AccAddress
+	privKey  crypto.PrivKey
+	addr     types.AccAddress
+	mnemonic string
+}
+
+func (m *keyManager) ExportAsMnemonic() (string, error) {
+	if m.mnemonic == "" {
+		return "", fmt.Errorf("This key manager is not recover from mnemonic or anto generated ")
+	}
+	return m.mnemonic, nil
+}
+
+func (m *keyManager) ExportAsPrivateKey() (string, error) {
+	secpPrivateKey, ok := m.privKey.(secp256k1.PrivKeySecp256k1)
+	if !ok {
+		return "", fmt.Errorf(" Only PrivKeySecp256k1 key is supported ")
+	}
+	return hex.EncodeToString(secpPrivateKey[:]), nil
+}
+
+func (m *keyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSONV1, error) {
+	return generateKeyStore(m.GetPrivKey(), password)
+}
+
+func NewRawKeyManager() (KeyManager, error) {
+	entropy, err := bip39.NewEntropy(256)
+	if err != nil {
+		return nil, err
+	}
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		return nil, err
+	}
+	return NewMnemonicKeyManager(mnemonic)
 }
 
 func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
@@ -71,6 +117,7 @@ func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
 	}
 	m.addr = addr
 	m.privKey = priKey
+	m.mnemonic = mnemonic
 	return nil
 }
 
@@ -156,5 +203,58 @@ func (m *keyManager) makeSignature(msg tx.StdSignMsg) (sig tx.StdSignature, err 
 		Sequence:      msg.Sequence,
 		PubKey:        m.privKey.PubKey(),
 		Signature:     sigBytes,
+	}, nil
+}
+
+func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKeyJSONV1, error) {
+	addr := types.AccAddress(privateKey.PubKey().Address())
+	salt, err := common.GenerateRandomBytes(32)
+	if err != nil {
+		return nil, err
+	}
+	iv, err := common.GenerateRandomBytes(16)
+	if err != nil {
+		return nil, err
+	}
+	scryptParamsJSON := make(map[string]interface{}, 4)
+	scryptParamsJSON["prf"] = "hmac-sha256"
+	scryptParamsJSON["dklen"] = 32
+	scryptParamsJSON["salt"] = hex.EncodeToString(salt)
+	scryptParamsJSON["c"] = 262144
+
+	cipherParamsJSON := cipherparamsJSON{IV: hex.EncodeToString(iv)}
+	derivedKey := pbkdf2.Key([]byte(password), salt, 262144, 32, sha256.New)
+	encryptKey := derivedKey[:16]
+	secpPrivateKey, ok := privateKey.(secp256k1.PrivKeySecp256k1)
+	if !ok {
+		return nil, fmt.Errorf(" Only PrivKeySecp256k1 key is supported ")
+	}
+	cipherText, err := aesCTRXOR(encryptKey, secpPrivateKey[:], iv)
+	if err != nil {
+		return nil, err
+	}
+
+	hasher := sha256.New()
+	hasher.Write(derivedKey[16:32])
+	hasher.Write(cipherText)
+	mac := hasher.Sum(nil)
+
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	cryptoStruct := CryptoJSON{
+		Cipher:       "aes-256-ctr",
+		CipherText:   hex.EncodeToString(cipherText),
+		CipherParams: cipherParamsJSON,
+		KDF:          "pbkdf2",
+		KDFParams:    scryptParamsJSON,
+		MAC:          hex.EncodeToString(mac),
+	}
+	return &EncryptedKeyJSONV1{
+		Address: addr.String(),
+		Crypto:  cryptoStruct,
+		Id:      id.String(),
+		Version: "1",
 	}, nil
 }
