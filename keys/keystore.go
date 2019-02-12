@@ -23,7 +23,7 @@ type PlainKeyJSON struct {
 	Version    int    `json:"version"`
 }
 
-type EncryptedKeyJSONV1 struct {
+type EncryptedKeyJSON struct {
 	Address string     `json:"address"`
 	Crypto  CryptoJSON `json:"crypto"`
 	Id      string     `json:"id"`
@@ -42,7 +42,7 @@ type cipherparamsJSON struct {
 	IV string `json:"iv"`
 }
 
-func decryptKeyV1(keyProtected *EncryptedKeyJSONV1, auth string) ([]byte, error) {
+func decryptKey(keyProtected *EncryptedKeyJSON, auth string) ([]byte, error) {
 	mac, err := hex.DecodeString(keyProtected.Crypto.MAC)
 	if err != nil {
 		return nil, err

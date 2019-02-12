@@ -2,8 +2,6 @@ package e2e
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/crypto"
-	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"testing"
 	time2 "time"
 
@@ -25,7 +23,8 @@ func TestAllProcess(t *testing.T) {
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
-	_, testAccount2 := PrivAndAddr()
+	testKeyManager2, _ := keys.NewKeyManager()
+	testAccount2 := testKeyManager2.GetAddr()
 
 	//-----   Init sdk  -------------
 	client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNetwork, keyManager)
@@ -188,10 +187,4 @@ func TestAllProcess(t *testing.T) {
 	//assert.NoError(t, err)
 	//fmt.Printf("New markets: %v \n ", markets)
 
-}
-
-func PrivAndAddr() (crypto.PrivKey, types.AccAddress) {
-	priv := secp256k1.GenPrivKey()
-	addr := types.AccAddress(priv.PubKey().Address())
-	return priv, addr
 }

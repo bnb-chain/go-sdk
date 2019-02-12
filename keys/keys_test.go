@@ -175,7 +175,7 @@ func TestSignTxNoError(t *testing.T) {
 
 func TestExportAsKeyStoreNoError(t *testing.T) {
 	defer os.Remove("TestGenerateKeyStoreNoError.json")
-	km, err := NewRawKeyManager()
+	km, err := NewKeyManager()
 	assert.NoError(t, err)
 	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
 	assert.NoError(t, err)
@@ -193,7 +193,7 @@ func TestExportAsKeyStoreNoError(t *testing.T) {
 }
 
 func TestExportAsMnemonicNoError(t *testing.T) {
-	km, err := NewRawKeyManager()
+	km, err := NewKeyManager()
 	assert.NoError(t, err)
 	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
 	assert.NoError(t, err)
@@ -209,7 +209,7 @@ func TestExportAsMnemonicNoError(t *testing.T) {
 }
 
 func TestExportAsPrivateKeyNoError(t *testing.T) {
-	km, err := NewRawKeyManager()
+	km, err := NewKeyManager()
 	assert.NoError(t, err)
 	encryPlain1, err := km.GetPrivKey().Sign([]byte("test plain"))
 	assert.NoError(t, err)

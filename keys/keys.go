@@ -24,12 +24,6 @@ const (
 	defaultBIP39Passphrase = ""
 )
 
-const (
-	Save = iota
-	DomainGroup
-	DomainOrg
-)
-
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
@@ -37,7 +31,7 @@ type KeyManager interface {
 
 	ExportAsMnemonic() (string, error)
 	ExportAsPrivateKey() (string, error)
-	ExportAsKeyStore(password string) (*EncryptedKeyJSONV1, error)
+	ExportAsKeyStore(password string) (*EncryptedKeyJSON, error)
 }
 
 func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
@@ -79,11 +73,11 @@ func (m *keyManager) ExportAsPrivateKey() (string, error) {
 	return hex.EncodeToString(secpPrivateKey[:]), nil
 }
 
-func (m *keyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSONV1, error) {
+func (m *keyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
 	return generateKeyStore(m.GetPrivKey(), password)
 }
 
-func NewRawKeyManager() (KeyManager, error) {
+func NewKeyManager() (KeyManager, error) {
 	entropy, err := bip39.NewEntropy(256)
 	if err != nil {
 		return nil, err
@@ -129,12 +123,12 @@ func (m *keyManager) recoveryFromKeyStore(keystoreFile string, auth string) erro
 	if err != nil {
 		return err
 	}
-	var encryptedKey EncryptedKeyJSONV1
+	var encryptedKey EncryptedKeyJSON
 	err = json.Unmarshal(keyJson, &encryptedKey)
 	if err != nil {
 		return err
 	}
-	keyBytes, err := decryptKeyV1(&encryptedKey, auth)
+	keyBytes, err := decryptKey(&encryptedKey, auth)
 	if err != nil {
 		return err
 	}
@@ -206,7 +200,7 @@ func (m *keyManager) makeSignature(msg tx.StdSignMsg) (sig tx.StdSignature, err 
 	}, nil
 }
 
-func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKeyJSONV1, error) {
+func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKeyJSON, error) {
 	addr := types.AccAddress(privateKey.PubKey().Address())
 	salt, err := common.GenerateRandomBytes(32)
 	if err != nil {
@@ -251,7 +245,7 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 		KDFParams:    scryptParamsJSON,
 		MAC:          hex.EncodeToString(mac),
 	}
-	return &EncryptedKeyJSONV1{
+	return &EncryptedKeyJSON{
 		Address: addr.String(),
 		Crypto:  cryptoStruct,
 		Id:      id.String(),
