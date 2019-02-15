@@ -19,3 +19,5 @@ require (
 	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
 	gopkg.in/resty.v1 v1.10.3
 )
+
+replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1

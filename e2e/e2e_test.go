@@ -19,7 +19,7 @@ import (
 // After bnbchain integration_test.sh has runned
 func TestAllProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "scout direct ten visa useless concert spray method focus ensure album weasel decline panic crane caught off brown deer welcome mimic lady ring play"
+	mnemonic := "test mnemonic"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	testAccount1 := keyManager.GetAddr()
@@ -70,7 +70,6 @@ func TestAllProcess(t *testing.T) {
 	fmt.Println(testAccount1.String())
 	trades, err := client.GetTrades(query.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
-	fmt.Println(err)
 	fmt.Printf("GetTrades: %v \n", trades)
 
 	//-----  Get Time    -----------
@@ -79,7 +78,7 @@ func TestAllProcess(t *testing.T) {
 	fmt.Printf("Get time: %v \n", time)
 
 	//----- Create order -----------
-	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 10000000000000, true)
+	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 30000000000, 10000000000000, true)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
@@ -160,7 +159,6 @@ func TestAllProcess(t *testing.T) {
 	//---- Submit Proposal ------
 	time2.Sleep(2 * time2.Second)
 	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
-	fmt.Println(err)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
@@ -173,7 +171,6 @@ func TestAllProcess(t *testing.T) {
 	//---- Vote Proposal  -------
 	time2.Sleep(2 * time2.Second)
 	vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
-	fmt.Println(err)
 	assert.NoError(t, err)
 	fmt.Printf("Vote: %v\n", vote)
 

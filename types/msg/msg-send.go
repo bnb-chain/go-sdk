@@ -51,24 +51,11 @@ func (msg SendMsg) ValidateBasic() error {
 
 // Implements Msg.
 func (msg SendMsg) GetSignBytes() []byte {
-	var inputs, outputs []json.RawMessage
-	for _, input := range msg.Inputs {
-		inputs = append(inputs, input.GetSignBytes())
-	}
-	for _, output := range msg.Outputs {
-		outputs = append(outputs, output.GetSignBytes())
-	}
-	b, err := MsgCdc.MarshalJSON(struct {
-		Inputs  []json.RawMessage `json:"inputs"`
-		Outputs []json.RawMessage `json:"outputs"`
-	}{
-		Inputs:  inputs,
-		Outputs: outputs,
-	})
+	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
 	}
-	return MustSortJSON(b)
+	return b
 }
 
 // Implements Msg.
