@@ -12,6 +12,10 @@ It includes the following core components:
 
 ## Install
 
+### Requirement
+
+Go version above 1.11
+
 ### Use go mod(recommend)
 
 Add "github.com/binance-chain/go-sdk" dependency into your go.mod file. Example:
@@ -81,7 +85,7 @@ keyManager, _ := keys.NewMnemonicKeyManager(mnemonic)
 From key base file:
 ```GO
 file := "testkeystore.json"
-keyManager, err := NewKeyStoreKeyManager(file, "Zjubfd@123")
+keyManager, err := NewKeyStoreKeyManager(file, "your password")
 
 ```
 
@@ -124,7 +128,7 @@ mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove 
 keyManager, _ := keys.NewMnemonicKeyManager(mnemonic)
 
 //-----   Init sdk  -------------
-client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNetwork, keyManager)
+client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
 
 ```
 For sdk init, you should know the famous api address. Besides, you should know what kind of network the api gateway is in, since we have different configurations for 
@@ -132,8 +136,8 @@ test network and production network.
 
 |  ChainNetwork |  ApiAddr | 
 |-------------- |----------------------------------|
-|   TestNetwork | https://testnet-dex.binance.org  |  
-|   ProdNetwork | https://dex.binance.org          |                                |
+|   TestNetwork | testnet-dex.binance.org  |  
+|   ProdNetwork | dex.binance.org          |                                |
 
 If you want broadcast some transactions, like send coins, create orders or cancel orders, you should construct a key manager.
 

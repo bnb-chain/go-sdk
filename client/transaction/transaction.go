@@ -26,6 +26,8 @@ type TransactionClient interface {
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, sync bool) (*SubmitProposalResult, error)
 	DepositProposal(proposalID int64, amount int64, sync bool) (*DepositProposalResult, error)
 	VoteProposal(proposalID int64, option msg.VoteOption, sync bool) (*VoteProposalResult, error)
+
+	GetKeyManager() keys.KeyManager
 }
 
 type client struct {
@@ -37,6 +39,10 @@ type client struct {
 
 func NewClient(chainId string, keyManager keys.KeyManager, queryClient query.QueryClient, basicClient basic.BasicClient) TransactionClient {
 	return &client{basicClient, queryClient, keyManager, chainId}
+}
+
+func (c *client) GetKeyManager() keys.KeyManager {
+	return c.keyManager
 }
 
 func (c *client) broadcastMsg(m msg.Msg, sync bool) (*tx.TxCommitResult, error) {

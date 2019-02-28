@@ -19,7 +19,7 @@ type ClosedOrdersQuery struct {
 	Start         *int64  `json:"start,omitempty,string"`  //option
 	End           *int64  `json:"end,omitempty,string"`    //option
 	Side          string  `json:"side,omitempty"`          //option
-	Total         int     `json:"total,string"`                   //0 for not required and 1 for required; default not required, return total=-1 in response
+	Total         int     `json:"total,string"`            //0 for not required and 1 for required; default not required, return total=-1 in response
 }
 
 func NewClosedOrdersQuery(senderAddress string, withTotal bool) *ClosedOrdersQuery {
