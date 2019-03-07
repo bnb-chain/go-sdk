@@ -2,8 +2,9 @@ package msg
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/types"
 	"strings"
+
+	"github.com/binance-chain/go-sdk/types"
 )
 
 // constants
@@ -47,7 +48,7 @@ func ValidateSymbol(symbol string) error {
 		return fmt.Errorf("Token symbol cannot be empty")
 	}
 
-	if len(symbol) > 8 {
+	if len(symbol) > 9 {
 		return fmt.Errorf("Token symbol is too long")
 	}
 
