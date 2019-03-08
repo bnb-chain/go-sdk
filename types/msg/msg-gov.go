@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/tendermint/go-amino"
+	"github.com/binance-chain/bnc-go-amino"
 )
 
 // name to idetify transaction types

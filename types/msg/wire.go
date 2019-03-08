@@ -1,7 +1,7 @@
 package msg
 
 import (
-	"github.com/tendermint/go-amino"
+	"github.com/binance-chain/bnc-go-amino"
 
 	"github.com/binance-chain/go-sdk/common/crypto/encoding/amino"
 )
