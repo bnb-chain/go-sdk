@@ -2,9 +2,13 @@ package msg
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/types"
 	"math"
+	"strings"
+
+	"github.com/binance-chain/go-sdk/common"
+	"github.com/binance-chain/go-sdk/types"
 )
 
 // TokenIssueMsg def
@@ -34,7 +38,7 @@ func (msg TokenIssueMsg) ValidateBasic() error {
 		return fmt.Errorf("sender address cannot be empty")
 	}
 
-	if err := ValidateSymbol(msg.Symbol); err != nil {
+	if err := validateIssueMsgTokenSymbol(msg.Symbol); err != nil {
 		return fmt.Errorf("Invalid symbol %v", msg.Symbol)
 	}
 
@@ -73,4 +77,25 @@ func (msg TokenIssueMsg) GetSignBytes() []byte {
 // GetInvolvedAddresses part of Msg interface
 func (msg TokenIssueMsg) GetInvolvedAddresses() []types.AccAddress {
 	return msg.GetSigners()
+}
+
+func validateIssueMsgTokenSymbol(symbol string) error {
+	if len(symbol) == 0 {
+		return errors.New("token symbol cannot be empty")
+	}
+
+	if strings.HasSuffix(symbol, DotBSuffix) {
+		symbol = strings.TrimSuffix(symbol, DotBSuffix)
+	}
+
+	// check len without .B suffix
+	if symbolLen := len(symbol); symbolLen > TokenSymbolMaxLen || symbolLen < TokenSymbolMinLen {
+		return errors.New("length of token symbol is limited to 3~8")
+	}
+
+	if !common.IsAlphaNum(symbol) {
+		return errors.New("token symbol should be alphanumeric")
+	}
+
+	return nil
 }
