@@ -16,13 +16,24 @@ It includes the following core components:
 
 Add "github.com/binance-chain/go-sdk" dependency into your go.mod file. Example:
 ```go
-require github.com/binance-chain/go-sdk v0.9.1
-
-replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
+require (
+	github.com/binance-chain/go-sdk latest
+)
 ```
 
-**Notice**: The amino version depends on the go-sdk release you want to use. You may visit `https://github.com/binance-chain/go-sdk/blob/{release version}/go.mod`
-to find out the correct bnc-go-amino version.
+### Use go get
+
+Use go get to install sdk into your `GOPATH`:
+```bash
+go get github.com/binance-chain/go-sdk
+```
+
+### Use dep
+Add dependency to your Gopkg.toml file. Example:
+```bash
+[[override]]
+  name = "github.com/binance-chain/go-sdk"
+```
 
 ## Usage 
 
@@ -38,8 +49,8 @@ type KeyManager interface {
 	GetAddr() txmsg.AccAddress
 	
 	ExportAsMnemonic() (string, error)
-    ExportAsPrivateKey() (string, error)
-    ExportAsKeyStore(password string) (*EncryptedKeyJSON, error)
+	ExportAsPrivateKey() (string, error)
+	ExportAsKeyStore(password string) (*EncryptedKeyJSON, error)
 }
 ```
 
