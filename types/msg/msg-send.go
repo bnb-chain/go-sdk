@@ -162,9 +162,18 @@ func NewOutput(addr types.AccAddress, coins types.Coins) Output {
 	return output
 }
 
-func CreateSendMsg(from types.AccAddress, to types.AccAddress, coins types.Coins) SendMsg {
-	input := NewInput(from, coins)
-	output := NewOutput(to, coins)
-	msg := NewMsgSend([]Input{input}, []Output{output})
+type Transfer struct {
+	ToAddr types.AccAddress
+	Coins  types.Coins
+}
+
+func CreateSendMsg(from types.AccAddress, fromCoins types.Coins, transfers []Transfer) SendMsg {
+	input := NewInput(from, fromCoins)
+
+	output := make([]Output, 0, len(transfers))
+	for _, t := range transfers {
+		output = append(output, NewOutput(t.ToAddr, t.Coins))
+	}
+	msg := NewMsgSend([]Input{input}, output)
 	return msg
 }

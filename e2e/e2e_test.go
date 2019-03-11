@@ -25,6 +25,8 @@ func TestAllProcess(t *testing.T) {
 	testAccount1 := keyManager.GetAddr()
 	testKeyManager2, _ := keys.NewKeyManager()
 	testAccount2 := testKeyManager2.GetAddr()
+	testKeyManager3, _ := keys.NewKeyManager()
+	testAccount3 := testKeyManager3.GetAddr()
 
 	//-----   Init sdk  -------------
 	client, err := sdk.NewDexClient("https://testnet-dex.binance.org", types.TestNetwork, keyManager)
@@ -114,7 +116,7 @@ func TestAllProcess(t *testing.T) {
 	fmt.Printf("GetTx: %v\n", tx)
 
 	//----   Send tx  -----------
-	send, err := client.SendToken(testAccount2, nativeSymbol, 10000000000, true)
+	send, err := client.SendToken([]msg.Transfer{{testAccount2, []types.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []types.Coin{{nativeSymbol, 100000000}}}}, true)
 	assert.NoError(t, err)
 	assert.True(t, send.Ok)
 	fmt.Printf("Send token: %v\n", send)
