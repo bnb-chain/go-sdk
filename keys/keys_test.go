@@ -69,8 +69,7 @@ func TestSignTxNoError(t *testing.T) {
 		expectHexTx string
 		errMsg      string
 	}{
-		{msg.CreateSendMsg(test1Addr, test2KeyManagr.GetAddr(),
-			types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}),
+		{msg.CreateSendMsg(test1Addr, types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}, []msg.Transfer{{test2KeyManagr.GetAddr(), types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}}}),
 			test1KeyManger,
 			0,
 			1,
