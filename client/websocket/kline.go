@@ -48,9 +48,9 @@ type KlineRecordEvent struct {
 	ClosePrice       types.Fixed8 `json:"c"` //"0.0020",  // Close price
 	HighPrice        types.Fixed8 `json:"h"` //"0.0025",  // High price
 	LowPrice         types.Fixed8 `json:"l"` //"0.0015",  // Low price
-	Volume           types.Fixed8 `json:"v"` //"1000",    // Base asset volume
-	QuoteAssetVolume types.Fixed8 `json:"q"` //"1.0000",  // Quote asset volume
-	NumberOfTrades   int32        `json:"n"` //100,       // Number of trades
+	Volume           types.Double `json:"v"` //"1000",    // Base asset volume
+	QuoteAssetVolume types.Double `json:"q"` //"1.0000",  // Quote asset volume
+	NumberOfTrades   int64        `json:"n"` //100,       // Number of trades
 	Closed           bool         `json:"x"` //Is this kline closed?
 }
 
