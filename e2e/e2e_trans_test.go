@@ -1,7 +1,9 @@
 package e2e
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"testing"
 	time2 "time"
 
@@ -16,72 +18,98 @@ import (
 	tx2 "github.com/binance-chain/go-sdk/types/tx"
 )
 
-// After bnbchain integration_test.sh has runned
+var (
+	mnemonic = flag.String("mnemonic", "test mnemonic", "mnemonic of a test account")
+
+	client      sdk.DexClient
+	tradeSymbol string
+)
+
+func TestMain(t *testing.M) {
+	flag.Parse()
+	keyManager, err := keys.NewMnemonicKeyManager(*mnemonic)
+	if err != nil {
+		panic(fmt.Sprintf("failed to construct keymanager %v", err))
+	}
+	client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
+	if err != nil {
+		panic(fmt.Sprintf("failed to construct client %v", err))
+	}
+	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	if err != nil {
+		panic(fmt.Sprintf("failed to get markets %v", err))
+	}
+	if len(markets) == 0 {
+		panic("the chain do not have any markets")
+	}
+	tradeSymbol = markets[0].TradeAsset
+	if markets[0].QuoteAsset != "BNB" {
+		tradeSymbol = markets[0].QuoteAsset
+	}
+	os.Exit(t.Run())
+}
+
+func TestGetAccount(t *testing.T) {
+	testAccount := client.GetKeyManager().GetAddr()
+	account, err := client.GetAccount(testAccount.String())
+	assert.NoError(t, err)
+	assert.NotNil(t, account)
+	assert.True(t, len(account.Balances) > 0)
+}
+
+func TestGetMarkets(t *testing.T) {
+	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(markets))
+}
+
+func TestGetDepth(t *testing.T) {
+	depth, err := client.GetDepth(query.NewDepthQuery(tradeSymbol, msg.NativeToken))
+	assert.NoError(t, err)
+	assert.True(t, depth.Height > 0)
+}
+
+func TestGetKline(t *testing.T) {
+	kline, err := client.GetKlines(query.NewKlineQuery(tradeSymbol, msg.NativeToken, "1h").WithLimit(1))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(kline))
+}
+
+func TestGetTicker(t *testing.T) {
+	ticker24h, err := client.GetTicker24h(query.NewTicker24hQuery().WithSymbol(tradeSymbol, msg.NativeToken))
+	assert.NoError(t, err)
+	assert.True(t, len(ticker24h) > 0)
+}
+
+func TestGetTokens(t *testing.T) {
+	tokens, err := client.GetTokens()
+	assert.NoError(t, err)
+	fmt.Printf("GetTokens: %v \n", tokens)
+}
+
+func TestGetTrades(t *testing.T) {
+	account := client.GetKeyManager().GetAddr().String()
+	trades, err := client.GetTrades(query.NewTradesQuery(account, true).WithSymbol(tradeSymbol, msg.NativeToken))
+	assert.NoError(t, err)
+	fmt.Printf("GetTrades: %v \n", trades)
+}
+
+func TestGetTime(t *testing.T) {
+	time, err := client.GetTime()
+	assert.NoError(t, err)
+	fmt.Printf("Get time: %v \n", time)
+}
+
 func TestTransProcess(t *testing.T) {
 	//----- Recover account ---------
-	mnemonic := "test mnemonic"
-	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
-	assert.NoError(t, err)
-	testAccount1 := keyManager.GetAddr()
+	testAccount1 := client.GetKeyManager().GetAddr()
 	testKeyManager2, _ := keys.NewKeyManager()
 	testAccount2 := testKeyManager2.GetAddr()
 	testKeyManager3, _ := keys.NewKeyManager()
 	testAccount3 := testKeyManager3.GetAddr()
 
-	//-----   Init sdk  -------------
-	client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
-	assert.NoError(t, err)
-	nativeSymbol := msg.NativeToken
-
-	//-----  Get account  -----------
-	account, err := client.GetAccount(testAccount1.String())
-	assert.NoError(t, err)
-	assert.NotNil(t, account)
-	assert.True(t, len(account.Balances) > 0)
-
-	//----- Get Markets  ------------
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != "BNB" {
-		tradeSymbol = markets[0].QuoteAsset
-	}
-
-	//-----  Get Depth  ----------
-	depth, err := client.GetDepth(query.NewDepthQuery(tradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	assert.True(t, depth.Height > 0)
-
-	//----- Get Kline
-	kline, err := client.GetKlines(query.NewKlineQuery(tradeSymbol, nativeSymbol, "1h").WithLimit(1))
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(kline))
-
-	//-----  Get Ticker 24h  -----------
-	ticker24h, err := client.GetTicker24h(query.NewTicker24hQuery().WithSymbol(tradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	assert.True(t, len(ticker24h) > 0)
-
-	//-----  Get Tokens  -----------
-	tokens, err := client.GetTokens()
-	assert.NoError(t, err)
-	fmt.Printf("GetTokens: %v \n", tokens)
-
-	//-----  Get Trades  -----------
-	fmt.Println(testAccount1.String())
-	trades, err := client.GetTrades(query.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	fmt.Printf("GetTrades: %v \n", trades)
-
-	//-----  Get Time    -----------
-	time, err := client.GetTime()
-	assert.NoError(t, err)
-	fmt.Printf("Get time: %v \n", time)
-
 	//----- Create order -----------
-	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 100000000, true)
-	fmt.Println(err)
+	createOrderResult, err := client.CreateOrder(tradeSymbol, msg.NativeToken, msg.OrderSide.SELL, 30000000000, 100000000, true)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
@@ -95,17 +123,17 @@ func TestTransProcess(t *testing.T) {
 	//---- Get Order    ------------
 	order, err := client.GetOrder(orderId)
 	assert.NoError(t, err)
-	assert.Equal(t, common.CombineSymbol(tradeSymbol, nativeSymbol), order.Symbol)
+	assert.Equal(t, common.CombineSymbol(tradeSymbol, msg.NativeToken), order.Symbol)
 
 	//---- Cancle Order  ---------
 	time2.Sleep(2 * time2.Second)
-	cancleOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true)
+	cancleOrderResult, err := client.CancelOrder(tradeSymbol, msg.NativeToken, orderId, true)
 	assert.NoError(t, err)
 	assert.True(t, cancleOrderResult.Ok)
 	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)
 
 	//---- Get Close Order---------
-	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
+	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, msg.NativeToken))
 	assert.NoError(t, err)
 	assert.True(t, len(closedOrders.Order) > 0)
 	fmt.Printf("GetClosedOrders: %v \n", closedOrders)
@@ -117,7 +145,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("GetTx: %v\n", tx)
 
 	//----   Send tx  -----------
-	send, err := client.SendToken([]msg.Transfer{{testAccount2, []types.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []types.Coin{{nativeSymbol, 100000000}}}}, true)
+	send, err := client.SendToken([]msg.Transfer{{testAccount2, []types.Coin{{msg.NativeToken, 100000000}}}, {testAccount3, []types.Coin{{msg.NativeToken, 100000000}}}}, true)
 	assert.NoError(t, err)
 	assert.True(t, send.Ok)
 	fmt.Printf("Send token: %v\n", send)
@@ -126,19 +154,19 @@ func TestTransProcess(t *testing.T) {
 	newTestAccout2, err := client.GetAccount(testAccount2.String())
 	assert.NoError(t, err)
 	for _, c := range newTestAccout2.Balances {
-		if c.Symbol == nativeSymbol {
+		if c.Symbol == msg.NativeToken {
 			fmt.Printf("test account BNB: %s \n", c.Free)
 		}
 	}
 
 	//----   Freeze Token ---------
-	freeze, err := client.FreezeToken(nativeSymbol, 100, true)
+	freeze, err := client.FreezeToken(msg.NativeToken, 100, true)
 	assert.NoError(t, err)
 	assert.True(t, freeze.Ok)
 	fmt.Printf("freeze token: %v\n", freeze)
 
 	//----   Unfreeze Token ---------
-	unfreeze, err := client.UnfreezeToken(nativeSymbol, 100, true)
+	unfreeze, err := client.UnfreezeToken(msg.NativeToken, 100, true)
 	assert.NoError(t, err)
 	assert.True(t, unfreeze.Ok)
 	fmt.Printf("Unfreeze token: %v\n", unfreeze)
@@ -161,7 +189,7 @@ func TestTransProcess(t *testing.T) {
 
 	//---- Submit Proposal ------
 	time2.Sleep(2 * time2.Second)
-	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
+	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, msg.NativeToken, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
@@ -172,19 +200,14 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, submitPorposalStatus.Code == tx2.CodeOk)
 
 	//---- Vote Proposal  -------
-	time2.Sleep(2 * time2.Second)
-	vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
-	assert.NoError(t, err)
-	fmt.Printf("Vote: %v\n", vote)
+	//time2.Sleep(2 * time2.Second)
+	//vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
+	//assert.NoError(t, err)
+	//fmt.Printf("Vote: %v\n", vote)
 
 	//--- List trade pair ------
-	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
-	assert.NoError(t, err)
-	fmt.Printf("List trading pair: %v\n", l)
-	//---- Get new markets
-	//time2.Sleep(1 * time2.Minute)
-	//markets, err = client.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})
+	//l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, msg.NativeToken, 1000000000, true)
 	//assert.NoError(t, err)
-	//fmt.Printf("New markets: %v \n ", markets)
+	//fmt.Printf("List trading pair: %v\n", l)
 
 }

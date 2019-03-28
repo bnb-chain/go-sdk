@@ -68,7 +68,7 @@ func (m *keyManager) ExportAsMnemonic() (string, error) {
 func (m *keyManager) ExportAsPrivateKey() (string, error) {
 	secpPrivateKey, ok := m.privKey.(secp256k1.PrivKeySecp256k1)
 	if !ok {
-		return "", fmt.Errorf(" Only PrivKeySecp256k1 key is supported ")
+		return "", fmt.Errorf("Only PrivKeySecp256k1 key is supported ")
 	}
 	return hex.EncodeToString(secpPrivateKey[:]), nil
 }

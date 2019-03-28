@@ -3,14 +3,16 @@ package e2e
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
 	sdk "github.com/binance-chain/go-sdk/client"
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/client/websocket"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types"
-	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func NewClient(t *testing.T) sdk.DexClient {
