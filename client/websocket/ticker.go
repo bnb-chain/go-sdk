@@ -24,8 +24,8 @@ type TickerEvent struct {
 	OpenPrice          types.Fixed8 `json:"o"` // "o": "0.0010",      // Open price
 	HighPrice          types.Fixed8 `json:"h"` // "h": "0.0025",      // High price
 	LowPrice           types.Fixed8 `json:"l"` // "l": "0.0010",      // Low price
-	Volume             types.Fixed8 `json:"v"` // "v": "10000",       // Total traded base asset volume
-	QuoteVolume        types.Fixed8 `json:"q"` // "q": "18",          // Total traded quote asset volume
+	Volume             types.Double `json:"v"` // "v": "10000",       // Total traded base asset volume
+	QuoteVolume        types.Double `json:"q"` // "q": "18",          // Total traded quote asset volume
 	OpenTime           int64        `json:"O"` // "O": 0,             // Statistics open time
 	CloseTime          int64        `json:"C"` // "C": 86400000,      // Statistics close time
 	FirstID            string       `json:"F"` // "F": 0,             // First trade ID
@@ -75,8 +75,8 @@ type MiniTickerEvent struct {
 	OpenPrice   types.Fixed8 `json:"o"` // "o": "0.0010",      // Open price
 	HighPrice   types.Fixed8 `json:"h"` // "h": "0.0025",      // High price
 	LowPrice    types.Fixed8 `json:"l"` // "l": "0.0010",      // Low price
-	Volume      types.Fixed8 `json:"v"` // "v": "10000",       // Total traded base asset volume
-	QuoteVolume types.Fixed8 `json:"q"` // "q": "18",          // Total traded quote asset volume
+	Volume      types.Double `json:"v"` // "v": "10000",       // Total traded base asset volume
+	QuoteVolume types.Double `json:"q"` // "q": "18",          // Total traded quote asset volume
 }
 
 func (c *client) SubscribeMiniTickerEvent(baseAssetSymbol, quoteAssetSymbol string, quit chan struct{}, onReceive func(event *MiniTickerEvent), onError func(err error), onClose func()) error {
