@@ -1,27 +1,28 @@
 package types
 
 import (
-	"github.com/binance-chain/go-sdk/common/crypto"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 // Token definition
 type Token struct {
-	Name        string           `json:"name"`
-	Symbol      string           `json:"symbol"`
-	OrigSymbol  string           `json:"original_symbol"`
-	TotalSupply Fixed8           `json:"total_supply"`
+	Name        string     `json:"name"`
+	Symbol      string     `json:"symbol"`
+	OrigSymbol  string     `json:"original_symbol"`
+	TotalSupply Fixed8     `json:"total_supply"`
 	Owner       AccAddress `json:"owner"`
-	Mintable    bool             `json:"mintable"`
+	Mintable    bool       `json:"mintable"`
 }
 
 // AppAccount definition
 type AppAccount struct {
 	BaseAccount `json:"base"`
-	Name             string    `json:"name"`
-	FrozenCoins      []Coin `json:"frozen"`
-	LockedCoins      []Coin `json:"locked"`
+	Name        string `json:"name"`
+	FrozenCoins []Coin `json:"frozen"`
+	LockedCoins []Coin `json:"locked"`
 }
 
 // Coin def
@@ -148,8 +149,6 @@ func (coins Coins) IsNotNegative() bool {
 	return true
 }
 
-
-
 type Account interface {
 	GetAddress() AccAddress
 	SetAddress(address AccAddress) error // errors if already set.
@@ -194,11 +193,11 @@ type NamedAcount interface {
 	SetLockedCoins([]Coin)
 }
 
-func (acc AppAccount) GetName() string                  { return acc.Name }
-func (acc *AppAccount) SetName(name string)             { acc.Name = name }
-func (acc AppAccount) GetFrozenCoins() []Coin       { return acc.FrozenCoins }
+func (acc AppAccount) GetName() string               { return acc.Name }
+func (acc *AppAccount) SetName(name string)          { acc.Name = name }
+func (acc AppAccount) GetFrozenCoins() []Coin        { return acc.FrozenCoins }
 func (acc *AppAccount) SetFrozenCoins(frozen []Coin) { acc.FrozenCoins = frozen }
-func (acc AppAccount) GetLockedCoins() []Coin       { return acc.LockedCoins }
+func (acc AppAccount) GetLockedCoins() []Coin        { return acc.LockedCoins }
 func (acc *AppAccount) SetLockedCoins(frozen []Coin) { acc.LockedCoins = frozen }
 
 func (acc *AppAccount) Clone() Account {
@@ -229,11 +228,11 @@ func (acc *AppAccount) Clone() Account {
 }
 
 type BaseAccount struct {
-	Address       AccAddress `json:"address"`
-	Coins         Coins      `json:"coins"`
-	PubKey        crypto.PubKey  `json:"public_key"`
-	AccountNumber int64          `json:"account_number"`
-	Sequence      int64          `json:"sequence"`
+	Address       AccAddress    `json:"address"`
+	Coins         Coins         `json:"coins"`
+	PubKey        crypto.PubKey `json:"public_key"`
+	AccountNumber int64         `json:"account_number"`
+	Sequence      int64         `json:"sequence"`
 }
 
 // Implements sdk.Account.

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/binance-chain/go-sdk/common/crypto"
+	cmn "github.com/tendermint/tendermint/libs/common"
 )
 
 // Account definition
@@ -24,7 +24,7 @@ type NodeInfo struct {
 	// Channels are HexBytes so easier to read as JSON
 	Network  string          `json:"network"`  // network/chain ID
 	Version  string          `json:"version"`  // major.minor.revision
-	Channels crypto.HexBytes `json:"channels"` // channels this node knows about
+	Channels cmn.HexBytes `json:"channels"` // channels this node knows about
 
 	// ASCIIText fields
 	Moniker string        `json:"moniker"` // arbitrary moniker
@@ -32,13 +32,13 @@ type NodeInfo struct {
 }
 
 type ValidatorInfo struct {
-	Address     crypto.HexBytes `json:"address"`
+	Address     cmn.HexBytes `json:"address"`
 	PubKey      []uint8         `json:"pub_key"`
 	VotingPower int64           `json:"voting_power"`
 }
 type SyncInfo struct {
-	LatestBlockHash   crypto.HexBytes `json:"latest_block_hash"`
-	LatestAppHash     crypto.HexBytes `json:"latest_app_hash"`
+	LatestBlockHash   cmn.HexBytes `json:"latest_block_hash"`
+	LatestAppHash     cmn.HexBytes `json:"latest_app_hash"`
 	LatestBlockHeight int64           `json:"latest_block_height"`
 	LatestBlockTime   time.Time       `json:"latest_block_time"`
 	CatchingUp        bool            `json:"catching_up"`

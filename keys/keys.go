@@ -14,10 +14,10 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/common/crypto"
-	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/common/uuid"
 	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 const (
