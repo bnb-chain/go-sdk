@@ -6,6 +6,7 @@ import (
 	sdk "github.com/binance-chain/go-sdk/client"
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/client/websocket"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func NewClient(t *testing.T) sdk.DexClient {
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 
-	client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
+	client, err := sdk.NewDexClient("testnet-dex.binance.org", ctypes.TestNetwork, keyManager)
 	assert.NoError(t, err)
 	return client
 }

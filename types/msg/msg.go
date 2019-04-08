@@ -2,13 +2,13 @@ package msg
 
 import (
 	"fmt"
+	"github.com/binance-chain/go-sdk/common/types"
 	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/types"
 )
 
 // constants

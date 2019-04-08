@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 
 	"io/ioutil"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/common/uuid"
-	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
@@ -27,7 +27,7 @@ const (
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
-	GetAddr() types.AccAddress
+	GetAddr() ctypes.AccAddress
 
 	ExportAsMnemonic() (string, error)
 	ExportAsPrivateKey() (string, error)
@@ -54,7 +54,7 @@ func NewPrivateKeyManager(priKey string) (KeyManager, error) {
 
 type keyManager struct {
 	privKey  crypto.PrivKey
-	addr     types.AccAddress
+	addr     ctypes.AccAddress
 	mnemonic string
 }
 
@@ -105,7 +105,7 @@ func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
 		return err
 	}
 	priKey := secp256k1.PrivKeySecp256k1(derivedPriv)
-	addr := types.AccAddress(priKey.PubKey().Address())
+	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (m *keyManager) recoveryFromKeyStore(keystoreFile string, auth string) erro
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], keyBytes[:32])
 	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
-	addr := types.AccAddress(priKey.PubKey().Address())
+	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
 	return nil
@@ -156,7 +156,7 @@ func (m *keyManager) recoveryFromPrivateKey(privateKey string) error {
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], priBytes[:32])
 	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
-	addr := types.AccAddress(priKey.PubKey().Address())
+	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
 	return nil
@@ -172,6 +172,7 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(string(bz))
 	//return bz, nil
 	return []byte(hex.EncodeToString(bz)), nil
 }
@@ -180,7 +181,7 @@ func (m *keyManager) GetPrivKey() crypto.PrivKey {
 	return m.privKey
 }
 
-func (m *keyManager) GetAddr() types.AccAddress {
+func (m *keyManager) GetAddr() ctypes.AccAddress {
 	return m.addr
 }
 
@@ -201,7 +202,7 @@ func (m *keyManager) makeSignature(msg tx.StdSignMsg) (sig tx.StdSignature, err 
 }
 
 func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKeyJSON, error) {
-	addr := types.AccAddress(privateKey.PubKey().Address())
+	addr := ctypes.AccAddress(privateKey.PubKey().Address())
 	salt, err := common.GenerateRandomBytes(32)
 	if err != nil {
 		return nil, err

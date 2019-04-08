@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/uuid"
 	"net"
 	"net/http"
 	"strings"
@@ -17,21 +16,25 @@ import (
 
 	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/rpc/client"
 	types "github.com/tendermint/tendermint/rpc/lib/types"
+	ctypes "github.com/tendermint/tendermint/types"
+
+	"github.com/binance-chain/go-sdk/common/uuid"
 )
 
 const (
-	defaultMaxReconnectAttempts = 25
-	defaultWriteWait            = 0
-	defaultReadWait             = 0
-	defaultPingPeriod           = 0
+	defaultMaxReconnectAttempts    = 25
+	defaultMaxReconnectBackOffTime = 600 * time.Second
+	defaultWriteWait               = 100 * time.Millisecond
+	defaultReadWait                = 0
+	defaultPingPeriod              = 0
 
 	protoHTTP  = "http"
 	protoHTTPS = "https"
 	protoWSS   = "wss"
 	protoWS    = "ws"
 	protoTCP   = "tcp"
-
 )
 
 // WSClient is a WebSocket client. The methods of WSClient are safe for use by
@@ -58,7 +61,6 @@ type WSClient struct {
 
 	// internal channels
 	send            chan types.RPCRequest // user requests
-	backlog         chan types.RPCRequest // stores a single user request received during a conn failure
 	reconnectAfter  chan error            // reconnect requests
 	readRoutineQuit chan struct{}         // a way for readRoutine to close writeRoutine
 
@@ -69,6 +71,7 @@ type WSClient struct {
 	reconnecting   bool
 
 	// Maximum reconnect attempts (0 or greater; default: 25).
+	// Less than 0 means always try to reconnect.
 	maxReconnectAttempts int
 
 	// Time allowed to write a message to the server. 0 means block until operation succeeds.
@@ -175,7 +178,6 @@ func (c *WSClient) OnStart() error {
 	c.reconnectAfter = make(chan error, 1)
 	// capacity for 1 request. a user won't be able to send more because the send
 	// channel is unbuffered.
-	c.backlog = make(chan types.RPCRequest, 1)
 
 	c.startReadWriteRoutines()
 	go c.reconnectRoutine()
@@ -222,17 +224,15 @@ func (c *WSClient) Send(ctx context.Context, request types.RPCRequest) error {
 }
 
 // Call the given method. See Send description.
-func (c *WSClient) Call(ctx context.Context, method string, params map[string]interface{}) (string, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return "", err
+func (c *WSClient) Call(ctx context.Context, method string, id types.JSONRPCStringID, params map[string]interface{}) error {
+	if c.IsReconnecting(){
+		return fmt.Errorf("websocket is reconnecting, can't send any request")
 	}
-	requestId := id.String()
-	request, err := types.MapToRequest(c.cdc, types.JSONRPCStringID(requestId), method, params)
+	request, err := types.MapToRequest(c.cdc, id, method, params)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return requestId, c.Send(ctx, request)
+	return c.Send(ctx, request)
 }
 
 // CallWithArrayParams the given method with params in a form of array. See
@@ -251,6 +251,18 @@ func (c *WSClient) Codec() *amino.Codec {
 
 func (c *WSClient) SetCodec(cdc *amino.Codec) {
 	c.cdc = cdc
+}
+
+func (c *WSClient) GenRequestId() (types.JSONRPCStringID, error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	return types.JSONRPCStringID(id.String()), nil
+}
+
+func (c *WSClient) EmptyRequest() types.JSONRPCStringID {
+	return types.JSONRPCStringID("")
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -283,13 +295,15 @@ func (c *WSClient) reconnect() error {
 		c.reconnecting = false
 		c.mtx.Unlock()
 	}()
-
+	backOffDuration := 1 * time.Second
 	for {
-		jitterSeconds := time.Duration(cmn.RandFloat64() * float64(time.Second)) // 1s == (1e9 ns)
-		backoffDuration := jitterSeconds + ((1 << uint(attempt)) * time.Second)
-
-		c.Logger.Info("reconnecting", "attempt", attempt+1, "backoff_duration", backoffDuration)
-		time.Sleep(backoffDuration)
+        // will never overflow until doomsday
+		backOffDuration := time.Duration(attempt)*time.Second + backOffDuration
+		if backOffDuration > defaultMaxReconnectBackOffTime {
+			backOffDuration = defaultMaxReconnectBackOffTime
+		}
+		c.Logger.Info("reconnecting", "attempt", attempt+1, "backoff_duration", backOffDuration)
+		time.Sleep(backOffDuration)
 
 		err := c.dial()
 		if err != nil {
@@ -304,7 +318,7 @@ func (c *WSClient) reconnect() error {
 
 		attempt++
 
-		if attempt > c.maxReconnectAttempts {
+		if c.maxReconnectAttempts >=0 && attempt > c.maxReconnectAttempts {
 			return errors.Wrap(err, "reached maximum reconnect attempts")
 		}
 	}
@@ -315,27 +329,6 @@ func (c *WSClient) startReadWriteRoutines() {
 	c.readRoutineQuit = make(chan struct{})
 	go c.readRoutine()
 	go c.writeRoutine()
-}
-
-func (c *WSClient) processBacklog() error {
-	select {
-	case request := <-c.backlog:
-		if c.writeWait > 0 {
-			if err := c.conn.SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
-				c.Logger.Error("failed to set write deadline", "err", err)
-			}
-		}
-		if err := c.conn.WriteJSON(request); err != nil {
-			c.Logger.Error("failed to resend request", "err", err)
-			c.reconnectAfter <- err
-			// requeue request
-			c.backlog <- request
-			return err
-		}
-		c.Logger.Info("resend a request", "req", request)
-	default:
-	}
-	return nil
 }
 
 func (c *WSClient) reconnectRoutine() {
@@ -357,10 +350,6 @@ func (c *WSClient) reconnectRoutine() {
 				default:
 					break LOOP
 				}
-			}
-			err := c.processBacklog()
-			if err == nil {
-				c.startReadWriteRoutines()
 			}
 
 		case <-c.Quit():
@@ -402,7 +391,7 @@ func (c *WSClient) writeRoutine() {
 				c.Logger.Error("failed to send request", "err", err)
 				c.reconnectAfter <- err
 				// add request to the backlog, so we don't lose it
-				c.backlog <- request
+				//c.backlog <- request
 				return
 			}
 		case <-ticker.C:
@@ -494,31 +483,110 @@ func (c *WSClient) readRoutine() {
 
 // Subscribe to a query. Note the server must have a "subscribe" route
 // defined.
-func (c *WSClient) Subscribe(ctx context.Context, query string) error {
+func (c *WSClient) Subscribe(ctx context.Context, id types.JSONRPCStringID, query string) error {
 	params := map[string]interface{}{"query": query}
-	_, err := c.Call(ctx, "subscribe", params)
-	return err
+	return c.Call(ctx, "subscribe", id, params)
 }
 
 // Unsubscribe from a query. Note the server must have a "unsubscribe" route
 // defined.
-func (c *WSClient) Unsubscribe(ctx context.Context, query string) error {
+func (c *WSClient) Unsubscribe(ctx context.Context, id types.JSONRPCStringID, query string) error {
 	params := map[string]interface{}{"query": query}
 
-	_, err := c.Call(ctx, "unsubscribe", params)
-	return err
+	return c.Call(ctx, "unsubscribe", id, params)
 }
 
 // UnsubscribeAll from all. Note the server must have a "unsubscribe_all" route
 // defined.
-func (c *WSClient) UnsubscribeAll(ctx context.Context) error {
+func (c *WSClient) UnsubscribeAll(ctx context.Context, id types.JSONRPCStringID) error {
 	params := map[string]interface{}{}
-	_, err := c.Call(ctx, "unsubscribe_all", params)
-	return err
+	return c.Call(ctx, "unsubscribe_all", id, params)
 }
 
-func (c *WSClient) Status(ctx context.Context) (string, error) {
-	return c.Call(ctx, "status", map[string]interface{}{})
+func (c *WSClient) Status(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "status", id, map[string]interface{}{})
+}
+
+func (c *WSClient) ABCIInfo(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "abci_info", id, map[string]interface{}{})
+}
+
+func (c *WSClient) ABCIQueryWithOptions(ctx context.Context, id types.JSONRPCStringID, path string, data cmn.HexBytes, opts client.ABCIQueryOptions) error {
+	return c.Call(ctx, "abci_query", id, map[string]interface{}{"path": path, "data": data, "height": opts.Height, "prove": opts.Prove})
+}
+
+func (c *WSClient) BroadcastTxCommit(ctx context.Context, id types.JSONRPCStringID, tx ctypes.Tx) error {
+	return c.Call(ctx, "broadcast_tx_commit", id, map[string]interface{}{"tx": tx})
+}
+
+func (c *WSClient) BroadcastTx(ctx context.Context, id types.JSONRPCStringID, route string, tx ctypes.Tx) error {
+	return c.Call(ctx, route, id, map[string]interface{}{"tx": tx})
+}
+
+func (c *WSClient) UnconfirmedTxs(ctx context.Context, id types.JSONRPCStringID, limit int) error {
+	return c.Call(ctx, "unconfirmed_txs", id, map[string]interface{}{"limit": limit})
+}
+
+func (c *WSClient) NumUnconfirmedTxs(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "num_unconfirmed_txs", id, map[string]interface{}{})
+}
+
+func (c *WSClient) NetInfo(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "net_info", id, map[string]interface{}{})
+}
+
+func (c *WSClient) DumpConsensusState(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "dump_consensus_state", id, map[string]interface{}{})
+}
+
+func (c *WSClient) ConsensusState(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "consensus_state", id, map[string]interface{}{})
+}
+
+func (c *WSClient) Health(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "health", id, map[string]interface{}{})
+}
+
+func (c *WSClient) BlockchainInfo(ctx context.Context, id types.JSONRPCStringID, minHeight, maxHeight int64) error {
+	return c.Call(ctx, "blockchain", id,
+		map[string]interface{}{"minHeight": minHeight, "maxHeight": maxHeight})
+}
+
+func (c *WSClient) Genesis(ctx context.Context, id types.JSONRPCStringID) error {
+	return c.Call(ctx, "genesis", id, map[string]interface{}{})
+}
+
+func (c *WSClient) Block(ctx context.Context, id types.JSONRPCStringID, height *int64) error {
+	return c.Call(ctx, "block", id, map[string]interface{}{"height": height})
+}
+
+func (c *WSClient) BlockResults(ctx context.Context, id types.JSONRPCStringID, height *int64) error {
+	return c.Call(ctx, "block_results", id, map[string]interface{}{"height": height})
+}
+
+func (c *WSClient) Commit(ctx context.Context, id types.JSONRPCStringID, height *int64) error {
+	return c.Call(ctx, "commit", id, map[string]interface{}{"height": height})
+}
+func (c *WSClient) Tx(ctx context.Context, id types.JSONRPCStringID, hash []byte, prove bool) error {
+	params := map[string]interface{}{
+		"hash":  hash,
+		"prove": prove,
+	}
+	return c.Call(ctx, "tx", id, params)
+}
+
+func (c *WSClient) TxSearch(ctx context.Context, id types.JSONRPCStringID, query string, prove bool, page, perPage int) error {
+	params := map[string]interface{}{
+		"query":    query,
+		"prove":    prove,
+		"page":     page,
+		"per_page": perPage,
+	}
+	return c.Call(ctx, "tx_search", id, params)
+}
+
+func (c *WSClient) Validators(ctx context.Context, id types.JSONRPCStringID, height *int64) error {
+	return c.Call(ctx, "validators", id, map[string]interface{}{"height": height})
 }
 
 func makeHTTPDialer(remoteAddr string) (string, string, func(string, string) (net.Conn, error)) {

@@ -2,6 +2,7 @@ package query
 
 import (
 	"github.com/binance-chain/go-sdk/client/basic"
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
 type QueryClient interface {
@@ -15,7 +16,7 @@ type QueryClient interface {
 	GetTrades(query *TradesQuery) (*Trades, error)
 	GetAccount(string) (*Account, error)
 	GetTime() (*Time, error)
-	GetTokens() ([]Token, error)
+	GetTokens() ([]types.Token, error)
 	GetNodeInfo() (*ResultStatus, error)
 }
 

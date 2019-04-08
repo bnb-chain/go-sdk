@@ -10,8 +10,8 @@ import (
 	sdk "github.com/binance-chain/go-sdk/client"
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/common"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	tx2 "github.com/binance-chain/go-sdk/types/tx"
 )
@@ -121,7 +121,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("GetTx: %v\n", tx)
 
 	//----   Send tx  -----------
-	send, err := client.SendToken([]msg.Transfer{{testAccount2, []types.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []types.Coin{{nativeSymbol, 100000000}}}}, true)
+	send, err := client.SendToken([]msg.Transfer{{testAccount2, []ctypes.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true)
 	assert.NoError(t, err)
 	assert.True(t, send.Ok)
 	fmt.Printf("Send token: %v\n", send)

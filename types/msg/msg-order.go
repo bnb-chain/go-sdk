@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/binance-chain/go-sdk/common/types"
 	"strings"
 
-	"github.com/binance-chain/go-sdk/types"
 )
 
 // Order routes

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/binance-chain/go-sdk/common/types"
 	"gopkg.in/resty.v1"
 
 	"github.com/binance-chain/go-sdk/client/basic"
@@ -8,7 +9,6 @@ import (
 	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/client/websocket"
 	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
 )
 
 // dexClient wrapper

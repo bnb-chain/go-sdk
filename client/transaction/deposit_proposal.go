@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
@@ -12,7 +13,7 @@ type DepositProposalResult struct {
 
 func (c *client) DepositProposal(proposalID int64, amount int64, sync bool) (*DepositProposalResult, error) {
 	fromAddr := c.keyManager.GetAddr()
-	coins := types.Coins{types.Coin{Denom: types.NativeSymbol, Amount: amount}}
+	coins := ctypes.Coins{ctypes.Coin{Denom: types.NativeSymbol, Amount: amount}}
 	depositMsg := msg.NewDepositMsg(fromAddr, proposalID, coins)
 	err := depositMsg.ValidateBasic()
 	if err != nil {

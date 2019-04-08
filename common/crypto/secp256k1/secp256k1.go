@@ -8,7 +8,7 @@ import (
 	"io"
 
 	secp256k1 "github.com/tendermint/btcd/btcec"
-	"github.com/binance-chain/bnc-go-amino"
+	"github.com/tendermint/go-amino"
 	"golang.org/x/crypto/ripemd160"
 
 	"github.com/binance-chain/go-sdk/common/crypto"
