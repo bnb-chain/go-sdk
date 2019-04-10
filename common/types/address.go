@@ -33,6 +33,11 @@ func (this ChainNetwork) Bech32Prefixes() string {
 	}
 }
 
+func (this ChainNetwork) Bech32ValidatorAddrPrefix() string {
+	return "bva"
+}
+
+
 // Marshal needed for protobuf compatibility
 func (bz AccAddress) Marshal() ([]byte, error) {
 	return bz, nil

@@ -21,8 +21,8 @@ type Token struct {
 type AppAccount struct {
 	BaseAccount `json:"base"`
 	Name        string `json:"name"`
-	FrozenCoins []Coin `json:"frozen"`
-	LockedCoins []Coin `json:"locked"`
+	FrozenCoins Coins `json:"frozen"`
+	LockedCoins Coins `json:"locked"`
 }
 
 // Coin def
@@ -149,6 +149,29 @@ func (coins Coins) IsNotNegative() bool {
 	return true
 }
 
+func (coins Coins) AmountOf(denom string) int64 {
+	switch len(coins) {
+	case 0:
+		return 0
+	case 1:
+		coin := coins[0]
+		if coin.Denom == denom {
+			return coin.Amount
+		}
+		return 0
+	default:
+		midIdx := len(coins) / 2 // 2:1, 3:1, 4:2
+		coin := coins[midIdx]
+		if denom < coin.Denom {
+			return coins[:midIdx].AmountOf(denom)
+		} else if denom == coin.Denom {
+			return coin.Amount
+		} else {
+			return coins[midIdx+1:].AmountOf(denom)
+		}
+	}
+}
+
 type Account interface {
 	GetAddress() AccAddress
 	SetAddress(address AccAddress) error // errors if already set.
@@ -185,20 +208,20 @@ type NamedAcount interface {
 	GetName() string
 	SetName(string)
 
-	GetFrozenCoins() []Coin
-	SetFrozenCoins([]Coin)
+	GetFrozenCoins() Coins
+	SetFrozenCoins(Coins)
 
 	//TODO: this should merge into Coin
-	GetLockedCoins() []Coin
-	SetLockedCoins([]Coin)
+	GetLockedCoins() Coins
+	SetLockedCoins(Coins)
 }
 
 func (acc AppAccount) GetName() string               { return acc.Name }
 func (acc *AppAccount) SetName(name string)          { acc.Name = name }
-func (acc AppAccount) GetFrozenCoins() []Coin        { return acc.FrozenCoins }
-func (acc *AppAccount) SetFrozenCoins(frozen []Coin) { acc.FrozenCoins = frozen }
-func (acc AppAccount) GetLockedCoins() []Coin        { return acc.LockedCoins }
-func (acc *AppAccount) SetLockedCoins(frozen []Coin) { acc.LockedCoins = frozen }
+func (acc AppAccount) GetFrozenCoins() Coins        { return acc.FrozenCoins }
+func (acc *AppAccount) SetFrozenCoins(frozen Coins) { acc.FrozenCoins = frozen }
+func (acc AppAccount) GetLockedCoins() Coins        { return acc.LockedCoins }
+func (acc *AppAccount) SetLockedCoins(frozen Coins) { acc.LockedCoins = frozen }
 
 func (acc *AppAccount) Clone() Account {
 	baseAcc := acc.BaseAccount.Clone().(*BaseAccount)
@@ -316,4 +339,11 @@ func (acc *BaseAccount) Clone() Account {
 	}
 
 	return clonedAcc
+}
+
+type TokenBalance struct {
+	Symbol string       `json:"symbol"`
+	Free   Fixed8 `json:"free"`
+	Locked Fixed8 `json:"locked"`
+	Frozen Fixed8 `json:"frozen"`
 }

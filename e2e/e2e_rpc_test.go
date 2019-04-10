@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/tendermint/tendermint/types"
 	"math/rand"
 	"sync"
 	"testing"
@@ -16,10 +17,12 @@ import (
 )
 
 var (
-	nodeAddr     = "tcp://data-seed-pre-1-s3.binance.org:80"
-	badAddr      = "tcp://127.0.0.1:80"
-	testTxHash   = "A9DBDB2052FEEA13B953B40F8E6D3D0B0D0C592A9A0736A99BA4A4C31A3E33C8"
-	testTxHeight = 6064550
+	nodeAddr      = "tcp://seed-pre-s3.binance.org:80"
+	badAddr       = "tcp://127.0.0.1:80"
+	testTxHash    = "9E9E6EA3FA13684DD260DB627144EABDB50F2C205DE733447C5E8415311670C9"
+	testTxHeight  = 960284
+	testAddress   = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
+	testTradePair = "X00-243_BNB"
 
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
@@ -147,25 +150,23 @@ func TestTx(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
-
 func TestReconnection(t *testing.T) {
 	c := defaultClient()
 	status, err := c.Status()
 	assert.NoError(t, err)
 	bz, err := json.Marshal(status)
 	fmt.Println(string(bz))
-	time.Sleep(10*time.Second)
+	time.Sleep(10 * time.Second)
 	status, err = c.Status()
 	assert.Error(t, err)
 	fmt.Println(err)
-	time.Sleep(10*time.Second)
+	time.Sleep(10 * time.Second)
 	status, err = c.Status()
 	assert.Error(t, err)
 	fmt.Println(err)
 	bz, err = json.Marshal(status)
 	fmt.Println(string(bz))
 }
-
 
 func TestTxSearch(t *testing.T) {
 	c := defaultClient()
@@ -274,12 +275,11 @@ func TestReceiveWithRequestId(t *testing.T) {
 
 func TestListAllTokens(t *testing.T) {
 	c := defaultClient()
-	tokens, err := c.ListAllTokens(1,10)
+	tokens, err := c.ListAllTokens(1, 10)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(tokens)
 	fmt.Println(string(bz))
 }
-
 
 func TestGetTokenInfo(t *testing.T) {
 	c := defaultClient()
@@ -292,11 +292,91 @@ func TestGetTokenInfo(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	ctypes.Network = ctypes.TestNetwork
 	c := defaultClient()
-	acc,err:=ctypes.AccAddressFromBech32("tbnb1z7sr92ar6njy9f80r4zl5rjtgm0hsej4686asa")
-	assert.NoError(t,err)
-	account,err:=c.GetAccount(acc)
-	assert.NoError(t,err)
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	account, err := c.GetAccount(acc)
+	assert.NoError(t, err)
 	bz, err := json.Marshal(account)
 	fmt.Println(string(bz))
 }
+
+func TestGetBalances(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	c := defaultClient()
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	balances, err := c.GetBalances(acc)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(balances)
+	fmt.Println(string(bz))
+}
+
+func TestGetBalance(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	c := defaultClient()
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	balance, err := c.GetBalance(acc, "BNB")
+	assert.NoError(t, err)
+	bz, err := json.Marshal(balance)
+	fmt.Println(string(bz))
+}
+
+func TestGetFees(t *testing.T) {
+	c := defaultClient()
+	fees, err := c.GetFee()
+	assert.NoError(t, err)
+	bz, err := json.Marshal(fees)
+	fmt.Println(string(bz))
+}
+
+func TestGetOpenOrder(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	c := defaultClient()
+	openorders, err := c.GetOpenOrders(acc, testTradePair)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(openorders)
+	assert.NoError(t, err)
+	fmt.Println(string(bz))
+}
+
+func TestGetTradePair(t *testing.T){
+	c := defaultClient()
+	trades, err := c.GetTradingPairs(0,10)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(trades)
+	fmt.Println(string(bz))
+}
+
+func TestGetDepth(t *testing.T){
+	c := defaultClient()
+	depth, err := c.GetDepth(testTradePair)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(depth)
+	fmt.Println(string(bz))
+}
+
+func TestBroadcastTxCommit(t *testing.T){
+	c := defaultClient()
+	txstring:="cc01f0625dee0a4c2a2c87fa0a220a14443c2367e8e2edfc93aac1700bf843ef8be69c56120a0a03424e421080a3c34712220a1487dbcff17c64291c2b3538806c72a4d3a0ef6128120a0a03424e421080a3c34712700a26eb5ae9872102942fb6ffe96f001a15931e0702dd1c10370ffb568fd962039f0c4d2d45b53e9712408454253a4cf0e8f868276dfe2caa96b4ed7f94e8abace386b3fd69c454f7aa7d3a088e482328b94d991b6e6f1449cdb34e2a90bb81d102d0dac55488b35650ec18bcd82820021a04746573742001"
+	txbyte,err:=hex.DecodeString(txstring)
+	assert.NoError(t,err)
+	res,err:=c.BroadcastTxCommit(types.Tx(txbyte))
+	assert.NoError(t,err)
+	fmt.Println(res)
+}
+
+func TestGetStakeValidators(t *testing.T){
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+	vals,err:=c.GetStakeValidators()
+	assert.NoError(t,err)
+	bz, err := json.Marshal(vals)
+	fmt.Println(string(bz))
+}
+
+
+
 

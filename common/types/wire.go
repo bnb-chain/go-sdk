@@ -8,4 +8,9 @@ func RegisterWire(cdc *amino.Codec) {
 	cdc.RegisterInterface((*Account)(nil), nil)
 	cdc.RegisterInterface((*NamedAccount)(nil), nil)
 	cdc.RegisterConcrete(&AppAccount{}, "bnbchain/Account", nil)
+
+	cdc.RegisterInterface((*FeeParam)(nil), nil)
+	cdc.RegisterConcrete(&FixedFeeParams{}, "params/FixedFeeParams", nil)
+	cdc.RegisterConcrete(&TransferFeeParam{}, "params/TransferFeeParams", nil)
+	cdc.RegisterConcrete(&DexFeeParam{}, "params/DexFeeParam", nil)
 }

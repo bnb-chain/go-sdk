@@ -47,9 +47,9 @@ func TestTransProcess(t *testing.T) {
 	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != "BNB" {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].QuoteAssetSymbol
+	if markets[0].QuoteAssetSymbol != "BNB" {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 
 	//-----  Get Depth  ----------

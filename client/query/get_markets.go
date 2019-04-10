@@ -2,6 +2,7 @@ package query
 
 import (
 	"encoding/json"
+	"github.com/binance-chain/go-sdk/common/types"
 
 	"github.com/binance-chain/go-sdk/common"
 )
@@ -32,17 +33,9 @@ func (param *MarketsQuery) Check() error {
 	return nil
 }
 
-// SymbolPair definition
-type SymbolPair struct {
-	TradeAsset string `json:"base_asset_symbol"`
-	QuoteAsset string `json:"quote_asset_symbol"`
-	Price      string `json:"price"`
-	TickSize   string `json:"tick_size"`
-	LotSize    string `json:"lot_size"`
-}
 
 // GetMarkets returns list of trading pairs
-func (c *client) GetMarkets(query *MarketsQuery) ([]SymbolPair, error) {
+func (c *client) GetMarkets(query *MarketsQuery) ([]types.TradingPair, error) {
 	err := query.Check()
 	if err != nil {
 		return nil, err
@@ -55,7 +48,7 @@ func (c *client) GetMarkets(query *MarketsQuery) ([]SymbolPair, error) {
 	if err != nil {
 		return nil, err
 	}
-	var listOfPairs []SymbolPair
+	var listOfPairs []types.TradingPair
 	if err := json.Unmarshal(resp, &listOfPairs); err != nil {
 		return nil, err
 	}

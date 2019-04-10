@@ -9,7 +9,7 @@ type QueryClient interface {
 	GetClosedOrders(query *ClosedOrdersQuery) (*CloseOrders, error)
 	GetDepth(query *DepthQuery) (*MarketDepth, error)
 	GetKlines(query *KlineQuery) ([]Kline, error)
-	GetMarkets(query *MarketsQuery) ([]SymbolPair, error)
+	GetMarkets(query *MarketsQuery) ([]types.TradingPair, error)
 	GetOrder(orderID string) (*Order, error)
 	GetOpenOrders(query *OpenOrdersQuery) (*OpenOrders, error)
 	GetTicker24h(query *Ticker24hQuery) ([]Ticker24h, error)
