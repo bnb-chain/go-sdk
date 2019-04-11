@@ -9,19 +9,9 @@ import (
 )
 
 const (
-	MainStoreName    = "main"
 	AccountStoreName = "acc"
-	ValAddrStoreName = "val"
 	TokenStoreName   = "tokens"
-	DexStoreName     = "dex"
-	PairStoreName    = "pairs"
-	StakeStoreName   = "stake"
-	ParamsStoreName  = "params"
-	GovStoreName     = "gov"
 	ParamABCIPrefix  = "param"
-
-	StakeTransientStoreName  = "transient_stake"
-	ParamsTransientStoreName = "transient_params"
 )
 
 func (c *HTTP) ListAllTokens(offset int, limit int) ([]types.Token, error) {

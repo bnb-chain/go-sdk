@@ -6,19 +6,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	ctypes "github.com/binance-chain/go-sdk/common/types"
-
 	"io/ioutil"
 	"strings"
 
 	"github.com/cosmos/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/tendermint/tendermint/crypto/secp256k1"
+
 	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/uuid"
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 )
 
 const (
