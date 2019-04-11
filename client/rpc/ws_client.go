@@ -6,21 +6,24 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/tendermint/tendermint/p2p"
+
 	"github.com/gorilla/websocket"
 	"github.com/rcrowley/go-metrics"
 
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/uuid"
-	"github.com/pkg/errors"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/binance-chain/go-sdk/common/uuid"
+	"github.com/pkg/errors"
 
 	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/lib/types"
+	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -92,6 +95,16 @@ func (w *WSEvents) OnStart() error {
 // OnStop implements cmn.Service by stopping WSClient.
 func (w *WSEvents) OnStop() {
 	_ = w.ws.Stop()
+}
+
+// OnStop implements cmn.Service by stopping WSClient.
+func (w *WSEvents) PendingRequest() int {
+	size := 0
+	w.responseChanMap.Range(func(key, value interface{}) bool {
+		size++
+		return true
+	})
+	return size
 }
 
 // Subscribe implements EventsClient by using WSClient to subscribe given
@@ -244,6 +257,14 @@ func (w *WSEvents) Status() (*ctypes.ResultStatus, error) {
 	status := new(ctypes.ResultStatus)
 	err := w.SimpleCall(w.ws.Status, status)
 	return status, err
+}
+
+func (w *WSEvents) NodeInfo() (*p2p.DefaultNodeInfo, error) {
+	status, err := w.Status()
+	if err != nil {
+		return nil, err
+	}
+	return &status.NodeInfo, nil
 }
 
 func (w *WSEvents) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
@@ -517,38 +538,6 @@ func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSCli
 		option(c)
 	}
 	return c
-}
-
-// MaxReconnectAttempts sets the maximum number of reconnect attempts before returning an error.
-// It should only be used in the constructor and is not Goroutine-safe.
-func MaxReconnectAttempts(max int) func(*WSClient) {
-	return func(c *WSClient) {
-		c.maxReconnectAttempts = max
-	}
-}
-
-// ReadWait sets the amount of time to wait before a websocket read times out.
-// It should only be used in the constructor and is not Goroutine-safe.
-func ReadWait(readWait time.Duration) func(*WSClient) {
-	return func(c *WSClient) {
-		c.readWait = readWait
-	}
-}
-
-// WriteWait sets the amount of time to wait before a websocket write times out.
-// It should only be used in the constructor and is not Goroutine-safe.
-func WriteWait(writeWait time.Duration) func(*WSClient) {
-	return func(c *WSClient) {
-		c.writeWait = writeWait
-	}
-}
-
-// PingPeriod sets the duration for sending websocket pings.
-// It should only be used in the constructor - not Goroutine-safe.
-func PingPeriod(pingPeriod time.Duration) func(*WSClient) {
-	return func(c *WSClient) {
-		c.pingPeriod = pingPeriod
-	}
 }
 
 // OnReconnect sets the callback, which will be called every time after

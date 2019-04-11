@@ -2,14 +2,16 @@ package rpc
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/tendermint/tendermint/p2p"
 
 	ntypes "github.com/binance-chain/go-sdk/common/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/lib/client"
+	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -32,7 +34,6 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 	ctypes.RegisterAmino(cdc)
 	ntypes.RegisterWire(cdc)
 
-
 	rc.SetCodec(cdc)
 	wsEvent := newWSEvents(cdc, remote, wsEndpoint)
 	client := &HTTP{
@@ -45,6 +46,10 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 
 func (c *HTTP) Status() (*ctypes.ResultStatus, error) {
 	return c.WSEvents.Status()
+}
+
+func (c *HTTP) NodeInfo() (*p2p.DefaultNodeInfo, error) {
+	return c.WSEvents.NodeInfo()
 }
 
 func (c *HTTP) ABCIInfo() (*ctypes.ResultABCIInfo, error) {

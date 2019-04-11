@@ -2,9 +2,10 @@ package msg
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/types"
 	"regexp"
 	"strings"
+
+	"github.com/binance-chain/go-sdk/common/types"
 
 	"github.com/pkg/errors"
 

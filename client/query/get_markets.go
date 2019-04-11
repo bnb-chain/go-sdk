@@ -2,6 +2,7 @@ package query
 
 import (
 	"encoding/json"
+
 	"github.com/binance-chain/go-sdk/common/types"
 
 	"github.com/binance-chain/go-sdk/common"
@@ -32,7 +33,6 @@ func (param *MarketsQuery) Check() error {
 	}
 	return nil
 }
-
 
 // GetMarkets returns list of trading pairs
 func (c *client) GetMarkets(query *MarketsQuery) ([]types.TradingPair, error) {

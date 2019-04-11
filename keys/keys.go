@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 
 	"io/ioutil"

@@ -4,12 +4,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	ctypes "github.com/binance-chain/go-sdk/common/types"
-	"github.com/tendermint/tendermint/types"
 	"math/rand"
 	"sync"
 	"testing"
 	"time"
+
+	ctypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/tendermint/tendermint/types"
 
 	"github.com/binance-chain/go-sdk/client/rpc"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +18,14 @@ import (
 )
 
 var (
-	nodeAddr      = "tcp://seed-pre-s3.binance.org:80"
-	badAddr       = "tcp://127.0.0.1:80"
-	testTxHash    = "9E9E6EA3FA13684DD260DB627144EABDB50F2C205DE733447C5E8415311670C9"
-	testTxHeight  = 960284
-	testAddress   = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
-	testTradePair = "X00-243_BNB"
-
+	nodeAddr           = "tcp://seed-pre-s3.binance.org:80"
+	badAddr            = "tcp://127.0.0.1:80"
+	testTxHash         = "9E9E6EA3FA13684DD260DB627144EABDB50F2C205DE733447C5E8415311670C9"
+	testTxHeight       = 960284
+	testAddress        = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
+	testDelAddr        = "tbnb12hlquylu78cjylk5zshxpdj6hf3t0tahwjt3ex"
+	testTradePair      = "X00-243_BNB"
+	testTxStr          = "xxx"
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
 )
@@ -40,6 +42,14 @@ func TestRPCStatus(t *testing.T) {
 	status, err := c.Status()
 	assert.NoError(t, err)
 	bz, err := json.Marshal(status)
+	fmt.Println(string(bz))
+}
+
+func TestRPCNodeInfo(t *testing.T) {
+	c := defaultClient()
+	nodeInfo, err := c.NodeInfo()
+	assert.NoError(t, err)
+	bz, err := json.Marshal(nodeInfo)
 	fmt.Println(string(bz))
 }
 
@@ -342,15 +352,15 @@ func TestGetOpenOrder(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
-func TestGetTradePair(t *testing.T){
+func TestGetTradePair(t *testing.T) {
 	c := defaultClient()
-	trades, err := c.GetTradingPairs(0,10)
+	trades, err := c.GetTradingPairs(0, 10)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(trades)
 	fmt.Println(string(bz))
 }
 
-func TestGetDepth(t *testing.T){
+func TestGetDepth(t *testing.T) {
 	c := defaultClient()
 	depth, err := c.GetDepth(testTradePair)
 	assert.NoError(t, err)
@@ -358,25 +368,61 @@ func TestGetDepth(t *testing.T){
 	fmt.Println(string(bz))
 }
 
-func TestBroadcastTxCommit(t *testing.T){
+func TestBroadcastTxCommit(t *testing.T) {
 	c := defaultClient()
-	txstring:="cc01f0625dee0a4c2a2c87fa0a220a14443c2367e8e2edfc93aac1700bf843ef8be69c56120a0a03424e421080a3c34712220a1487dbcff17c64291c2b3538806c72a4d3a0ef6128120a0a03424e421080a3c34712700a26eb5ae9872102942fb6ffe96f001a15931e0702dd1c10370ffb568fd962039f0c4d2d45b53e9712408454253a4cf0e8f868276dfe2caa96b4ed7f94e8abace386b3fd69c454f7aa7d3a088e482328b94d991b6e6f1449cdb34e2a90bb81d102d0dac55488b35650ec18bcd82820021a04746573742001"
-	txbyte,err:=hex.DecodeString(txstring)
-	assert.NoError(t,err)
-	res,err:=c.BroadcastTxCommit(types.Tx(txbyte))
-	assert.NoError(t,err)
+	txbyte, err := hex.DecodeString(testTxStr)
+	assert.NoError(t, err)
+	res, err := c.BroadcastTxCommit(types.Tx(txbyte))
+	assert.NoError(t, err)
 	fmt.Println(res)
 }
 
-func TestGetStakeValidators(t *testing.T){
+func TestGetStakeValidators(t *testing.T) {
 	c := defaultClient()
 	ctypes.Network = ctypes.TestNetwork
-	vals,err:=c.GetStakeValidators()
-	assert.NoError(t,err)
+	vals, err := c.GetStakeValidators()
+	assert.NoError(t, err)
 	bz, err := json.Marshal(vals)
 	fmt.Println(string(bz))
 }
 
+func TestGetDelegatorUnbondingDelegations(t *testing.T) {
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+	acc, err := ctypes.AccAddressFromBech32(testDelAddr)
+	assert.NoError(t, err)
+	vals, err := c.GetDelegatorUnbondingDelegations(acc)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(vals)
+	fmt.Println(string(bz))
+}
 
+func TestNoRequestLeakInBadNetwork(t *testing.T) {
+	c := rpc.NewRPCClient(badAddr)
+	c.SetTimeOut(1 * time.Second)
+	w := sync.WaitGroup{}
+	w.Add(100)
+	for i := 0; i < 100; i++ {
+		go func() {
+			c.GetFee()
+			w.Done()
+		}()
+	}
+	w.Wait()
+	assert.Equal(t, c.PendingRequest(), 0)
+}
 
-
+func TestNoRequestLeakInGoodNetwork(t *testing.T) {
+	c := defaultClient()
+	c.SetTimeOut(1 * time.Second)
+	w := sync.WaitGroup{}
+	w.Add(100)
+	for i := 0; i < 100; i++ {
+		go func() {
+			c.GetFee()
+			w.Done()
+		}()
+	}
+	w.Wait()
+	assert.Equal(t, c.PendingRequest(), 0)
+}

@@ -1,6 +1,7 @@
 package types
 
 import "fmt"
+
 const (
 	OperateFeeType  = "operate"
 	TransferFeeType = "transfer"
@@ -17,6 +18,7 @@ type FeeParam interface {
 	GetParamType() string
 	Check() error
 }
+
 // dexFee
 type DexFeeParam struct {
 	DexFeeFields []DexFeeField `json:"dex_fee_fields"`
@@ -49,8 +51,8 @@ func (p *DexFeeParam) Check() error {
 
 // fixedFee
 type FixedFeeParams struct {
-	MsgType string                  `json:"msg_type"`
-	Fee     int64                   `json:"fee"`
+	MsgType string            `json:"msg_type"`
+	Fee     int64             `json:"fee"`
 	FeeFor  FeeDistributeType `json:"fee_for"`
 }
 
@@ -68,7 +70,6 @@ func (p *FixedFeeParams) Check() error {
 	}
 	return nil
 }
-
 
 type TransferFeeParam struct {
 	FixedFeeParams    `json:"fixed_fee_params"`

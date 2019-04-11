@@ -3,8 +3,9 @@ package rpc
 import (
 	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/types"
 	"strings"
+
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
 const (
@@ -166,7 +167,7 @@ func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, erro
 }
 
 func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
-    rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s", tradePair), nil)
+	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s", tradePair), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +178,6 @@ func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
 	}
 	return &ob, nil
 }
-
-
 
 func (c *HTTP) existsCC(symbol string) bool {
 	key := []byte(strings.ToUpper(symbol))

@@ -2,9 +2,9 @@ package query
 
 import (
 	"encoding/json"
+
 	"github.com/binance-chain/go-sdk/common/types"
 )
-
 
 // GetTokens returns list of tokens
 func (c *client) GetTokens() ([]types.Token, error) {

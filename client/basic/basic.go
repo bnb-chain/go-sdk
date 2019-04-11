@@ -3,10 +3,11 @@ package basic
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/resty.v1"
 	"net/http"
 	"net/url"
 	"time"
+
+	"gopkg.in/resty.v1"
 
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/tx"

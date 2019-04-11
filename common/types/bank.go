@@ -21,8 +21,8 @@ type Token struct {
 type AppAccount struct {
 	BaseAccount `json:"base"`
 	Name        string `json:"name"`
-	FrozenCoins Coins `json:"frozen"`
-	LockedCoins Coins `json:"locked"`
+	FrozenCoins Coins  `json:"frozen"`
+	LockedCoins Coins  `json:"locked"`
 }
 
 // Coin def
@@ -216,8 +216,8 @@ type NamedAcount interface {
 	SetLockedCoins(Coins)
 }
 
-func (acc AppAccount) GetName() string               { return acc.Name }
-func (acc *AppAccount) SetName(name string)          { acc.Name = name }
+func (acc AppAccount) GetName() string              { return acc.Name }
+func (acc *AppAccount) SetName(name string)         { acc.Name = name }
 func (acc AppAccount) GetFrozenCoins() Coins        { return acc.FrozenCoins }
 func (acc *AppAccount) SetFrozenCoins(frozen Coins) { acc.FrozenCoins = frozen }
 func (acc AppAccount) GetLockedCoins() Coins        { return acc.LockedCoins }
@@ -342,7 +342,7 @@ func (acc *BaseAccount) Clone() Account {
 }
 
 type TokenBalance struct {
-	Symbol string       `json:"symbol"`
+	Symbol string `json:"symbol"`
 	Free   Fixed8 `json:"free"`
 	Locked Fixed8 `json:"locked"`
 	Frozen Fixed8 `json:"frozen"`

@@ -22,8 +22,8 @@ type NodeInfo struct {
 
 	// Check compatibility.
 	// Channels are HexBytes so easier to read as JSON
-	Network  string          `json:"network"`  // network/chain ID
-	Version  string          `json:"version"`  // major.minor.revision
+	Network  string       `json:"network"`  // network/chain ID
+	Version  string       `json:"version"`  // major.minor.revision
 	Channels cmn.HexBytes `json:"channels"` // channels this node knows about
 
 	// ASCIIText fields
@@ -33,15 +33,15 @@ type NodeInfo struct {
 
 type ValidatorInfo struct {
 	Address     cmn.HexBytes `json:"address"`
-	PubKey      []uint8         `json:"pub_key"`
-	VotingPower int64           `json:"voting_power"`
+	PubKey      []uint8      `json:"pub_key"`
+	VotingPower int64        `json:"voting_power"`
 }
 type SyncInfo struct {
 	LatestBlockHash   cmn.HexBytes `json:"latest_block_hash"`
 	LatestAppHash     cmn.HexBytes `json:"latest_app_hash"`
-	LatestBlockHeight int64           `json:"latest_block_height"`
-	LatestBlockTime   time.Time       `json:"latest_block_time"`
-	CatchingUp        bool            `json:"catching_up"`
+	LatestBlockHeight int64        `json:"latest_block_height"`
+	LatestBlockTime   time.Time    `json:"latest_block_time"`
+	CatchingUp        bool         `json:"catching_up"`
 }
 
 type NodeInfoOther struct {

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/bech32"
-	"github.com/tendermint/tendermint/crypto"
 	"strconv"
 	"time"
+
+	"github.com/binance-chain/go-sdk/common/bech32"
 )
 
 type ValAddress []byte
@@ -42,7 +42,6 @@ func (c Commission) String() string {
 	)
 }
 
-
 // Validator defines the total amount of bond shares and their exchange rate to
 // coins. Accumulation of interest is modelled as an in increase in the
 // exchange rate, and slashing as a decrease.  When coins are delegated to this
@@ -51,10 +50,10 @@ func (c Commission) String() string {
 // exchange rate. Voting power can be calculated as total bonds multiplied by
 // exchange rate.
 type Validator struct {
-	FeeAddr      AccAddress    `json:"fee_addr"`         // address for fee collection
-	OperatorAddr ValAddress    `json:"operator_address"` // address of the validator's operator; bech encoded in JSON
-	ConsPubKey   crypto.PubKey `json:"consensus_pubkey"` // the consensus public key of the validator; bech encoded in JSON
-	Jailed       bool          `json:"jailed"`           // has the validator been jailed from bonded status?
+	FeeAddr      AccAddress `json:"fee_addr"`         // address for fee collection
+	OperatorAddr ValAddress `json:"operator_address"` // address of the validator's operator; bech encoded in JSON
+	ConsPubKey   string     `json:"consensus_pubkey"` // the consensus public key of the validator; bech encoded in JSON
+	Jailed       bool       `json:"jailed"`           // has the validator been jailed from bonded status?
 
 	Status          BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)
 	Tokens          Dec        `json:"tokens"`           // delegated tokens (incl. self-delegation)
@@ -68,6 +67,15 @@ type Validator struct {
 	UnbondingMinTime time.Time `json:"unbonding_time"`   // if unbonding, min time for the validator to complete unbonding
 
 	Commission Commission `json:"commission"` // commission parameters
+}
+
+type UnbondingDelegation struct {
+	DelegatorAddr  AccAddress `json:"delegator_addr"`  // delegator
+	ValidatorAddr  ValAddress `json:"validator_addr"`  // validator unbonding from operator addr
+	CreationHeight int64      `json:"creation_height"` // height which the unbonding took place
+	MinTime        time.Time  `json:"min_time"`        // unix time for unbonding completion
+	InitialBalance Coin       `json:"initial_balance"` // atoms initially scheduled to receive at completion
+	Balance        Coin       `json:"balance"`         // atoms to receive at completion
 }
 
 type Dec struct {
@@ -139,6 +147,7 @@ func (va ValAddress) String() string {
 func (va ValAddress) Bytes() []byte {
 	return va
 }
+
 // MarshalJSON marshals to JSON using Bech32.
 func (va ValAddress) MarshalJSON() ([]byte, error) {
 	return json.Marshal(va.String())
