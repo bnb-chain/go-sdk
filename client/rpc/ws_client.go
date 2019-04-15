@@ -6,30 +6,29 @@ import (
 	"net"
 	"net/http"
 
-
 	"fmt"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/gorilla/websocket"
-	"github.com/rcrowley/go-metrics"
+	"github.com/pkg/errors"
 
 	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
+	"github.com/tendermint/tendermint/rpc/lib/types"
 	"github.com/tendermint/tendermint/types"
 
 	"github.com/binance-chain/go-sdk/common/uuid"
+	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 const (
 	defaultMaxReconnectAttempts    = 25
-	defaultMaxReconnectBackOffTime = 600 * time.Second
+	defaultMaxReconnectBackOffTime = 120 * time.Second
 	defaultWriteWait               = 100 * time.Millisecond
 	defaultReadWait                = 0
 	defaultPingPeriod              = 0
@@ -394,6 +393,18 @@ func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*ctype
 	return txs, err
 }
 
+func (w *WSEvents) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
+
+	txs := new(ctypes.ResultTxSearch)
+	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
+		return w.ws.TxSearch(ctx, id, query, prove, page, perPage)
+	}, txs)
+	if err != nil {
+		return nil, err
+	}
+	return FormatTxResults(w.cdc, txs.Txs)
+}
+
 func (w *WSEvents) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	validators := new(ctypes.ResultValidators)
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
@@ -472,10 +483,6 @@ type WSClient struct {
 	Endpoint string // /websocket/url/endpoint
 	Dialer   func(string, string) (net.Conn, error)
 
-	// Time between sending a ping and receiving a pong. See
-	// https://godoc.org/github.com/rcrowley/go-metrics#Timer.
-	PingPongLatencyTimer metrics.Timer
-
 	// Single user facing channel to read RPCResponses from, closed only when the client is being stopped.
 	ResponsesCh chan rpctypes.RPCResponse
 
@@ -521,11 +528,10 @@ func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSCli
 	}
 
 	c := &WSClient{
-		cdc:                  amino.NewCodec(),
-		Address:              addr,
-		Dialer:               dialer,
-		Endpoint:             endpoint,
-		PingPongLatencyTimer: metrics.NewTimer(),
+		cdc:      amino.NewCodec(),
+		Address:  addr,
+		Dialer:   dialer,
+		Endpoint: endpoint,
 
 		maxReconnectAttempts: defaultMaxReconnectAttempts,
 		readWait:             defaultReadWait,
@@ -591,8 +597,6 @@ func (c *WSClient) Stop() error {
 
 // IsReconnecting returns true if the client is reconnecting right now.
 func (c *WSClient) IsReconnecting() bool {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
 	return c.reconnecting
 }
 
@@ -823,12 +827,6 @@ func (c *WSClient) readRoutine() {
 	}()
 
 	c.conn.SetPongHandler(func(string) error {
-		// gather latency stats
-		c.mtx.RLock()
-		t := c.sentLastPingAt
-		c.mtx.RUnlock()
-		c.PingPongLatencyTimer.UpdateSince(t)
-
 		c.Logger.Debug("got pong")
 		return nil
 	})
@@ -1013,4 +1011,42 @@ func makeHTTPDialer(remoteAddr string) (string, string, func(string, string) (ne
 	return clientProtocol, trimmedAddress, func(proto, addr string) (net.Conn, error) {
 		return net.Dial(protocol, address)
 	}
+}
+
+// parse the indexed txs into an array of Info
+func FormatTxResults(cdc *amino.Codec, res []*ctypes.ResultTx) ([]tx.Info, error) {
+	var err error
+	out := make([]tx.Info, len(res))
+	for i := range res {
+		out[i], err = formatTxResult(cdc, res[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return out, nil
+}
+
+func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
+	parsedTx, err := parseTx(cdc, res.Tx)
+	if err != nil {
+		return tx.Info{}, err
+	}
+
+	return tx.Info{
+		Hash:   res.Hash,
+		Height: res.Height,
+		Tx:     parsedTx,
+		Result: res.TxResult,
+	}, nil
+}
+
+func parseTx(cdc *amino.Codec, txBytes []byte) (tx.Tx, error) {
+	var parsedTx tx.StdTx
+
+	err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &parsedTx)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedTx, nil
 }

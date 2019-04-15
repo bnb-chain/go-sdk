@@ -5,14 +5,16 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/tendermint/tendermint/p2p"
 
-	ntypes "github.com/binance-chain/go-sdk/common/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
+	"github.com/tendermint/tendermint/rpc/lib/client"
 	"github.com/tendermint/tendermint/types"
+
+	ntypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 const defaultTimeout = 5 * time.Second
@@ -33,6 +35,7 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 	cdc := rc.Codec()
 	ctypes.RegisterAmino(cdc)
 	ntypes.RegisterWire(cdc)
+	tx.RegisterCodec(cdc)
 
 	rc.SetCodec(cdc)
 	wsEvent := newWSEvents(cdc, remote, wsEndpoint)
@@ -61,22 +64,40 @@ func (c *HTTP) ABCIQuery(path string, data cmn.HexBytes) (*ctypes.ResultABCIQuer
 }
 
 func (c *HTTP) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
+	if err := ValidateABCIPath(path); err != nil {
+		return nil, err
+	}
+	if err := ValidateABCIData(data); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.ABCIQueryWithOptions(path, data, opts)
 }
 
 func (c *HTTP) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
+	if err := ValidateTx(tx); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.BroadcastTxCommit(tx)
 }
 
 func (c *HTTP) BroadcastTxAsync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
+	if err := ValidateTx(tx); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.BroadcastTx("broadcast_tx_async", tx)
 }
 
 func (c *HTTP) BroadcastTxSync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
+	if err := ValidateTx(tx); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.BroadcastTx("broadcast_tx_sync", tx)
 }
 
 func (c *HTTP) UnconfirmedTxs(limit int) (*ctypes.ResultUnconfirmedTxs, error) {
+	if err := ValidateUnConfirmedTxsLimit(limit); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.UnconfirmedTxs(limit)
 }
 
@@ -101,6 +122,9 @@ func (c *HTTP) Health() (*ctypes.ResultHealth, error) {
 }
 
 func (c *HTTP) BlockchainInfo(minHeight, maxHeight int64) (*ctypes.ResultBlockchainInfo, error) {
+	if err := ValidateHeightRange(minHeight, maxHeight); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.BlockchainInfo(minHeight, maxHeight)
 }
 
@@ -109,23 +133,45 @@ func (c *HTTP) Genesis() (*ctypes.ResultGenesis, error) {
 }
 
 func (c *HTTP) Block(height *int64) (*ctypes.ResultBlock, error) {
+	if err := ValidateHeight(height); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.Block(height)
 }
 
 func (c *HTTP) BlockResults(height *int64) (*ctypes.ResultBlockResults, error) {
+	if err := ValidateHeight(height); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.BlockResults(height)
 }
 
 func (c *HTTP) Commit(height *int64) (*ctypes.ResultCommit, error) {
+	if err := ValidateHeight(height); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.Commit(height)
 }
 
 func (c *HTTP) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
+	if err := ValidateHash(hash); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.Tx(hash, prove)
 }
 
 func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
+	if err := ValidateCommonStr(query); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.TxSearch(query, prove, page, perPage)
+}
+
+func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
+	if err := ValidateCommonStr(query); err != nil {
+		return nil, err
+	}
+	return c.WSEvents.TxInfoSearch(query, prove, page, perPage)
 }
 
 func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
