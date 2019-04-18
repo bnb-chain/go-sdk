@@ -3,6 +3,7 @@ package rpc
 import (
 	"errors"
 	"fmt"
+	"github.com/binance-chain/go-sdk/types/tx"
 	"strings"
 
 	"github.com/binance-chain/go-sdk/common/types"
@@ -13,6 +14,26 @@ const (
 	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
 )
+
+type DexClient interface {
+	TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error)
+	ListAllTokens(offset int, limit int) ([]types.Token, error)
+	GetTokenInfo(symbol string) (*types.Token, error)
+	GetAccount(addr types.AccAddress) (acc types.Account, err error)
+	GetBalances(addr types.AccAddress) ([]types.TokenBalance, error)
+	GetBalance(addr types.AccAddress, symbol string) (*types.TokenBalance, error)
+	GetFee() ([]types.FeeParam, error)
+	GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
+	GetTradingPairs(offset int, limit int) ([]types.TradingPair, error)
+	GetDepth(tradePair string) (*types.OrderBook, error)
+}
+
+func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
+	if err := ValidateCommonStr(query); err != nil {
+		return nil, err
+	}
+	return c.WSEvents.TxInfoSearch(query, prove, page, perPage)
+}
 
 func (c *HTTP) ListAllTokens(offset int, limit int) ([]types.Token, error) {
 	path := fmt.Sprintf("tokens/list/%d/%d", offset, limit)

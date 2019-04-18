@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://seed-pre-s3.binance.org:80"
+	nodeAddr           = "tcp://data-seed-pre-0-s3.binance.org:80"
 	badAddr            = "tcp://127.0.0.1:80"
-	testTxHash         = "9E9E6EA3FA13684DD260DB627144EABDB50F2C205DE733447C5E8415311670C9"
-	testTxHeight       = 960284
+	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
+	testTxHeight       = 8669273
 	testAddress        = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
 	testDelAddr        = "tbnb12hlquylu78cjylk5zshxpdj6hf3t0tahwjt3ex"
 	testTradePair      = "X00-243_BNB"
@@ -180,8 +180,7 @@ func TestReconnection(t *testing.T) {
 
 func TestTxSearch(t *testing.T) {
 	c := defaultClient()
-
-	tx, err := c.TxSearch(fmt.Sprintf("tx.height=%d", testTxHeight), false, 1, 10)
+	tx, err := c.TxInfoSearch(fmt.Sprintf("tx.height=%d", testTxHeight), false, 1, 10)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(tx)
 	fmt.Println(string(bz))
@@ -252,9 +251,9 @@ func TestSubscribeEventTwice(t *testing.T) {
 
 func TestReceiveWithRequestId(t *testing.T) {
 	c := defaultClient()
-	c.SetTimeOut(5 * time.Second)
+	c.SetTimeOut(1 * time.Second)
 	w := sync.WaitGroup{}
-	w.Add(10)
+	w.Add(2000)
 	testCases := []func(t *testing.T){
 		TestRPCStatus,
 		TestRPCABCIInfo,
@@ -267,13 +266,13 @@ func TestReceiveWithRequestId(t *testing.T) {
 		TestBlockchainInfo,
 		TestGenesis,
 		TestBlock,
-		TestBlockResults,
+		//TestBlockResults,
 		TestCommit,
-		TestTx,
-		TestTxSearch,
-		//TestValidators,
+		//TestTx,
+		//TestTxSearch,
+		TestValidators,
 	}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 2000; i++ {
 		testFuncIndex := rand.Intn(len(testCases))
 		go func() {
 			testCases[testFuncIndex](t)
@@ -308,6 +307,8 @@ func TestGetAccount(t *testing.T) {
 	assert.NoError(t, err)
 	bz, err := json.Marshal(account)
 	fmt.Println(string(bz))
+	fmt.Println(hex.EncodeToString(account.GetAddress().Bytes()))
+
 }
 
 func TestGetBalances(t *testing.T) {
@@ -416,13 +417,17 @@ func TestNoRequestLeakInGoodNetwork(t *testing.T) {
 	c := defaultClient()
 	c.SetTimeOut(1 * time.Second)
 	w := sync.WaitGroup{}
-	w.Add(100)
-	for i := 0; i < 100; i++ {
+	w.Add(3000)
+	for i := 0; i < 3000; i++ {
 		go func() {
-			c.GetFee()
+			_, err := c.Block(nil)
+			assert.NoError(t, err)
+			//bz, err := json.Marshal(fees)
+			//fmt.Println(string(bz))
 			w.Done()
 		}()
 	}
 	w.Wait()
 	assert.Equal(t, c.PendingRequest(), 0)
 }
+

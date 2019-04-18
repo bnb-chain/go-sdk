@@ -17,15 +17,15 @@ const (
 )
 
 var (
-	ExceedABCIPathLengthError       = errors.New(fmt.Sprintf("the abci path exceed max length %d ", maxABCIPathLength))
-	ExceedABCIDataLengthError       = errors.New(fmt.Sprintf("the abci data exceed max length %d ", maxABCIDataLength))
-	ExceedTxLengthError             = errors.New(fmt.Sprintf("the tx data exceed max length %d ", maxTxLength))
-	LimitNegativeError              = errors.New("the limit can't be negative")
-	ExceedMaxUnConfirmedTxsNumError = errors.New(fmt.Sprintf("the limit of unConfirmed tx exceed max limit %d ", maxUnConfirmedTxs))
-	HeightNegativeError             = errors.New("the height can't be negative")
-	MaxMinHeightConflictError       = errors.New("the min height can't be larger than max height")
-	HashLengthError                 = errors.New("the length of hash is not 32")
-	ExceedCommonStrLengthError      = errors.New(fmt.Sprintf("the query string exceed max length %d ", maxABCIPathLength))
+	ExceedABCIPathLengthError       = fmt.Errorf("the abci path exceed max length %d ", maxABCIPathLength)
+	ExceedABCIDataLengthError       = fmt.Errorf("the abci data exceed max length %d ", maxABCIDataLength)
+	ExceedTxLengthError             = fmt.Errorf("the tx data exceed max length %d ", maxTxLength)
+	LimitNegativeError              = fmt.Errorf("the limit can't be negative")
+	ExceedMaxUnConfirmedTxsNumError = fmt.Errorf("the limit of unConfirmed tx exceed max limit %d ", maxUnConfirmedTxs)
+	HeightNegativeError             = fmt.Errorf("the height can't be negative")
+	MaxMinHeightConflictError       = fmt.Errorf("the min height can't be larger than max height")
+	HashLengthError                 = fmt.Errorf("the length of hash is not 32")
+	ExceedCommonStrLengthError      = fmt.Errorf("the query string exceed max length %d ", maxABCIPathLength)
 )
 
 func ValidateABCIPath(path string) error {

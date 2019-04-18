@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -1042,8 +1043,9 @@ func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
 
 func parseTx(cdc *amino.Codec, txBytes []byte) (tx.Tx, error) {
 	var parsedTx tx.StdTx
-
+	fmt.Println(hex.EncodeToString(txBytes))
 	err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &parsedTx)
+
 	if err != nil {
 		return nil, err
 	}

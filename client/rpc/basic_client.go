@@ -19,6 +19,23 @@ import (
 
 const defaultTimeout = 5 * time.Second
 
+type Client interface {
+	cmn.Service
+	client.ABCIClient
+	client.SignClient
+	client.HistoryClient
+	client.StatusClient
+	EventsClient
+	DexClient
+	OpsClient
+}
+
+type EventsClient interface {
+	Subscribe(query string, outCapacity ...int) (out chan ctypes.ResultEvent, err error)
+	Unsubscribe(query string) error
+	UnsubscribeAll() error
+}
+
 func NewRPCClient(nodeURI string) *HTTP {
 	return NewHTTP(nodeURI, "/websocket")
 }
@@ -165,13 +182,6 @@ func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ctypes.Re
 		return nil, err
 	}
 	return c.WSEvents.TxSearch(query, prove, page, perPage)
-}
-
-func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
-	if err := ValidateCommonStr(query); err != nil {
-		return nil, err
-	}
-	return c.WSEvents.TxInfoSearch(query, prove, page, perPage)
 }
 
 func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {

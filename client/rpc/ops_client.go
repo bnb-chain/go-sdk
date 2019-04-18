@@ -2,6 +2,11 @@ package rpc
 
 import "github.com/binance-chain/go-sdk/common/types"
 
+type OpsClient interface {
+	GetStakeValidators() ([]types.Validator, error)
+	GetDelegatorUnbondingDelegations(delegatorAddr types.AccAddress) ([]types.UnbondingDelegation, error)
+}
+
 func (c *HTTP) GetStakeValidators() ([]types.Validator, error) {
 	rawVal, err := c.ABCIQuery("custom/stake/validators", nil)
 	if err != nil {
