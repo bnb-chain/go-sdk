@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/binance-chain/go-sdk/client/basic"
 	"github.com/binance-chain/go-sdk/client/query"
@@ -22,8 +23,8 @@ type TransactionClient interface {
 	SendToken(transfers []msg.Transfer, sync bool) (*SendTokenResult, error)
 	MintToken(symbol string, amount int64, sync bool) (*MintTokenResult, error)
 
-	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, sync bool) (*SubmitProposalResult, error)
-	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, sync bool) (*SubmitProposalResult, error)
+	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error)
+	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error)
 	DepositProposal(proposalID int64, amount int64, sync bool) (*DepositProposalResult, error)
 	VoteProposal(proposalID int64, option msg.VoteOption, sync bool) (*VoteProposalResult, error)
 

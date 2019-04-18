@@ -20,8 +20,12 @@ import (
 func TestTransProcess(t *testing.T) {
 	//----- Recover account ---------
 	mnemonic := "test mnemonic"
+	baeUrl := "test basic url"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
+	validatorMnemonics := []string{
+		"test mnemonic",
+	}
 	testAccount1 := keyManager.GetAddr()
 	testKeyManager2, _ := keys.NewKeyManager()
 	testAccount2 := testKeyManager2.GetAddr()
@@ -29,7 +33,7 @@ func TestTransProcess(t *testing.T) {
 	testAccount3 := testKeyManager3.GetAddr()
 
 	//-----   Init sdk  -------------
-	client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
+	client, err := sdk.NewDexClient(baeUrl, types.TestNetwork, keyManager)
 	assert.NoError(t, err)
 	nativeSymbol := msg.NativeToken
 
@@ -161,7 +165,7 @@ func TestTransProcess(t *testing.T) {
 
 	//---- Submit Proposal ------
 	time2.Sleep(2 * time2.Second)
-	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, true)
+	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, 20*time2.Second, true)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
@@ -172,19 +176,20 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, submitPorposalStatus.Code == tx2.CodeOk)
 
 	//---- Vote Proposal  -------
-	time2.Sleep(2 * time2.Second)
-	vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
-	assert.NoError(t, err)
-	fmt.Printf("Vote: %v\n", vote)
+	for _, m := range validatorMnemonics {
+		time2.Sleep(1 * time2.Second)
+		k, err := keys.NewMnemonicKeyManager(m)
+		assert.NoError(t, err)
+		client, err := sdk.NewDexClient(baeUrl, types.TestNetwork, k)
+		assert.NoError(t, err)
+		vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
+		assert.NoError(t, err)
+		fmt.Printf("Vote: %v\n", vote)
+	}
 
 	//--- List trade pair ------
+	time2.Sleep(20 * time2.Second)
 	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("List trading pair: %v\n", l)
-	//---- Get new markets
-	//time2.Sleep(1 * time2.Minute)
-	//markets, err = client.GetMarkets(&api.MarketsQuery{Limit: 1, Offset: 0})
-	//assert.NoError(t, err)
-	//fmt.Printf("New markets: %v \n ", markets)
-
 }
