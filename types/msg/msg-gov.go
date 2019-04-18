@@ -3,15 +3,22 @@ package msg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/binance-chain/go-sdk/types"
 	"time"
 
 	"github.com/pkg/errors"
+
 	"github.com/binance-chain/bnc-go-amino"
+	"github.com/binance-chain/go-sdk/types"
 )
 
 // name to idetify transaction types
-const MsgRoute = "gov"
+const (
+	MsgRoute = "gov"
+
+	MaxTitleLength           = 128
+	MaxDescriptionLength int = 2048
+	MaxVotingPeriod          = 2 * 7 * 24 * 60 * 60 * time.Second // 2 weeks
+)
 
 type VoteOption byte
 
@@ -218,21 +225,24 @@ type ListTradingPairParams struct {
 }
 
 //-----------------------------------------------------------
+// SubmitProposalMsg
 type SubmitProposalMsg struct {
 	Title          string           `json:"title"`           //  Title of the proposal
 	Description    string           `json:"description"`     //  Description of the proposal
 	ProposalType   ProposalKind     `json:"proposal_type"`   //  Type of proposal. Initial set {PlainTextProposal, SoftwareUpgradeProposal}
 	Proposer       types.AccAddress `json:"proposer"`        //  Address of the proposer
 	InitialDeposit types.Coins      `json:"initial_deposit"` //  Initial deposit paid by sender. Must be strictly positive.
+	VotingPeriod   time.Duration    `json:"voting_period"`   //  Length of the voting period (s)
 }
 
-func NewMsgSubmitProposal(title string, description string, proposalType ProposalKind, proposer types.AccAddress, initialDeposit types.Coins) SubmitProposalMsg {
+func NewMsgSubmitProposal(title string, description string, proposalType ProposalKind, proposer types.AccAddress, initialDeposit types.Coins, votingPeriod time.Duration) SubmitProposalMsg {
 	return SubmitProposalMsg{
 		Title:          title,
 		Description:    description,
 		ProposalType:   proposalType,
 		Proposer:       proposer,
 		InitialDeposit: initialDeposit,
+		VotingPeriod:   votingPeriod,
 	}
 }
 
@@ -245,9 +255,17 @@ func (msg SubmitProposalMsg) ValidateBasic() error {
 	if len(msg.Title) == 0 {
 		return fmt.Errorf("title can't be empty")
 	}
+	if len(msg.Title) > MaxTitleLength {
+		return fmt.Errorf("Proposal title is longer than max length of %d", MaxTitleLength)
+	}
 	if len(msg.Description) == 0 {
 		return fmt.Errorf("description can't be empty")
 	}
+
+	if len(msg.Description) > MaxDescriptionLength {
+		return fmt.Errorf("Proposal description is longer than max length of %d", MaxDescriptionLength)
+	}
+
 	if !validProposalType(msg.ProposalType) {
 		return fmt.Errorf("invalid proposal type %v ", msg.ProposalType)
 	}
@@ -259,6 +277,9 @@ func (msg SubmitProposalMsg) ValidateBasic() error {
 	}
 	if !msg.InitialDeposit.IsNotNegative() {
 		return fmt.Errorf("initial deposit %v is negative. ", msg.InitialDeposit)
+	}
+	if msg.VotingPeriod <= 0 || msg.VotingPeriod > MaxVotingPeriod {
+		return fmt.Errorf("voting period should between 0 and %d weeks",  MaxVotingPeriod/(7 * 24 * 60 * 60 * time.Second))
 	}
 	return nil
 }

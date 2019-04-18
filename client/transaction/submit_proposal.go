@@ -3,6 +3,7 @@ package transaction
 import (
 	"encoding/json"
 	"strconv"
+	"time"
 
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
@@ -14,18 +15,18 @@ type SubmitProposalResult struct {
 	ProposalId int64 `json:"proposal_id"`
 }
 
-func (c *client) SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, sync bool) (*SubmitProposalResult, error) {
+func (c *client) SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error) {
 	bz, err := json.Marshal(&param)
 	if err != nil {
 		return nil, err
 	}
-	return c.SubmitProposal(title, string(bz), msg.ProposalTypeListTradingPair, initialDeposit, sync)
+	return c.SubmitProposal(title, string(bz), msg.ProposalTypeListTradingPair, initialDeposit, votingPeriod, sync)
 }
 
-func (c *client) SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, sync bool) (*SubmitProposalResult, error) {
+func (c *client) SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	coins := types.Coins{types.Coin{Denom: types.NativeSymbol, Amount: initialDeposit}}
-	proposalMsg := msg.NewMsgSubmitProposal(title, description, proposalType, fromAddr, coins)
+	proposalMsg := msg.NewMsgSubmitProposal(title, description, proposalType, fromAddr, coins, votingPeriod)
 	err := proposalMsg.ValidateBasic()
 	if err != nil {
 		return nil, err
