@@ -15,10 +15,10 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
 	"github.com/binance-chain/go-sdk/common"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/common/uuid"
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/tendermint/tendermint/crypto"
-	ctypes "github.com/binance-chain/go-sdk/common/types"
 )
 
 const (
@@ -173,7 +173,6 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(bz))
 	//return bz, nil
 	return []byte(hex.EncodeToString(bz)), nil
 }

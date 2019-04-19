@@ -2,9 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/binance-chain/go-sdk/common/bech32"
@@ -77,7 +75,6 @@ type UnbondingDelegation struct {
 	InitialBalance Coin       `json:"initial_balance"` // atoms initially scheduled to receive at completion
 	Balance        Coin       `json:"balance"`         // atoms to receive at completion
 }
-
 
 func (va ValAddress) String() string {
 	bech32PrefixValAddr := Network.Bech32ValidatorAddrPrefix()

@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/lib/client"
@@ -66,10 +65,6 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 
 func (c *HTTP) Status() (*ctypes.ResultStatus, error) {
 	return c.WSEvents.Status()
-}
-
-func (c *HTTP) NodeInfo() (*p2p.DefaultNodeInfo, error) {
-	return c.WSEvents.NodeInfo()
 }
 
 func (c *HTTP) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
@@ -178,13 +173,16 @@ func (c *HTTP) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
 }
 
 func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
-	if err := ValidateCommonStr(query); err != nil {
+	if err := ValidateABCIQueryStr(query); err != nil {
 		return nil, err
 	}
 	return c.WSEvents.TxSearch(query, prove, page, perPage)
 }
 
 func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
+	if err := ValidateHeight(height); err != nil {
+		return nil, err
+	}
 	return c.WSEvents.Validators(height)
 }
 

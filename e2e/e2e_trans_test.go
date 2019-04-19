@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	sdk "github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/common"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
@@ -20,7 +19,7 @@ import (
 func TestTransProcess(t *testing.T) {
 	//----- Recover account ---------
 	mnemonic := "test mnemonic"
-	baeUrl := "test basic url"
+	baeUrl := "test base url"
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 	validatorMnemonics := []string{
@@ -33,7 +32,7 @@ func TestTransProcess(t *testing.T) {
 	testAccount3 := testKeyManager3.GetAddr()
 
 	//-----   Init sdk  -------------
-	client, err := sdk.NewDexClient(baeUrl, types.TestNetwork, keyManager)
+	client, err := sdk.NewDexClient(baeUrl, ctypes.TestNetwork, keyManager)
 	assert.NoError(t, err)
 	nativeSymbol := msg.NativeToken
 
@@ -44,26 +43,26 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, len(account.Balances) > 0)
 
 	//----- Get Markets  ------------
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].QuoteAssetSymbol
-	if markets[0].QuoteAssetSymbol != "BNB" {
-		tradeSymbol = markets[0].QuoteAssetSymbol
+	if tradeSymbol == "BNB" {
+		tradeSymbol = markets[0].BaseAssetSymbol
 	}
 
 	//-----  Get Depth  ----------
-	depth, err := client.GetDepth(query.NewDepthQuery(tradeSymbol, nativeSymbol))
+	depth, err := client.GetDepth(ctypes.NewDepthQuery(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, depth.Height > 0)
 
 	//----- Get Kline
-	kline, err := client.GetKlines(query.NewKlineQuery(tradeSymbol, nativeSymbol, "1h").WithLimit(1))
+	kline, err := client.GetKlines(ctypes.NewKlineQuery(tradeSymbol, nativeSymbol, "1h").WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(kline))
 
 	//-----  Get Ticker 24h  -----------
-	ticker24h, err := client.GetTicker24h(query.NewTicker24hQuery().WithSymbol(tradeSymbol, nativeSymbol))
+	ticker24h, err := client.GetTicker24h(ctypes.NewTicker24hQuery().WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, len(ticker24h) > 0)
 
@@ -74,7 +73,7 @@ func TestTransProcess(t *testing.T) {
 
 	//-----  Get Trades  -----------
 	fmt.Println(testAccount1.String())
-	trades, err := client.GetTrades(query.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
+	trades, err := client.GetTrades(ctypes.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	fmt.Printf("GetTrades: %v \n", trades)
 
@@ -90,7 +89,7 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, true, createOrderResult.Ok)
 
 	//---- Get Open Order ---------
-	openOrders, err := client.GetOpenOrders(query.NewOpenOrdersQuery(testAccount1.String(), true))
+	openOrders, err := client.GetOpenOrders(ctypes.NewOpenOrdersQuery(testAccount1.String(), true))
 	assert.NoError(t, err)
 	assert.True(t, len(openOrders.Order) > 0)
 	orderId := openOrders.Order[0].ID
@@ -109,7 +108,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)
 
 	//---- Get Close Order---------
-	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
+	closedOrders, err := client.GetClosedOrders(ctypes.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	assert.True(t, len(closedOrders.Order) > 0)
 	fmt.Printf("GetClosedOrders: %v \n", closedOrders)
@@ -180,7 +179,7 @@ func TestTransProcess(t *testing.T) {
 		time2.Sleep(1 * time2.Second)
 		k, err := keys.NewMnemonicKeyManager(m)
 		assert.NoError(t, err)
-		client, err := sdk.NewDexClient(baeUrl, types.TestNetwork, k)
+		client, err := sdk.NewDexClient(baeUrl, ctypes.TestNetwork, k)
 		assert.NoError(t, err)
 		vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
 		assert.NoError(t, err)

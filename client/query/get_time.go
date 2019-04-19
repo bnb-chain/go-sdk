@@ -2,22 +2,19 @@ package query
 
 import (
 	"encoding/json"
+
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
-type Time struct {
-	ApTime    string `json:"ap_time"`
-	BlockTime string `json:"block_time"`
-}
-
 // GetTime returns market depth records
-func (c *client) GetTime() (*Time, error) {
+func (c *client) GetTime() (*types.Time, error) {
 	qp := map[string]string{}
 	resp, err := c.baseClient.Get("/time", qp)
 	if err != nil {
 		return nil, err
 	}
 
-	var t Time
+	var t types.Time
 	if err := json.Unmarshal(resp, &t); err != nil {
 		return nil, err
 	}

@@ -2,29 +2,13 @@ package query
 
 import (
 	"encoding/json"
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
-// Account definition
-type Account struct {
-	Number    int64   `json:"account_number"`
-	Address   string  `json:"address"`
-	Balances  []Coin  `json:"balances"`
-	PublicKey []uint8 `json:"public_key"`
-	Sequence  int64   `json:"sequence"`
-}
-
-// Coin def
-type Coin struct {
-	Symbol string `json:"symbol"` // ex: BNB
-	Free   string `json:"free"`   // in decimal, ex: 0.00000000
-	Locked string `json:"locked"` // in decimal, ex: 0.00000000
-	Frozen string `json:"frozen"` // in decimal, ex: 0.00000000
-}
-
 // GetAccount returns list of trading pairs
-func (c *client) GetAccount(address string) (*Account, error) {
+func (c *client) GetAccount(address string) (*types.BalanceAccount, error) {
 	if address == "" {
-		return nil, AddressMissingError
+		return nil, types.AddressMissingError
 	}
 
 	qp := map[string]string{}
@@ -32,10 +16,9 @@ func (c *client) GetAccount(address string) (*Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	var account Account
+	var account types.BalanceAccount
 	if err := json.Unmarshal(resp, &account); err != nil {
 		return nil, err
 	}
-
 	return &account, nil
 }

@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/lib/types"
@@ -257,14 +255,6 @@ func (w *WSEvents) Status() (*ctypes.ResultStatus, error) {
 	status := new(ctypes.ResultStatus)
 	err := w.SimpleCall(w.ws.Status, status)
 	return status, err
-}
-
-func (w *WSEvents) NodeInfo() (*p2p.DefaultNodeInfo, error) {
-	status, err := w.Status()
-	if err != nil {
-		return nil, err
-	}
-	return &status.NodeInfo, nil
 }
 
 func (w *WSEvents) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
@@ -1043,7 +1033,6 @@ func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
 
 func parseTx(cdc *amino.Codec, txBytes []byte) (tx.Tx, error) {
 	var parsedTx tx.StdTx
-	fmt.Println(hex.EncodeToString(txBytes))
 	err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &parsedTx)
 
 	if err != nil {

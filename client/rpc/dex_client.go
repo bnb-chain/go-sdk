@@ -29,13 +29,19 @@ type DexClient interface {
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
-	if err := ValidateCommonStr(query); err != nil {
+	if err := ValidateTxSearchQueryStr(query); err != nil {
 		return nil, err
 	}
 	return c.WSEvents.TxInfoSearch(query, prove, page, perPage)
 }
 
 func (c *HTTP) ListAllTokens(offset int, limit int) ([]types.Token, error) {
+	if err := ValidateOffset(offset); err != nil {
+		return nil, err
+	}
+	if err := ValidateLimit(limit); err != nil {
+		return nil, err
+	}
 	path := fmt.Sprintf("tokens/list/%d/%d", offset, limit)
 	result, err := c.ABCIQuery(path, nil)
 	if err != nil {
@@ -48,6 +54,9 @@ func (c *HTTP) ListAllTokens(offset int, limit int) ([]types.Token, error) {
 }
 
 func (c *HTTP) GetTokenInfo(symbol string) (*types.Token, error) {
+	if err := ValidateSymbol(symbol); err != nil {
+		return nil, err
+	}
 	path := fmt.Sprintf("tokens/info/%s", symbol)
 	result, err := c.ABCIQuery(path, nil)
 	if err != nil {
@@ -115,6 +124,9 @@ func (c *HTTP) GetBalances(addr types.AccAddress) ([]types.TokenBalance, error) 
 }
 
 func (c *HTTP) GetBalance(addr types.AccAddress, symbol string) (*types.TokenBalance, error) {
+	if err := ValidateSymbol(symbol); err != nil {
+		return nil, err
+	}
 	exist := c.existsCC(symbol)
 	if !exist {
 		return nil, errors.New("symbol not found")
@@ -148,6 +160,9 @@ func (c *HTTP) GetFee() ([]types.FeeParam, error) {
 }
 
 func (c *HTTP) GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error) {
+	if err := ValidatePair(pair); err != nil {
+		return nil, err
+	}
 	rawOrders, err := c.ABCIQuery(fmt.Sprintf("dex/openorders/%s/%s", pair, addr), nil)
 	if err != nil {
 		return nil, err
@@ -165,6 +180,12 @@ func (c *HTTP) GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOr
 }
 
 func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
+	if err := ValidateLimit(limit); err != nil {
+		return nil, err
+	}
+	if err := ValidateOffset(offset); err != nil {
+		return nil, err
+	}
 	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex/pairs/%d/%d", offset, limit), nil)
 	if err != nil {
 		return nil, err
@@ -178,6 +199,9 @@ func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, erro
 }
 
 func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
+	if err := ValidatePair(tradePair); err != nil {
+		return nil, err
+	}
 	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s", tradePair), nil)
 	if err != nil {
 		return nil, err

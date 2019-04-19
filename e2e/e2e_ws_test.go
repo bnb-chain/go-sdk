@@ -7,7 +7,6 @@ import (
 	"time"
 
 	sdk "github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/client/websocket"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
@@ -44,7 +43,7 @@ func TestSubscribeAllTickerEvent(t *testing.T) {
 func TestSubscribeTickerEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol
@@ -83,7 +82,7 @@ func TestSubscribeAllMiniTickersEvent(t *testing.T) {
 func TestSubscribeMiniTickersEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol
@@ -107,7 +106,7 @@ func TestSubscribeMiniTickersEvent(t *testing.T) {
 func TestSubscribeTradeEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol
@@ -179,7 +178,7 @@ func TestSubscribeBlockHeightEvent(t *testing.T) {
 func TestSubscribeKlineEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol
@@ -203,7 +202,7 @@ func TestSubscribeKlineEvent(t *testing.T) {
 func TestSubscribeMarketDiffEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol
@@ -227,7 +226,7 @@ func TestSubscribeMarketDiffEvent(t *testing.T) {
 func TestSubscribeMarketDepthEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
 	tradeSymbol := markets[0].BaseAssetSymbol

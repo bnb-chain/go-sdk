@@ -45,14 +45,6 @@ func TestRPCStatus(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
-func TestRPCNodeInfo(t *testing.T) {
-	c := defaultClient()
-	nodeInfo, err := c.NodeInfo()
-	assert.NoError(t, err)
-	bz, err := json.Marshal(nodeInfo)
-	fmt.Println(string(bz))
-}
-
 func TestRPCABCIInfo(t *testing.T) {
 	c := defaultClient()
 	info, err := c.ABCIInfo()
@@ -160,23 +152,23 @@ func TestTx(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
-func TestReconnection(t *testing.T) {
-	c := defaultClient()
-	status, err := c.Status()
-	assert.NoError(t, err)
-	bz, err := json.Marshal(status)
-	fmt.Println(string(bz))
-	time.Sleep(10 * time.Second)
-	status, err = c.Status()
-	assert.Error(t, err)
-	fmt.Println(err)
-	time.Sleep(10 * time.Second)
-	status, err = c.Status()
-	assert.Error(t, err)
-	fmt.Println(err)
-	bz, err = json.Marshal(status)
-	fmt.Println(string(bz))
-}
+//func TestReconnection(t *testing.T) {
+//	c := defaultClient()
+//	status, err := c.Status()
+//	assert.NoError(t, err)
+//	bz, err := json.Marshal(status)
+//	fmt.Println(string(bz))
+//	time.Sleep(10 * time.Second)
+//	status, err = c.Status()
+//	assert.Error(t, err)
+//	fmt.Println(err)
+//	time.Sleep(10 * time.Second)
+//	status, err = c.Status()
+//	assert.Error(t, err)
+//	fmt.Println(err)
+//	bz, err = json.Marshal(status)
+//	fmt.Println(string(bz))
+//}
 
 func TestTxSearch(t *testing.T) {
 	c := defaultClient()
@@ -231,7 +223,7 @@ func TestSubscribeEvent(t *testing.T) {
 			}
 		}
 	}()
-	time.Sleep(100 * time.Second)
+	time.Sleep(10 * time.Second)
 	err = c.Unsubscribe(query)
 	noMoreEvent <- struct{}{}
 	assert.NoError(t, err)
@@ -430,4 +422,3 @@ func TestNoRequestLeakInGoodNetwork(t *testing.T) {
 	w.Wait()
 	assert.Equal(t, c.PendingRequest(), 0)
 }
-

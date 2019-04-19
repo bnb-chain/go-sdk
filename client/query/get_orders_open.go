@@ -4,57 +4,11 @@ import (
 	"encoding/json"
 
 	"github.com/binance-chain/go-sdk/common"
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
-// OpenOrdersQuery def
-type OpenOrdersQuery struct {
-	SenderAddress string  `json:"address"` // required
-	Symbol        string  `json:"symbol,omitempty"`
-	Offset        *uint32 `json:"offset,omitempty,string"`
-	Limit         *uint32 `json:"limit,omitempty,string"`
-	Total         int     `json:"total,string"` //0 for not required and 1 for required; default not required, return total=-1 in response
-}
-
-func NewOpenOrdersQuery(senderAddress string, withTotal bool) *OpenOrdersQuery {
-	totalQuery := 0
-	if withTotal {
-		totalQuery = 1
-	}
-	return &OpenOrdersQuery{SenderAddress: senderAddress, Total: totalQuery}
-}
-
-func (param *OpenOrdersQuery) WithSymbol(symbol string) *OpenOrdersQuery {
-	param.Symbol = symbol
-	return param
-}
-
-func (param *OpenOrdersQuery) WithOffset(offset uint32) *OpenOrdersQuery {
-	param.Offset = &offset
-	return param
-}
-
-func (param *OpenOrdersQuery) WithLimit(limit uint32) *OpenOrdersQuery {
-	param.Limit = &limit
-	return param
-}
-
-func (param *OpenOrdersQuery) Check() error {
-	if param.SenderAddress == "" {
-		return AddressMissingError
-	}
-	if param.Limit != nil && *param.Limit <= 0 {
-		return LimitOutOfRangeError
-	}
-	return nil
-}
-
-type OpenOrders struct {
-	Order []Order `json:"order"`
-	Total int     `json:"total"`
-}
-
 // GetOpenOrders returns array of open orders
-func (c *client) GetOpenOrders(query *OpenOrdersQuery) (*OpenOrders, error) {
+func (c *client) GetOpenOrders(query *types.OpenOrdersQuery) (*types.OpenOrders, error) {
 	err := query.Check()
 	if err != nil {
 		return nil, err
@@ -69,7 +23,7 @@ func (c *client) GetOpenOrders(query *OpenOrdersQuery) (*OpenOrders, error) {
 		return nil, err
 	}
 
-	var openOrders OpenOrders
+	var openOrders types.OpenOrders
 	if err := json.Unmarshal(resp, &openOrders); err != nil {
 		return nil, err
 	}

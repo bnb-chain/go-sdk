@@ -1,5 +1,68 @@
 package types
 
+// OrderSide enum
+var OrderSide = struct {
+	BUY  string
+	SELL string
+}{
+	"BUY",
+	"SELL",
+}
+
+// TimeInForce enum
+var TimeInForce = struct {
+	GTC string
+	IOC string
+}{"GTC", "IOC"}
+
+// OrderStatus enum
+var OrderStatus = struct {
+	ACK              string
+	PARTIALLY_FILLED string
+	IOC_NO_FILL      string
+	FULLY_FILLED     string
+	CANCELED         string
+	EXPIRED          string
+	UNKNOWN          string
+}{
+	"ACK",
+	"PARTIALLY_FILLED",
+	"IOC_NO_FILL",
+	"FULLY_FILLED",
+	"CANCELED",
+	"EXPIRED",
+	"UNKNOWN",
+}
+
+// OrderType enum
+var OrderType = struct {
+	LIMIT             string
+	MARKET            string
+	STOP_LOSS         string
+	STOP_LOSS_LIMIT   string
+	TAKE_PROFIT       string
+	TAKE_PROFIT_LIMIT string
+	LIMIT_MAKER       string
+}{
+	"LIMIT",
+	"MARKET",
+	"STOP_LOSS",
+	"STOP_LOSS_LIMIT",
+	"TAKE_PROFIT",
+	"TAKE_PROFIT_LIMIT",
+	"LIMIT_MAKER",
+}
+
+type CloseOrders struct {
+	Order []Order `json:"order"`
+	Total int     `json:"total"`
+}
+
+type OpenOrders struct {
+	Order []Order `json:"order"`
+	Total int     `json:"total"`
+}
+
 type OpenOrder struct {
 	Id                   string `json:"id"`
 	Symbol               string `json:"symbol"`
@@ -31,4 +94,47 @@ type OrderBookLevel struct {
 	BuyPrice  Fixed8 `json:"buyPrice"`
 	SellQty   Fixed8 `json:"sellQty"`
 	SellPrice Fixed8 `json:"sellPrice"`
+}
+
+type Trades struct {
+	Trade []Trade `json:"trade"`
+	Total int     `json:"total"`
+}
+
+// Trade def
+type Trade struct {
+	BuyerOrderID  string `json:"buyerOrderId"`
+	BuyFee        string `json:"buyFee"`
+	BuyerId       string `json:"buyerId"`
+	Price         string `json:"price"`
+	Quantity      string `json:"quantity"`
+	SellFee       string `json:"sellFee"`
+	SellerId      string `json:"sellerId"`
+	SellerOrderID string `json:"sellerOrderId"`
+	Symbol        string `json:"symbol"`
+	Time          int64  `json:"time"`
+	TradeID       string `json:"tradeId"`
+	BlockHeight   int64  `json:"blockHeight"`
+	BaseAsset     string `json:"baseAsset"`
+	QuoteAsset    string `json:"quoteAsset"`
+}
+
+type Order struct {
+	ID                   string `json:"orderId"`
+	Owner                string `json:"owner"`
+	Symbol               string `json:"symbol"`
+	Price                string `json:"price"`
+	Quantity             string `json:"quantity"`
+	CumulateQuantity     string `json:"cumulateQuantity"`
+	Fee                  string `json:"fee"`
+	Side                 int    `json:"side"` // BUY or SELL
+	Status               string `json:"status"`
+	TimeInForce          int    `json:"timeInForce"`
+	Type                 int    `json:"type"`
+	TradeId              string `json:"tradeId"`
+	LastExecutedPrice    string `json:"last_executed_price"`
+	LastExecutedQuantity string `json:"lastExecutedQuantity"`
+	TransactionHash      string `json:"transactionHash"`
+	OrderCreateTime      string `json:"orderCreateTime"`
+	TransactionTime      string `json:"transactionTime"`
 }
