@@ -1018,7 +1018,7 @@ func FormatTxResults(cdc *amino.Codec, res []*ctypes.ResultTx) ([]tx.Info, error
 }
 
 func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
-	parsedTx, err := parseTx(cdc, res.Tx)
+	parsedTx, err := ParseTx(cdc, res.Tx)
 	if err != nil {
 		return tx.Info{}, err
 	}
@@ -1031,7 +1031,7 @@ func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
 	}, nil
 }
 
-func parseTx(cdc *amino.Codec, txBytes []byte) (tx.Tx, error) {
+func ParseTx(cdc *amino.Codec, txBytes []byte) (tx.Tx, error) {
 	var parsedTx tx.StdTx
 	err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &parsedTx)
 
