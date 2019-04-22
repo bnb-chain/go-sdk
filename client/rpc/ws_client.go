@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	defaultMaxReconnectAttempts    = 25
+	defaultMaxReconnectAttempts    = -1
 	defaultMaxReconnectBackOffTime = 120 * time.Second
 	defaultWriteWait               = 100 * time.Millisecond
 	defaultReadWait                = 0
@@ -673,13 +673,9 @@ func (c *WSClient) dial() error {
 func (c *WSClient) reconnect() error {
 	attempt := 0
 
-	c.mtx.Lock()
 	c.reconnecting = true
-	c.mtx.Unlock()
 	defer func() {
-		c.mtx.Lock()
 		c.reconnecting = false
-		c.mtx.Unlock()
 	}()
 	backOffDuration := 1 * time.Second
 	for {
