@@ -3,6 +3,7 @@ package ledger
 import (
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
+	"github.com/binance-chain/go-sdk/types"
 	"github.com/btcsuite/btcd/btcec"
 	ledgergo "github.com/zondax/ledger-cosmos-go"
 )
@@ -61,6 +62,10 @@ func GenLedgerSecp256k1Key(path DerivationPath, device LedgerSECP256K1) (PrivKey
 
 func (pkl PrivKeyLedgerSecp256k1) Bytes() []byte {
 	return nil
+}
+
+func (pkl PrivKeyLedgerSecp256k1) ShowSignAddr() error {
+	return pkl.ledger.ShowAddressSECP256K1(pkl.path, types.Network.Bech32Prefixes())
 }
 
 func (pkl PrivKeyLedgerSecp256k1) Sign(msg []byte) ([]byte, error) {
