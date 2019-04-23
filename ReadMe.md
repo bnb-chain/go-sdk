@@ -25,19 +25,20 @@ require (
 )
 ```
 
-### Use go get
+### Package replace
 
-Use go get to install sdk into your `GOPATH`:
-```bash
-go get github.com/binance-chain/go-sdk
+If you use `go mod` to manage dependency, please add this replace in your go mod file
+```
+replace github.com/zondax/ledger-cosmos-go => github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
+```
+If you use `dep`, please add the following code to `Gopkg.toml`
+```
+[[constraint]]
+  name = "github.com/zondax/ledger-cosmos-go"
+  source = "https://github.com/binance-chain/ledger-cosmos-go"
+  version = "v0.9.9-binance.1"
 ```
 
-### Use dep
-Add dependency to your Gopkg.toml file. Example:
-```bash
-[[override]]
-  name = "github.com/binance-chain/go-sdk"
-```
 
 ## Usage 
 
