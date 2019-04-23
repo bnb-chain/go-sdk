@@ -16,6 +16,12 @@ import (
 	ledgergo "github.com/zondax/ledger-cosmos-go"
 )
 
+// BIP44Prefix is the parts of the BIP32 HD path that are fixed by what we used during the fundraiser.
+const (
+	BIP44Prefix        = "44'/714'/"
+	FullFundraiserPath = BIP44Prefix + "0'/0/0"
+)
+
 var (
 	// discoverLedger defines a function to be invoked at runtime for discovering
 	// a connected Ledger device.
@@ -23,6 +29,7 @@ var (
 )
 
 type (
+
 	// discoverLedgerFn defines a Ledger discovery function that returns a
 	// connected device or an error upon failure. Its allows a method to avoid CGO
 	// dependencies when Ledger support is potentially not enabled.
@@ -47,12 +54,6 @@ type (
 		Path    DerivationPath
 		ledger  LedgerSECP256K1
 	}
-)
-
-// BIP44Prefix is the parts of the BIP32 HD path that are fixed by what we used during the fundraiser.
-const (
-	BIP44Prefix        = "44'/714'/"
-	FullFundraiserPath = BIP44Prefix + "0'/0/0"
 )
 
 // BIP44Params wraps BIP 44 params (5 level BIP 32 path).
@@ -103,12 +104,12 @@ func NewFundraiserParams(account uint32, addressIdx uint32) *BIP44Params {
 }
 
 // Return the BIP44 fields as an array.
-func (p BIP44Params) DerivationPath() []uint32 {
+func (p BIP44Params) DerivationPath() DerivationPath {
 	change := uint32(0)
 	if p.change {
 		change = 1
 	}
-	return []uint32{
+	return DerivationPath{
 		p.purpose,
 		p.coinType,
 		p.account,
