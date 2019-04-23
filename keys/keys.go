@@ -52,6 +52,12 @@ func NewPrivateKeyManager(priKey string) (KeyManager, error) {
 	return &k, err
 }
 
+func NewLedgerKeyManager(path DerivationPath) (KeyManager, error) {
+	k := keyManager{}
+	err := k.recoveryFromLedgerKey(path)
+	return &k, err
+}
+
 type keyManager struct {
 	privKey  crypto.PrivKey
 	addr     types.AccAddress
@@ -159,6 +165,24 @@ func (m *keyManager) recoveryFromPrivateKey(privateKey string) error {
 	addr := types.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
+	return nil
+}
+
+func (m *keyManager) recoveryFromLedgerKey(path DerivationPath) error {
+	if discoverLedger == nil {
+		return fmt.Errorf("no Ledger discovery function defined")
+	}
+
+	device, err := discoverLedger()
+	if err != nil {
+		return fmt.Errorf("failed to create PrivKeyLedgerSecp256k1: %s", err.Error())
+	}
+
+	pkl := &PrivKeyLedgerSecp256k1{Path: path, ledger: device}
+
+	addr := types.AccAddress(pkl.PubKey().Address())
+	m.addr = addr
+	m.privKey = pkl
 	return nil
 }
 

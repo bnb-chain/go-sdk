@@ -10,7 +10,43 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/binance-chain/go-sdk/common/crypto"
+	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/btcsuite/btcd/btcec"
+	ledgergo "github.com/zondax/ledger-cosmos-go"
+)
+
+var (
+	// discoverLedger defines a function to be invoked at runtime for discovering
+	// a connected Ledger device.
+	discoverLedger discoverLedgerFn
+)
+
+type (
+	// discoverLedgerFn defines a Ledger discovery function that returns a
+	// connected device or an error upon failure. Its allows a method to avoid CGO
+	// dependencies when Ledger support is potentially not enabled.
+	discoverLedgerFn func() (LedgerSECP256K1, error)
+
+	// DerivationPath represents a Ledger derivation path.
+	DerivationPath []uint32
+
+	// LedgerSECP256K1 reflects an interface a Ledger API must implement for
+	// the SECP256K1 scheme.
+	LedgerSECP256K1 interface {
+		GetPublicKeySECP256K1([]uint32) ([]byte, error)
+		ShowAddressSECP256K1([]uint32, string) error
+		SignSECP256K1([]uint32, []byte) ([]byte, error)
+		GetVersion() (*ledgergo.VersionInfo, error)
+	}
+
+	// PrivKeyLedgerSecp256k1 implements PrivKey, calling the ledger nano we
+	// cache the PubKey from the first call to use it later.
+	PrivKeyLedgerSecp256k1 struct {
+		privKey crypto.PrivKey
+		Path    DerivationPath
+		ledger  LedgerSECP256K1
+	}
 )
 
 // BIP44Prefix is the parts of the BIP32 HD path that are fixed by what we used during the fundraiser.
@@ -103,6 +139,54 @@ func ComputeMastersFromSeed(seed []byte) (secret [32]byte, chainCode [32]byte) {
 	secret, chainCode = i64(masterSecret, seed)
 
 	return
+}
+
+func (pkl PrivKeyLedgerSecp256k1) Bytes() []byte {
+	return nil
+}
+
+func (pkl PrivKeyLedgerSecp256k1) Sign(msg []byte) ([]byte, error) {
+	sig, err := pkl.ledger.SignSECP256K1(pkl.Path, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertDERtoBER(sig)
+}
+
+func convertDERtoBER(signatureDER []byte) ([]byte, error) {
+	sigDER, err := btcec.ParseDERSignature(signatureDER[:], btcec.S256())
+	if err != nil {
+		return nil, err
+	}
+	sigBER := btcec.Signature{R: sigDER.R, S: sigDER.S}
+	return sigBER.Serialize(), nil
+}
+
+func (privKey PrivKeyLedgerSecp256k1) PubKey() crypto.PubKey {
+	pubkey, err := privKey.ledger.GetPublicKeySECP256K1(privKey.Path)
+	if err != nil {
+		return nil
+	}
+
+	var pk secp256k1.PubKeySecp256k1
+
+	// re-serialize in the 33-byte compressed format
+	cmp, err := btcec.ParsePubKey(pubkey[:], btcec.S256())
+	if err != nil {
+		return nil
+	}
+	copy(pk[:], cmp.SerializeCompressed())
+
+	return pk
+}
+
+func (pkl PrivKeyLedgerSecp256k1) Equals(other crypto.PrivKey) bool {
+	if ledger, ok := other.(*PrivKeyLedgerSecp256k1); ok {
+		return pkl.PubKey().Equals(ledger.PubKey())
+	}
+
+	return false
 }
 
 // DerivePrivateKeyForPath derives the private key by following the BIP 32/44 path from privKeyBytes,
