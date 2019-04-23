@@ -101,12 +101,12 @@ func TestTransProcess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, common.CombineSymbol(tradeSymbol, nativeSymbol), order.Symbol)
 
-	//---- Cancle Order  ---------
+	//---- Cancel Order  ---------
 	time2.Sleep(2 * time2.Second)
-	cancleOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true)
+	cancelOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true)
 	assert.NoError(t, err)
-	assert.True(t, cancleOrderResult.Ok)
-	fmt.Printf("cancleOrderResult:  %v \n", cancleOrderResult)
+	assert.True(t, cancelOrderResult.Ok)
+	fmt.Printf("cancelOrderResult:  %v \n", cancelOrderResult)
 
 	//---- Get Close Order---------
 	closedOrders, err := client.GetClosedOrders(query.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
