@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/binance-chain/go-sdk/keys"
@@ -13,5 +14,6 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(keyManager.GetAddr())
+	fmt.Println(fmt.Sprintf("address: %s", keyManager.GetAddr()))
+	fmt.Println(fmt.Sprintf("pubkey: %s", hex.EncodeToString(keyManager.GetPrivKey().PubKey().Bytes())))
 }
