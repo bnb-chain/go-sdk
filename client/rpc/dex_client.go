@@ -3,10 +3,10 @@ package rpc
 import (
 	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/types/tx"
 	"strings"
 
 	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 const (

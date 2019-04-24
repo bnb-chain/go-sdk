@@ -1,9 +1,11 @@
 package mock
 
 import (
+	"github.com/binance-chain/go-sdk/client/rpc"
 	"reflect"
 
 	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/rpc/core"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -17,15 +19,17 @@ import (
 // Nothing hidden here, so no New function, just construct it from
 // some parts, and swap them out them during the tests.
 type Client struct {
+	cmn.Service
 	client.ABCIClient
 	client.SignClient
 	client.HistoryClient
 	client.StatusClient
-	client.EventsClient
-	cmn.Service
+	rpc.EventsClient
+	rpc.DexClient
+	rpc.OpsClient
 }
 
-var _ client.Client = Client{}
+var _ rpc.Client = Client{}
 
 // Call is used by recorders to save a call and response.
 // It can also be used to configure mock responses.
@@ -106,14 +110,6 @@ func (c Client) Health() (*ctypes.ResultHealth, error) {
 	return core.Health(&rpctypes.Context{})
 }
 
-func (c Client) DialSeeds(seeds []string) (*ctypes.ResultDialSeeds, error) {
-	return core.UnsafeDialSeeds(&rpctypes.Context{}, seeds)
-}
-
-func (c Client) DialPeers(peers []string, persistent bool) (*ctypes.ResultDialPeers, error) {
-	return core.UnsafeDialPeers(&rpctypes.Context{}, peers, persistent)
-}
-
 func (c Client) BlockchainInfo(minHeight, maxHeight int64) (*ctypes.ResultBlockchainInfo, error) {
 	return core.BlockchainInfo(&rpctypes.Context{}, minHeight, maxHeight)
 }
@@ -132,4 +128,8 @@ func (c Client) Commit(height *int64) (*ctypes.ResultCommit, error) {
 
 func (c Client) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	return core.Validators(&rpctypes.Context{}, height)
+}
+
+func (c Client) SetLogger(log.Logger) {
+	return
 }

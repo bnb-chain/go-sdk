@@ -3,9 +3,10 @@ package rpc
 import (
 	"crypto/sha256"
 	"fmt"
+	"strings"
+
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/types"
-	"strings"
 )
 
 const (

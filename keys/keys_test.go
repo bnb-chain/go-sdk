@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/binance-chain/go-sdk/types"
+	"github.com/stretchr/testify/assert"
+
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRecoveryFromKeyWordsNoError(t *testing.T) {
@@ -69,7 +71,7 @@ func TestSignTxNoError(t *testing.T) {
 		expectHexTx string
 		errMsg      string
 	}{
-		{msg.CreateSendMsg(test1Addr, types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}, []msg.Transfer{{test2KeyManagr.GetAddr(), types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}}}),
+		{msg.CreateSendMsg(test1Addr, ctypes.Coins{ctypes.Coin{Denom: "BNB", Amount: 100000000000000}}, []msg.Transfer{{test2KeyManagr.GetAddr(), ctypes.Coins{ctypes.Coin{Denom: "BNB", Amount: 100000000000000}}}}),
 			test1KeyManger,
 			0,
 			1,
@@ -84,11 +86,11 @@ func TestSignTxNoError(t *testing.T) {
 			"a701f0625dee0a3317efab800a146b571fc0a9961a7ddf45e49a88a4d83941fcabbe1207426974636f696e1a034254432080809aa6eaafe3012801126c0a26eb5ae9872103d8f33449356d58b699f6b16a498bd391aa5e051085415d0fe1873939bc1d2e3a12403686586a55f8c50a11ae6f09c35734f09830a566823846f9333c3e53f6d83d4a2cd3a0542c37a8d28b474f563d44223ba6c2b7cf260539b7b85020999ebe2c001801",
 			"issue message sign error",
 		},
-		{msg.NewMsgSubmitProposal("list BTC/BNB", "{\"base_asset_symbol\":\"BTC-86A\",\"quote_asset_symbol\":\"BNB\",\"init_price\":100000000,\"description\":\"list BTC/BNB\",\"expire_time\":\"2018-12-24T00:46:05+08:00\"}", msg.ProposalTypeListTradingPair, test1Addr, types.Coins{types.Coin{Denom: "BNB", Amount: 200000000000}}),
+		{msg.NewMsgSubmitProposal("list BTC/BNB", "{\"base_asset_symbol\":\"BTC-86A\",\"quote_asset_symbol\":\"BNB\",\"init_price\":100000000,\"description\":\"list BTC/BNB\",\"expire_time\":\"2018-12-24T00:46:05+08:00\"}", msg.ProposalTypeListTradingPair, test1Addr, ctypes.Coins{ctypes.Coin{Denom: "BNB", Amount: 200000000000}}, time.Second),
 			test1KeyManger,
 			0,
 			2,
-			"c802f0625dee0ad301b42d614e0a0c6c697374204254432f424e421298017b22626173655f61737365745f73796d626f6c223a224254432d383641222c2271756f74655f61737365745f73796d626f6c223a22424e42222c22696e69745f7072696365223a3130303030303030302c226465736372697074696f6e223a226c697374204254432f424e42222c226578706972655f74696d65223a22323031382d31322d32345430303a34363a30352b30383a3030227d180422141d0e3086e8e4e0a53c38a90d55bd58b34d57d2fa2a0c0a03424e421080a0b787e905126c0a26eb5ae98721027e69d96640300433654e016d218a8d7ffed751023d8efe81e55dedbd6754c971124053292ece8b9d2258ea6d22399ec988d75aab526056219174373b45bb1372d0a12f5853a196f56b1cc9e13fef7ab6debfdb43a36c175f40de99193ac7b319a53d2002",
+			"ce02f0625dee0ad901b42d614e0a0c6c697374204254432f424e421298017b22626173655f61737365745f73796d626f6c223a224254432d383641222c2271756f74655f61737365745f73796d626f6c223a22424e42222c22696e69745f7072696365223a3130303030303030302c226465736372697074696f6e223a226c697374204254432f424e42222c226578706972655f74696d65223a22323031382d31322d32345430303a34363a30352b30383a3030227d180422141d0e3086e8e4e0a53c38a90d55bd58b34d57d2fa2a0c0a03424e421080a0b787e905308094ebdc03126c0a26eb5ae98721027e69d96640300433654e016d218a8d7ffed751023d8efe81e55dedbd6754c9711240ebac8c34f27e9dc0719167c4ad87bc2e3e1437022c3287030425db8f4233c3b80938dfa16f555738ba97e92aa7a15ebb6ac8baa5d799118cccf503302d166df92002",
 			"submit proposal sign error",
 		},
 		{

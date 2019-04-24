@@ -1,24 +1,26 @@
 package e2e
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os/exec"
 	"sync"
 	"testing"
 	"time"
 
-	ctypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/stretchr/testify/assert"
+	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/types"
 
 	"github.com/binance-chain/go-sdk/client/rpc"
-	"github.com/stretchr/testify/assert"
-	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 )
 
 var (
-	nodeAddr           = "tcp://data-seed-pre-0-s3.binance.org:80"
+	nodeAddr           = "tcp://127.0.0.1:26657"
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
 	testTxHeight       = 8669273
@@ -29,6 +31,18 @@ var (
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
 )
+
+func startBnbchaind(t *testing.T) *exec.Cmd {
+	cmd := exec.Command("bnbchaind", "start", "--home", "testnoded")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Start()
+	assert.NoError(t, err)
+	// wait for completely start
+	time.Sleep(15 * time.Second)
+	return cmd
+}
 
 func defaultClient() *rpc.HTTP {
 	onceClient.Do(func() {
@@ -152,23 +166,55 @@ func TestTx(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
-//func TestReconnection(t *testing.T) {
-//	c := defaultClient()
-//	status, err := c.Status()
-//	assert.NoError(t, err)
-//	bz, err := json.Marshal(status)
-//	fmt.Println(string(bz))
-//	time.Sleep(10 * time.Second)
-//	status, err = c.Status()
-//	assert.Error(t, err)
-//	fmt.Println(err)
-//	time.Sleep(10 * time.Second)
-//	status, err = c.Status()
-//	assert.Error(t, err)
-//	fmt.Println(err)
-//	bz, err = json.Marshal(status)
-//	fmt.Println(string(bz))
-//}
+func TestReconnection(t *testing.T) {
+	repeatNum := 10
+	c := defaultClient()
+
+	// Find error
+	time.Sleep(1 * time.Second)
+	for i := 0; i < repeatNum; i++ {
+		_, err := c.Status()
+		assert.Error(t, err)
+	}
+
+	// Reconnect and find no error
+	cmd := startBnbchaind(t)
+
+	for i := 0; i < repeatNum; i++ {
+		status, err := c.Status()
+		assert.NoError(t, err)
+		bz, err := json.Marshal(status)
+		fmt.Println(string(bz))
+	}
+
+	// kill process
+	err := cmd.Process.Kill()
+	assert.NoError(t, err)
+	err = cmd.Process.Release()
+	assert.NoError(t, err)
+	time.Sleep(1 * time.Second)
+
+	// Find error
+	for i := 0; i < repeatNum; i++ {
+		_, err := c.Status()
+		assert.Error(t, err)
+	}
+
+	// Restart bnbchain
+	cmd = startBnbchaind(t)
+
+	// Find no error
+	for i := 0; i < repeatNum; i++ {
+		status, err := c.Status()
+		assert.NoError(t, err)
+		bz, _ := json.Marshal(status)
+		fmt.Println(string(bz))
+	}
+
+	// Stop bnbchain
+	cmd.Process.Kill()
+	cmd.Process.Release()
+}
 
 func TestTxSearch(t *testing.T) {
 	c := defaultClient()

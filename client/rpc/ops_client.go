@@ -3,8 +3,13 @@ package rpc
 import "github.com/binance-chain/go-sdk/common/types"
 
 type OpsClient interface {
+	IsActive() bool
 	GetStakeValidators() ([]types.Validator, error)
 	GetDelegatorUnbondingDelegations(delegatorAddr types.AccAddress) ([]types.UnbondingDelegation, error)
+}
+
+func (c *HTTP) IsActive() bool {
+	return c.WSEvents.IsActive()
 }
 
 func (c *HTTP) GetStakeValidators() ([]types.Validator, error) {
