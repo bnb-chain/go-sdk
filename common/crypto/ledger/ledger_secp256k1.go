@@ -43,21 +43,21 @@ type (
 	}
 )
 
-func GenLedgerSecp256k1Key(path DerivationPath, device LedgerSECP256K1) (PrivKeyLedgerSecp256k1, error) {
+func GenLedgerSecp256k1Key(path DerivationPath, device LedgerSECP256K1) (*PrivKeyLedgerSecp256k1, error) {
 	var pk secp256k1.PubKeySecp256k1
 	pubkey, err := device.GetPublicKeySECP256K1(path)
 	if err != nil {
-		return PrivKeyLedgerSecp256k1{}, err
+		return nil, err
 	}
 	// re-serialize in the 33-byte compressed format
 	cmp, err := btcec.ParsePubKey(pubkey[:], btcec.S256())
 	if err != nil {
-		return PrivKeyLedgerSecp256k1{}, err
+		return nil, err
 	}
 	copy(pk[:], cmp.SerializeCompressed())
 
 	privKey := PrivKeyLedgerSecp256k1{path: path, ledger: device, pubkey: pk}
-	return privKey, nil
+	return &privKey, nil
 }
 
 func (pkl PrivKeyLedgerSecp256k1) Bytes() []byte {
