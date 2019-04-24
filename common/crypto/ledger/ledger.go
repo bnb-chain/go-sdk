@@ -10,7 +10,7 @@ import (
 // set the discoverLedger function which is responsible for loading the Ledger
 // device at runtime or returning an error.
 func init() {
-	DiscoverLedger = func() (LedgerSECP256K1, error) {
+	DiscoverLedger = func() (LedgerSecp256k1, error) {
 		device, err := ledger.FindLedgerCosmosUserApp()
 		if err != nil {
 			return nil, err

@@ -19,14 +19,14 @@ type (
 	// discoverLedgerFn defines a Ledger discovery function that returns a
 	// connected device or an error upon failure. Its allows a method to avoid CGO
 	// dependencies when Ledger support is potentially not enabled.
-	discoverLedgerFn func() (LedgerSECP256K1, error)
+	discoverLedgerFn func() (LedgerSecp256k1, error)
 
 	// DerivationPath represents a Ledger derivation path.
 	DerivationPath []uint32
 
-	// LedgerSECP256K1 reflects an interface a Ledger API must implement for
+	// LedgerSecp256k1 reflects an interface a Ledger API must implement for
 	// the SECP256K1 scheme.
-	LedgerSECP256K1 interface {
+	LedgerSecp256k1 interface {
 		GetPublicKeySECP256K1([]uint32) ([]byte, error)
 		ShowAddressSECP256K1([]uint32, string) error
 		SignSECP256K1([]uint32, []byte) ([]byte, error)
@@ -39,11 +39,11 @@ type (
 		crypto.PrivKey
 		pubkey secp256k1.PubKeySecp256k1
 		path   DerivationPath
-		ledger LedgerSECP256K1
+		ledger LedgerSecp256k1
 	}
 )
 
-func GenLedgerSecp256k1Key(path DerivationPath, device LedgerSECP256K1) (*PrivKeyLedgerSecp256k1, error) {
+func GenLedgerSecp256k1Key(path DerivationPath, device LedgerSecp256k1) (*PrivKeyLedgerSecp256k1, error) {
 	var pk secp256k1.PubKeySecp256k1
 	pubkey, err := device.GetPublicKeySECP256K1(path)
 	if err != nil {
