@@ -66,6 +66,13 @@ func NewFundraiserParams(account uint32, addressIdx uint32) *BIP44Params {
 	return NewParams(44, 714, account, false, addressIdx)
 }
 
+// NewBinanceBIP44Params creates a BIP 44 parameter object from the params:
+// m / 44' / 714' / account' / 0 / address_index
+// The fixed parameters (purpose', coin_type', and change) are determined by what was used in the binance ledger app.
+func NewBinanceBIP44Params(account uint32, addressIdx uint32) *BIP44Params {
+	return NewParams(44, 714, account, false, addressIdx)
+}
+
 // Return the BIP44 fields as an array.
 func (p BIP44Params) DerivationPath() []uint32 {
 	change := uint32(0)

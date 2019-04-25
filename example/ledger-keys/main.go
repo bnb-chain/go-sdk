@@ -12,7 +12,19 @@ import (
 )
 
 func main() {
-	bip44Params := keys.NewFundraiserParams(0, 0)
+	//Check whether there are variable ledger devices
+	ledgerDevice, err := ledger.DiscoverLedger()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Failed to find ledger device: %s", err.Error()))
+		return
+	}
+	err = ledgerDevice.Close()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Failed to find ledger device: %s", err.Error()))
+		return
+	}
+
+	bip44Params := keys.NewBinanceBIP44Params(0, 0)
 	keyManager1, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
 	if err != nil {
 		fmt.Println(err.Error())

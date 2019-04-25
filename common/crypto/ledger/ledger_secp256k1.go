@@ -5,7 +5,7 @@ import (
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/btcsuite/btcd/btcec"
-	ledgergo "github.com/zondax/ledger-cosmos-go"
+	ledgergo "github.com/binance-chain/ledger-cosmos-go"
 )
 
 var (
@@ -31,6 +31,7 @@ type (
 		ShowAddressSECP256K1([]uint32, string) error
 		SignSECP256K1([]uint32, []byte) ([]byte, error)
 		GetVersion() (*ledgergo.VersionInfo, error)
+		Close() error
 	}
 
 	// PrivKeyLedgerSecp256k1 implements PrivKey, calling the ledger nano we

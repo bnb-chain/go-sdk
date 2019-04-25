@@ -18,30 +18,26 @@ Go version above 1.11
 
 ### Use go mod(recommend)
 
-Add `go-sdk` dependency into your `go.mod` file. Example:
-```
+Add "github.com/binance-chain/go-sdk" dependency into your go.mod file. Example:
+```go
 require (
 	github.com/binance-chain/go-sdk latest
 )
 ```
-Don't forget to add this to your `go.mod` file
-```
-replace github.com/zondax/ledger-cosmos-go => github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
+
+### Use go get
+
+Use go get to install sdk into your `GOPATH`:
+```bash
+go get github.com/binance-chain/go-sdk
 ```
 
-### Use go dep
-
-If you use `dep`, please add the following code to `Gopkg.toml`
-```
-[[constraint]]
-  name = "github.com/binance-chain/go-sdk"
-  version = "v0.9.3"
+### Use dep
+Add dependency to your Gopkg.toml file. Example:
+```bash
 [[override]]
-  name = "github.com/zondax/ledger-cosmos-go"
-  source = "https://github.com/binance-chain/ledger-cosmos-go"
-  version = "v0.9.9-binance.1"
+  name = "github.com/binance-chain/go-sdk"
 ```
-Currently, the recommended `go-sdk` version is `v0.9.3`, please select proper version according to your application.
 
 ## Usage 
 
