@@ -24,7 +24,7 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f h1:R0wLxgASGMoRQTF/dCSk4N+M3j9DLyPDzDff2WtCg/I=
 github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f/go.mod h1:DC6/m53jtQzr/NFmMNEu0rxf18/ktVoVtMrnDD5pN+U=
 github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9/go.mod h1:nt45hbhDkWVdMBkr2TOgOzCrpBccXdN09WOiOYTHVEk=
-github.com/tendermint/tendermint v0.30.1/go.mod h1:ymcPyWblXCplCPQjbOYbrF1fWnpslATMVqiGgWbZrlc=
+github.com/tendermint/tendermint v0.31.2-rc0/go.mod h1:ymcPyWblXCplCPQjbOYbrF1fWnpslATMVqiGgWbZrlc=
 github.com/zondax/hid v0.9.0 h1:eiT3P6vNxAEVxXMw66eZUAAnU2zD33JBkfG/EnfAKl8=
 github.com/zondax/hid v0.9.0/go.mod h1:l5wttcP0jwtdLjqjMMWFVEE7d1zO0jvSPA9OPZxWpEM=
 github.com/zondax/ledger-go v0.9.0 h1:oTrtFqPFA4VdCPRvqMaN45mQnJxkPc0JxoVZfCoUpjI=

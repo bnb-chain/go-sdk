@@ -17,7 +17,7 @@ require (
 	github.com/stretchr/testify v1.2.2
 	github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f
 	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9 // indirect
-	github.com/tendermint/tendermint v0.30.1
+	github.com/tendermint/tendermint v0.31.2-rc0
 	github.com/zondax/hid v0.9.0 // indirect
 	github.com/zondax/ledger-go v0.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
