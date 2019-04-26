@@ -112,7 +112,7 @@ ExportAsMnemonic() (string, error)
 ExportAsPrivateKey() (string, error)
 
 ExportAsKeyStore(password string) (*EncryptedKeyJSON, error)
-```
+``` 
 
 Examples:
 ```go
@@ -125,7 +125,7 @@ newkm, _ := NewKeyStoreKeyManager("TestGenerateKeyStoreNoError.json", "testpassw
 encryPlain2, _ := newkm.GetPrivKey().Sign([]byte("test plain"))
 assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
 ```
-
+**As for ledger key, it can't be exported. Because its private key is saved on ledger device and no one can directly access it outside.** 
 
 ### Init Client
 
