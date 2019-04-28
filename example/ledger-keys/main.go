@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/client"
 	"strconv"
 
+	"github.com/binance-chain/go-sdk/client"
 	"github.com/binance-chain/go-sdk/common/crypto/ledger"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types"
@@ -53,7 +53,7 @@ func main() {
 	}
 
 	floatAmount := 0.0
-	for _,coin :=  range account.Balances {
+	for _, coin := range account.Balances {
 		if coin.Symbol == "BNB" {
 			fmt.Println(fmt.Sprintf("Your account has %s:BNB", coin.Free))
 			floatAmount, err = strconv.ParseFloat(coin.Free, 64)
