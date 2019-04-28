@@ -1,17 +1,20 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
+	"github.com/binance-chain/go-sdk/client"
+	"strconv"
 
 	"github.com/binance-chain/go-sdk/common/crypto/ledger"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
 )
 
+// To run this example, please make sure your key address have more than 1:BNB on testnet
 func main() {
+	types.Network = types.TestNetwork
+
 	//Check whether there are variable ledger devices
 	ledgerDevice, err := ledger.DiscoverLedger()
 	if err != nil {
@@ -25,47 +28,51 @@ func main() {
 	}
 
 	bip44Params := keys.NewBinanceBIP44Params(0, 0)
-	keyManager1, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
+	keyManager, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(fmt.Sprintf("address: %s", keyManager1.GetAddr()))
-	fmt.Println(fmt.Sprintf("pubkey: %s", hex.EncodeToString(keyManager1.GetPrivKey().PubKey().Bytes())))
 
-	receiverAddr, err := types.AccAddressFromBech32("bnb1pkppf2ar3wj38cu7y8khyg0clmhvf2f2nzt4w6")
+	receiverAddr, err := types.AccAddressFromBech32("tbnb15339dcwlq5nza4atfmqxfx6mhamywz35he2cvv")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	sendMsg := msg.CreateSendMsg(keyManager1.GetAddr(), types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}, []msg.Transfer{{receiverAddr, types.Coins{types.Coin{Denom: "BNB", Amount: 100000000000000}}}})
-	stdTx := tx.StdSignMsg{
-		ChainID:       "binance-chain",
-		AccountNumber: 0,
-		Sequence:      0,
-		Msgs:          []msg.Msg{sendMsg},
-		Memo:          "test ledger sign",
-		Source:        0,
+
+	dexClient, err := client.NewDexClient("testnet-dex.binance.org:443", types.TestNetwork, keyManager)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
 	}
 
-	if ledgerKey, ok := keyManager1.GetPrivKey().(*ledger.PrivKeyLedgerSecp256k1); ok {
-		fmt.Println(fmt.Sprintf("Please verify if the address displayed on your ledger screen is identical to %s", types.AccAddress(keyManager1.GetAddr()).String()))
-		fmt.Println("If so, please click confirm button on your ledger device")
-		// Before sign with ledger key, you must call ShowSignAddr first
-		err := ledgerKey.ShowSignAddr()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
+	account, err := dexClient.GetAccount(keyManager.GetAddr().String())
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	floatAmount := 0.0
+	for _,coin :=  range account.Balances {
+		if coin.Symbol == "BNB" {
+			fmt.Println(fmt.Sprintf("Your account has %s:BNB", coin.Free))
+			floatAmount, err = strconv.ParseFloat(coin.Free, 64)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			break
 		}
-	} else {
-		fmt.Println("Invalid ledger keyManager")
-		return
 	}
-	fmt.Println("Please verify transaction data")
-	signature, err := keyManager1.GetPrivKey().Sign(stdTx.Bytes())
+	if floatAmount <= 1.0 {
+		fmt.Println("Your account doesn't have enough bnb")
+	}
+
+	fmt.Println(fmt.Sprintf("Please verify sign key address (%s) and transaction data", types.AccAddress(keyManager.GetAddr()).String()))
+	sendResult, err := dexClient.SendToken([]msg.Transfer{{receiverAddr, types.Coins{types.Coin{Denom: "BNB", Amount: 10000000}}}}, true)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(fmt.Sprintf("signature: %s", hex.EncodeToString(signature)))
+	fmt.Println(fmt.Sprintf("Send result: %t", sendResult.Ok))
 }

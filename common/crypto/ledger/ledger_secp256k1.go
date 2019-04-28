@@ -4,8 +4,9 @@ import (
 	"github.com/binance-chain/go-sdk/common/crypto"
 	"github.com/binance-chain/go-sdk/common/crypto/secp256k1"
 	"github.com/binance-chain/go-sdk/types"
-	"github.com/btcsuite/btcd/btcec"
 	ledgergo "github.com/binance-chain/ledger-cosmos-go"
+	"github.com/btcsuite/btcd/btcec"
+	tmbtcec "github.com/tendermint/btcd/btcec"
 )
 
 var (
@@ -70,6 +71,10 @@ func (pkl PrivKeyLedgerSecp256k1) ShowSignAddr() error {
 }
 
 func (pkl PrivKeyLedgerSecp256k1) Sign(msg []byte) ([]byte, error) {
+	err := pkl.ShowSignAddr()
+	if err != nil {
+		return nil, err
+	}
 	sig, err := pkl.ledger.SignSECP256K1(pkl.path, msg)
 	if err != nil {
 		return nil, err
@@ -90,10 +95,10 @@ func (pkl PrivKeyLedgerSecp256k1) Equals(other crypto.PrivKey) bool {
 }
 
 func convertDERtoBER(signatureDER []byte) ([]byte, error) {
-	sigDER, err := btcec.ParseDERSignature(signatureDER[:], btcec.S256())
+	sigDER, err := btcec.ParseSignature(signatureDER[:], btcec.S256())
 	if err != nil {
 		return nil, err
 	}
-	sigBER := btcec.Signature{R: sigDER.R, S: sigDER.S}
+	sigBER := tmbtcec.Signature{R: sigDER.R, S: sigDER.S}
 	return sigBER.Serialize(), nil
 }

@@ -172,7 +172,7 @@ func (m *keyManager) recoveryFromPrivateKey(privateKey string) error {
 
 func (m *keyManager) recoveryFromLedgerKey(path ledger.DerivationPath) error {
 	if ledger.DiscoverLedger == nil {
-		return fmt.Errorf("no Ledger discovery function defined")
+		return fmt.Errorf("no Ledger discovery function defined, please make sure you have added ledger to build tags and cgo is enabled")
 	}
 
 	device, err := ledger.DiscoverLedger()
