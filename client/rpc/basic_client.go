@@ -40,7 +40,6 @@ func NewRPCClient(nodeURI string) *HTTP {
 }
 
 type HTTP struct {
-	remote string
 	*WSEvents
 }
 
@@ -56,7 +55,6 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 	rc.SetCodec(cdc)
 	wsEvent := newWSEvents(cdc, remote, wsEndpoint)
 	client := &HTTP{
-		remote:   remote,
 		WSEvents: wsEvent,
 	}
 	client.Start()
