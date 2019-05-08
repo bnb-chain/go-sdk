@@ -2,8 +2,9 @@ package tx
 
 import (
 	"encoding/json"
-	"github.com/binance-chain/go-sdk/common/crypto"
+
 	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 // StdSignDoc def

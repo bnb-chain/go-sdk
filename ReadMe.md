@@ -23,21 +23,10 @@ Add "github.com/binance-chain/go-sdk" dependency into your go.mod file. Example:
 require (
 	github.com/binance-chain/go-sdk latest
 )
+replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
 ```
 
-### Use go get
-
-Use go get to install sdk into your `GOPATH`:
-```bash
-go get github.com/binance-chain/go-sdk
-```
-
-### Use dep
-Add dependency to your Gopkg.toml file. Example:
-```bash
-[[override]]
-  name = "github.com/binance-chain/go-sdk"
-```
+**NOTE**: Please make sure you use binance-chain amino repo instead of tendermint amino.
 
 ## Usage 
 
@@ -150,3 +139,15 @@ createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.Or
 ```
 
 For more API usage documentation, please check the [wiki](https://github.com/binance-chain/go-sdk/wiki)..
+
+## RPC Client(Beta)
+RPC endpoints may be used to interact with a node directly over HTTP or websockets. Using RPC, you may perform low-level 
+operations like executing ABCI queries, viewing network/consensus state or broadcasting a transaction against full node or
+light client.
+
+### Example
+```go
+nodeAddr := "tcp://127.0.0.1:27147"
+testClientInstance := rpc.NewRPCClient(nodeAddr)
+status, err := c.Status()
+```

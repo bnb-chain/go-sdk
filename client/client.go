@@ -7,8 +7,8 @@ import (
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/client/websocket"
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
 )
 
 // dexClient wrapper

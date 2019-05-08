@@ -1,15 +1,13 @@
 package msg
 
 import (
-	"github.com/binance-chain/bnc-go-amino"
-
-	"github.com/binance-chain/go-sdk/common/crypto/encoding/amino"
+	"github.com/tendermint/go-amino"
 )
 
 var MsgCdc = amino.NewCodec()
 
 func RegisterCodec(cdc *amino.Codec) {
-	cryptoAmino.RegisterAmino(cdc)
+
 	cdc.RegisterInterface((*Msg)(nil), nil)
 
 	cdc.RegisterConcrete(CreateOrderMsg{}, "dex/NewOrder", nil)

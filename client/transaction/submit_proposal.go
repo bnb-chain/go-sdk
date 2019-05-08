@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
@@ -25,7 +26,7 @@ func (c *client) SubmitListPairProposal(title string, param msg.ListTradingPairP
 
 func (c *client) SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error) {
 	fromAddr := c.keyManager.GetAddr()
-	coins := types.Coins{types.Coin{Denom: types.NativeSymbol, Amount: initialDeposit}}
+	coins := ctypes.Coins{ctypes.Coin{Denom: types.NativeSymbol, Amount: initialDeposit}}
 	proposalMsg := msg.NewMsgSubmitProposal(title, description, proposalType, fromAddr, coins, votingPeriod)
 	err := proposalMsg.ValidateBasic()
 	if err != nil {

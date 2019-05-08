@@ -2,26 +2,19 @@ package query
 
 import (
 	"encoding/json"
+
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
-// Token definition
-type Token struct {
-	Name           string `json:"name"`
-	Symbol         string `json:"symbol"`
-	TotalSupply    string `json:"total_supply"`
-	Owner          string `json:"owner"`
-	OriginalSymbol string `json:"original_symbol"`
-}
-
 // GetTokens returns list of tokens
-func (c *client) GetTokens() ([]Token, error) {
+func (c *client) GetTokens() ([]types.Token, error) {
 	qp := map[string]string{}
 	resp, err := c.baseClient.Get("/tokens", qp)
 	if err != nil {
 		return nil, err
 	}
 
-	var tokens []Token
+	var tokens []types.Token
 	if err := json.Unmarshal(resp, &tokens); err != nil {
 		return nil, err
 	}

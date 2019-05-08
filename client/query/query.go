@@ -2,21 +2,22 @@ package query
 
 import (
 	"github.com/binance-chain/go-sdk/client/basic"
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
 type QueryClient interface {
-	GetClosedOrders(query *ClosedOrdersQuery) (*CloseOrders, error)
-	GetDepth(query *DepthQuery) (*MarketDepth, error)
-	GetKlines(query *KlineQuery) ([]Kline, error)
-	GetMarkets(query *MarketsQuery) ([]SymbolPair, error)
-	GetOrder(orderID string) (*Order, error)
-	GetOpenOrders(query *OpenOrdersQuery) (*OpenOrders, error)
-	GetTicker24h(query *Ticker24hQuery) ([]Ticker24h, error)
-	GetTrades(query *TradesQuery) (*Trades, error)
-	GetAccount(string) (*Account, error)
-	GetTime() (*Time, error)
-	GetTokens() ([]Token, error)
-	GetNodeInfo() (*ResultStatus, error)
+	GetClosedOrders(query *types.ClosedOrdersQuery) (*types.CloseOrders, error)
+	GetDepth(query *types.DepthQuery) (*types.MarketDepth, error)
+	GetKlines(query *types.KlineQuery) ([]types.Kline, error)
+	GetMarkets(query *types.MarketsQuery) ([]types.TradingPair, error)
+	GetOrder(orderID string) (*types.Order, error)
+	GetOpenOrders(query *types.OpenOrdersQuery) (*types.OpenOrders, error)
+	GetTicker24h(query *types.Ticker24hQuery) ([]types.Ticker24h, error)
+	GetTrades(query *types.TradesQuery) (*types.Trades, error)
+	GetAccount(string) (*types.BalanceAccount, error)
+	GetTime() (*types.Time, error)
+	GetTokens() ([]types.Token, error)
+	GetNodeInfo() (*types.ResultStatus, error)
 }
 
 type client struct {

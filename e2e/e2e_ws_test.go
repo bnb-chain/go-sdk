@@ -3,14 +3,16 @@ package e2e
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/client/query"
-	"github.com/binance-chain/go-sdk/client/websocket"
-	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	sdk "github.com/binance-chain/go-sdk/client"
+	"github.com/binance-chain/go-sdk/client/websocket"
+	ctypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/keys"
+	"github.com/binance-chain/go-sdk/types"
 )
 
 func NewClient(t *testing.T) sdk.DexClient {
@@ -18,7 +20,7 @@ func NewClient(t *testing.T) sdk.DexClient {
 	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
 	assert.NoError(t, err)
 
-	client, err := sdk.NewDexClient("testnet-dex.binance.org", types.TestNetwork, keyManager)
+	client, err := sdk.NewDexClient("testnet-dex.binance.org", ctypes.TestNetwork, keyManager)
 	assert.NoError(t, err)
 	return client
 }
@@ -42,12 +44,12 @@ func TestSubscribeAllTickerEvent(t *testing.T) {
 func TestSubscribeTickerEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeTickerEvent(tradeSymbol, types.NativeSymbol, quit, func(event *websocket.TickerEvent) {
@@ -81,12 +83,12 @@ func TestSubscribeAllMiniTickersEvent(t *testing.T) {
 func TestSubscribeMiniTickersEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeMiniTickerEvent(tradeSymbol, types.NativeSymbol, quit, func(event *websocket.MiniTickerEvent) {
@@ -105,12 +107,12 @@ func TestSubscribeMiniTickersEvent(t *testing.T) {
 func TestSubscribeTradeEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeTradeEvent(tradeSymbol, types.NativeSymbol, quit, func(events []*websocket.TradeEvent) {
@@ -177,12 +179,12 @@ func TestSubscribeBlockHeightEvent(t *testing.T) {
 func TestSubscribeKlineEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeKlineEvent(tradeSymbol, types.NativeSymbol, websocket.OneMinuteInterval, quit, func(event *websocket.KlineEvent) {
@@ -201,12 +203,12 @@ func TestSubscribeKlineEvent(t *testing.T) {
 func TestSubscribeMarketDiffEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].QuoteAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeMarketDiffEvent(tradeSymbol, types.NativeSymbol, quit, func(event *websocket.MarketDeltaEvent) {
@@ -225,12 +227,12 @@ func TestSubscribeMarketDiffEvent(t *testing.T) {
 func TestSubscribeMarketDepthEvent(t *testing.T) {
 	client := NewClient(t)
 
-	markets, err := client.GetMarkets(query.NewMarketsQuery().WithLimit(1))
+	markets, err := client.GetMarkets(ctypes.NewMarketsQuery().WithLimit(1))
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(markets))
-	tradeSymbol := markets[0].TradeAsset
-	if markets[0].QuoteAsset != types.NativeSymbol {
-		tradeSymbol = markets[0].QuoteAsset
+	tradeSymbol := markets[0].BaseAssetSymbol
+	if markets[0].QuoteAssetSymbol != types.NativeSymbol {
+		tradeSymbol = markets[0].BaseAssetSymbol
 	}
 	quit := make(chan struct{})
 	err = client.SubscribeMarketDepthEvent(tradeSymbol, types.NativeSymbol, quit, func(event *websocket.MarketDepthEvent) {
