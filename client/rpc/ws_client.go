@@ -1008,7 +1008,7 @@ func makeHTTPDialer(remoteAddr string) (string, string, func(string, string) (ne
 	// replace / with . for http requests (kvstore domain)
 	trimmedAddress := strings.Replace(address, "/", ".", -1)
 	return clientProtocol, trimmedAddress, func(proto, addr string) (net.Conn, error) {
-		return net.Dial(protocol, address)
+		return net.DialTimeout(protocol, address, defaultTimeout)
 	}
 }
 

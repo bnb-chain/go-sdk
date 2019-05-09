@@ -17,7 +17,7 @@ const (
 	maxTxSearchStrLength  = 1024
 	maxUnConfirmedTxs     = 100
 
-	tokenSymbolMaxLen = 11
+	tokenSymbolMaxLen = 12
 	tokenSymbolMinLen = 3
 )
 
