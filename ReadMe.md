@@ -148,6 +148,6 @@ light client.
 ### Example
 ```go
 nodeAddr := "tcp://127.0.0.1:27147"
-testClientInstance := rpc.NewRPCClient(nodeAddr)
+testClientInstance := rpc.NewRPCClient(nodeAddr,types.TestNetwork)
 status, err := c.Status()
 ```
