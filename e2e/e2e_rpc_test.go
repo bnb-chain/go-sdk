@@ -46,7 +46,7 @@ func startBnbchaind(t *testing.T) *exec.Cmd {
 
 func defaultClient() *rpc.HTTP {
 	onceClient.Do(func() {
-		testClientInstance = rpc.NewRPCClient(nodeAddr)
+		testClientInstance = rpc.NewRPCClient(nodeAddr, ctypes.TestNetwork)
 	})
 	return testClientInstance
 }
@@ -233,13 +233,13 @@ func TestValidators(t *testing.T) {
 }
 
 func TestBadNodeAddr(t *testing.T) {
-	c := rpc.NewRPCClient(badAddr)
+	c := rpc.NewRPCClient(badAddr, ctypes.TestNetwork)
 	_, err := c.Validators(nil)
 	assert.Error(t, err, "context deadline exceeded")
 }
 
 func TestSetTimeOut(t *testing.T) {
-	c := rpc.NewRPCClient(badAddr)
+	c := rpc.NewRPCClient(badAddr, ctypes.TestNetwork)
 	c.SetTimeOut(1 * time.Second)
 	before := time.Now()
 	_, err := c.Validators(nil)
@@ -437,7 +437,7 @@ func TestGetDelegatorUnbondingDelegations(t *testing.T) {
 }
 
 func TestNoRequestLeakInBadNetwork(t *testing.T) {
-	c := rpc.NewRPCClient(badAddr)
+	c := rpc.NewRPCClient(badAddr, ctypes.TestNetwork)
 	c.SetTimeOut(1 * time.Second)
 	w := sync.WaitGroup{}
 	w.Add(100)

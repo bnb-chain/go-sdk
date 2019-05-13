@@ -35,7 +35,8 @@ type EventsClient interface {
 	UnsubscribeAll() error
 }
 
-func NewRPCClient(nodeURI string) *HTTP {
+func NewRPCClient(nodeURI string, network ntypes.ChainNetwork) *HTTP {
+	ntypes.Network = network
 	return NewHTTP(nodeURI, "/websocket")
 }
 
