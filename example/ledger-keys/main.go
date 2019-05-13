@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/common/crypto/ledger"
+	"github.com/binance-chain/go-sdk/common/ledger"
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 )
 
@@ -56,7 +56,7 @@ func main() {
 	for _, coin := range account.Balances {
 		if coin.Symbol == "BNB" {
 			fmt.Println(fmt.Sprintf("Your account has %s:BNB", coin.Free))
-			floatAmount, err = strconv.ParseFloat(coin.Free, 64)
+			floatAmount, err = strconv.ParseFloat(coin.Free.String(), 64)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
