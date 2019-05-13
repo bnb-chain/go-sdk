@@ -1,7 +1,6 @@
 module github.com/binance-chain/go-sdk
 
 require (
-	github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
 	github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
 	github.com/btcsuite/btcd v0.0.0-20181013004428-67e573d211ac
 	github.com/btcsuite/btcutil v0.0.0-20180706230648-ab6388e0c60a
