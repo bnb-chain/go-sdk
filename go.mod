@@ -1,6 +1,7 @@
 module github.com/binance-chain/go-sdk
 
 require (
+	github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
 	github.com/btcsuite/btcd v0.0.0-20181013004428-67e573d211ac
 	github.com/btcsuite/btcutil v0.0.0-20180706230648-ab6388e0c60a
 	github.com/coreos/go-iptables v0.4.0
@@ -21,6 +22,8 @@ require (
 	github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9 // indirect
 	github.com/tendermint/go-amino v0.14.1
 	github.com/tendermint/tendermint v0.31.2-rc0
+	github.com/zondax/hid v0.9.0 // indirect
+	github.com/zondax/ledger-go v0.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
 	google.golang.org/grpc v1.19.1 // indirect

@@ -15,6 +15,9 @@ import (
 
 // BIP44Prefix is the parts of the BIP32 HD path that are fixed by what we used during the fundraiser.
 const (
+	BIPPurpose         = 44
+	BIPCoinType        = 714
+	BIPChange          = false
 	BIP44Prefix        = "44'/714'/"
 	FullFundraiserPath = BIP44Prefix + "0'/0/0"
 )
@@ -63,7 +66,14 @@ func isHardened(field string) bool {
 // m / 44' / 714' / account' / 0 / address_index
 // The fixed parameters (purpose', coin_type', and change) are determined by what was used in the fundraiser.
 func NewFundraiserParams(account uint32, addressIdx uint32) *BIP44Params {
-	return NewParams(44, 714, account, false, addressIdx)
+	return NewParams(BIPPurpose, BIPCoinType, account, BIPChange, addressIdx)
+}
+
+// NewBinanceBIP44Params creates a BIP 44 parameter object from the params:
+// m / 44' / 714' / account' / 0 / address_index
+// The fixed parameters (purpose', coin_type', and change) are determined by what was used in the binance ledger app.
+func NewBinanceBIP44Params(account uint32, addressIdx uint32) *BIP44Params {
+	return NewParams(BIPPurpose, BIPCoinType, account, BIPChange, addressIdx)
 }
 
 // Return the BIP44 fields as an array.

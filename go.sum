@@ -4,6 +4,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 h1:xJ4a3vCFaGF/jqvzLM
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/binance-chain/bnc-go-amino v0.14.1-binance.1 h1:RU33Toj/38sztKjcJTdziUIL0MBoMF7Xt1gQ3bT2zK0=
 github.com/binance-chain/bnc-go-amino v0.14.1-binance.1/go.mod h1:yaElUUxWtv/TC/ldGtlKAvS1vKwokxgJ1d97I+6is80=
+github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1 h1:8mAtw1Tp/BhhTrsXmXM60H1fihcvcKLfo2ZSxShaXKw=
+github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1/go.mod h1:FI6WAujuiBpoSavYreux2zTKyrUkngXDlRJczxsDK5M=
 github.com/btcsuite/btcd v0.0.0-20181013004428-67e573d211ac h1:/zx+Hglw2JN/pwVam1Z8cTCTl4pWyrbvOn2oooqCQSs=
 github.com/btcsuite/btcd v0.0.0-20181013004428-67e573d211ac/go.mod h1:Dmm/EzmjnCiweXmzRIAiUWCInVmPgjkzgv5k4tVyXiQ=
 github.com/btcsuite/btcutil v0.0.0-20180706230648-ab6388e0c60a h1:RQMUrEILyYJEoAT34XS/kLu40vC0+po/UfxrBBA4qZE=
@@ -25,6 +27,8 @@ github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfU
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db h1:woRePGFeVFfLKN/pOkfl+p/TAqKOfFu+7KPlMVpok/w=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
@@ -58,6 +62,10 @@ github.com/syndtr/goleveldb v1.0.0/go.mod h1:ZVVdQEZoIme9iO1Ch2Jdy24qqXrMMOU6lpP
 github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f h1:R0wLxgASGMoRQTF/dCSk4N+M3j9DLyPDzDff2WtCg/I=
 github.com/tendermint/btcd v0.0.0-20180816174608-e5840949ff4f/go.mod h1:DC6/m53jtQzr/NFmMNEu0rxf18/ktVoVtMrnDD5pN+U=
 github.com/tendermint/ed25519 v0.0.0-20171027050219-d8387025d2b9/go.mod h1:nt45hbhDkWVdMBkr2TOgOzCrpBccXdN09WOiOYTHVEk=
+github.com/zondax/hid v0.9.0 h1:eiT3P6vNxAEVxXMw66eZUAAnU2zD33JBkfG/EnfAKl8=
+github.com/zondax/hid v0.9.0/go.mod h1:l5wttcP0jwtdLjqjMMWFVEE7d1zO0jvSPA9OPZxWpEM=
+github.com/zondax/ledger-go v0.9.0 h1:oTrtFqPFA4VdCPRvqMaN45mQnJxkPc0JxoVZfCoUpjI=
+github.com/zondax/ledger-go v0.9.0/go.mod h1:b2vIcu3u9gJoIx4kTWuXOgzGV7FPWeUktqRqVf6feG0=
 github.com/tendermint/tendermint v0.31.2-rc0 h1:Iltc7dXcninZMH0p7iMxJZOv4jXTUznwBwfWge5EJlo=
 github.com/tendermint/tendermint v0.31.2-rc0/go.mod h1:ymcPyWblXCplCPQjbOYbrF1fWnpslATMVqiGgWbZrlc=
 golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 h1:kkXA53yGe04D0adEYJwEVQjeBppL01Exg+fnMjfUraU=
