@@ -3,7 +3,8 @@ package msg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/binance-chain/go-sdk/types"
+
+	"github.com/binance-chain/go-sdk/common/types"
 )
 
 // TokenFreezeMsg def

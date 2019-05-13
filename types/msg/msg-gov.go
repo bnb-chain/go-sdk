@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/pkg/errors"
-
-	"github.com/binance-chain/bnc-go-amino"
-	"github.com/binance-chain/go-sdk/types"
+	"github.com/tendermint/go-amino"
 )
 
 // name to idetify transaction types
@@ -279,7 +278,7 @@ func (msg SubmitProposalMsg) ValidateBasic() error {
 		return fmt.Errorf("initial deposit %v is negative. ", msg.InitialDeposit)
 	}
 	if msg.VotingPeriod <= 0 || msg.VotingPeriod > MaxVotingPeriod {
-		return fmt.Errorf("voting period should between 0 and %d weeks",  MaxVotingPeriod/(7 * 24 * 60 * 60 * time.Second))
+		return fmt.Errorf("voting period should between 0 and %d weeks", MaxVotingPeriod/(7*24*60*60*time.Second))
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+
 	"github.com/binance-chain/go-sdk/common/types"
 )
 
