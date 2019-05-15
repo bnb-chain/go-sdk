@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://127.0.0.1:26657"
+	nodeAddr           = "tcp://127.0.0.1:80"
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
 	testTxHeight       = 8669273
@@ -49,6 +49,33 @@ func defaultClient() *rpc.HTTP {
 		testClientInstance = rpc.NewRPCClient(nodeAddr, ctypes.TestNetwork)
 	})
 	return testClientInstance
+}
+
+func TestRPCGetProposals(t *testing.T) {
+	c := defaultClient()
+	statuses:= []ctypes.ProposalStatus{
+		ctypes.StatusDepositPeriod,
+		ctypes.StatusVotingPeriod,
+		ctypes.StatusPassed,
+		ctypes.StatusRejected,
+	}
+	for _,s:=range statuses{
+		proposals, err := c.GetProposals(s, 100)
+		assert.NoError(t, err)
+		for _,p:=range proposals{
+			assert.Equal(t,p.GetStatus(),s)
+		}
+		bz, err := json.Marshal(proposals)
+		fmt.Println(string(bz))
+	}
+}
+
+func TestRPCGetProposal(t *testing.T) {
+	c := defaultClient()
+	proposal, err := c.GetProposal(int64(1))
+	assert.NoError(t, err)
+	bz, err := json.Marshal(proposal)
+	fmt.Println(string(bz))
 }
 
 func TestRPCStatus(t *testing.T) {

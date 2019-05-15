@@ -13,4 +13,7 @@ func RegisterWire(cdc *amino.Codec) {
 	cdc.RegisterConcrete(&FixedFeeParams{}, "params/FixedFeeParams", nil)
 	cdc.RegisterConcrete(&TransferFeeParam{}, "params/TransferFeeParams", nil)
 	cdc.RegisterConcrete(&DexFeeParam{}, "params/DexFeeParam", nil)
+
+	cdc.RegisterInterface((*Proposal)(nil), nil)
+	cdc.RegisterConcrete(&TextProposal{}, "gov/TextProposal", nil)
 }
