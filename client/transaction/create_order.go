@@ -37,7 +37,7 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(newOrderMsg, sync)
+	commit, err := c.broadcastMsg(newOrderMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

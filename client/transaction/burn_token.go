@@ -26,7 +26,7 @@ func (c *client) BurnToken(symbol string, amount int64, sync bool) (*BurnTokenRe
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(burnMsg, sync)
+	commit, err := c.broadcastMsg(burnMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

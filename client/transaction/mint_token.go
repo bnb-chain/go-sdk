@@ -26,7 +26,7 @@ func (c *client) MintToken(symbol string, amount int64, sync bool) (*MintTokenRe
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(mintMsg, sync)
+	commit, err := c.broadcastMsg(mintMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

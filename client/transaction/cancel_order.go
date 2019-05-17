@@ -27,7 +27,7 @@ func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sy
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(cancelOrderMsg, sync)
+	commit, err := c.broadcastMsg(cancelOrderMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

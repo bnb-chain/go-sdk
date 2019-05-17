@@ -19,7 +19,7 @@ func (c *client) DepositProposal(proposalID int64, amount int64, sync bool) (*De
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(depositMsg, sync)
+	commit, err := c.broadcastMsg(depositMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

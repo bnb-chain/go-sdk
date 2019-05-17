@@ -38,7 +38,7 @@ func (c *client) IssueToken(name, symbol string, supply int64, sync bool, mintab
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(issueMsg, sync)
+	commit, err := c.broadcastMsg(issueMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

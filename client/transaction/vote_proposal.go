@@ -16,7 +16,7 @@ func (c *client) VoteProposal(proposalID int64, option msg.VoteOption, sync bool
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(voteMsg, sync)
+	commit, err := c.broadcastMsg(voteMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

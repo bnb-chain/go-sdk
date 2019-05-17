@@ -26,7 +26,7 @@ func (c *client) UnfreezeToken(symbol string, amount int64, sync bool) (*Unfreez
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(unfreezeMsg, sync)
+	commit, err := c.broadcastMsg(unfreezeMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}

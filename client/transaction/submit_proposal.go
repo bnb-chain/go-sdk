@@ -32,7 +32,7 @@ func (c *client) SubmitProposal(title string, description string, proposalType m
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(proposalMsg, sync)
+	commit, err := c.broadcastMsg(proposalMsg, "", sync)
 	if err != nil {
 		return nil, err
 	}
