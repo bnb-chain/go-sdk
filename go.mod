@@ -1,4 +1,4 @@
-module github.com/binance-chain/go-sdk
+module github.com/momaer/go-sdk
 
 require (
 	github.com/VividCortex/gohistogram v1.0.0 // indirect
