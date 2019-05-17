@@ -20,7 +20,7 @@ type TransactionClient interface {
 	FreezeToken(symbol string, amount int64, sync bool) (*FreezeTokenResult, error)
 	UnfreezeToken(symbol string, amount int64, sync bool) (*UnfreezeTokenResult, error)
 	IssueToken(name, symbol string, supply int64, sync bool, mintable bool) (*IssueTokenResult, error)
-	SendToken(transfers []msg.Transfer, sync bool) (*SendTokenResult, error)
+	SendToken(transfers []msg.Transfer, memo string, sync bool) (*SendTokenResult, error)
 	MintToken(symbol string, amount int64, sync bool) (*MintTokenResult, error)
 
 	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error)
@@ -46,7 +46,7 @@ func (c *client) GetKeyManager() keys.KeyManager {
 	return c.keyManager
 }
 
-func (c *client) broadcastMsg(m msg.Msg, sync bool) (*tx.TxCommitResult, error) {
+func (c *client) broadcastMsg(m msg.Msg, memo string, sync bool) (*tx.TxCommitResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	acc, err := c.queryClient.GetAccount(fromAddr.String())
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool) (*tx.TxCommitResult, error) 
 		ChainID:       c.chainId,
 		AccountNumber: acc.Number,
 		Sequence:      sequence,
-		Memo:          "",
+		Memo:          memo,
 		Msgs:          []msg.Msg{m},
 		Source:        types.GoSdkSource,
 	}
