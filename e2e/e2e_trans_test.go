@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"fmt"
+	"github.com/binance-chain/go-sdk/client/transaction"
 	"testing"
 	time2 "time"
 
@@ -12,7 +13,7 @@ import (
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
-	tx2 "github.com/binance-chain/go-sdk/types/tx"
+	txtype "github.com/binance-chain/go-sdk/types/tx"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -83,8 +84,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("Get time: %v \n", time)
 
 	//----- Create order -----------
-	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 100000000, true)
-	fmt.Println(err)
+	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
@@ -155,7 +155,7 @@ func TestTransProcess(t *testing.T) {
 	time2.Sleep(2 * time2.Second)
 	issueresult, err := client.GetTx(issue.Hash)
 	assert.NoError(t, err)
-	assert.True(t, issueresult.Code == tx2.CodeOk)
+	assert.True(t, issueresult.Code == txtype.CodeOk)
 
 	//--- mint token -----------
 	mint, err := client.MintToken(issue.Symbol, 100000000, true)
@@ -172,7 +172,7 @@ func TestTransProcess(t *testing.T) {
 	time2.Sleep(2 * time2.Second)
 	submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
 	assert.NoError(t, err)
-	assert.True(t, submitPorposalStatus.Code == tx2.CodeOk)
+	assert.True(t, submitPorposalStatus.Code == txtype.CodeOk)
 
 	//---- Vote Proposal  -------
 	for _, m := range validatorMnemonics {

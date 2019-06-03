@@ -12,7 +12,7 @@ type CancelOrderResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool) (*CancelOrderResult, error) {
+func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error) {
 	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
 	}
@@ -27,7 +27,7 @@ func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sy
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(cancelOrderMsg, sync)
+	commit, err := c.broadcastMsg(cancelOrderMsg, sync, options...)
 	if err != nil {
 		return nil, err
 	}

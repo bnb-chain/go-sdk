@@ -13,7 +13,7 @@ type CreateOrderResult struct {
 	OrderId string
 }
 
-func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool) (*CreateOrderResult, error) {
+func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool, options ...Option) (*CreateOrderResult, error) {
 	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
 	}
@@ -37,7 +37,7 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(newOrderMsg, sync)
+	commit, err := c.broadcastMsg(newOrderMsg, sync, options...)
 	if err != nil {
 		return nil, err
 	}

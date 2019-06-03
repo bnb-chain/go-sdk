@@ -7,26 +7,25 @@ import (
 	"github.com/binance-chain/go-sdk/client/basic"
 	"github.com/binance-chain/go-sdk/client/query"
 	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 type TransactionClient interface {
-	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool) (*CreateOrderResult, error)
-	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool) (*CancelOrderResult, error)
-	BurnToken(symbol string, amount int64, sync bool) (*BurnTokenResult, error)
-	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool) (*ListPairResult, error)
-	FreezeToken(symbol string, amount int64, sync bool) (*FreezeTokenResult, error)
-	UnfreezeToken(symbol string, amount int64, sync bool) (*UnfreezeTokenResult, error)
-	IssueToken(name, symbol string, supply int64, sync bool, mintable bool) (*IssueTokenResult, error)
-	SendToken(transfers []msg.Transfer, sync bool) (*SendTokenResult, error)
-	MintToken(symbol string, amount int64, sync bool) (*MintTokenResult, error)
+	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool, options ...Option) (*CreateOrderResult, error)
+	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error)
+	BurnToken(symbol string, amount int64, sync bool, options ...Option) (*BurnTokenResult, error)
+	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, options ...Option) (*ListPairResult, error)
+	FreezeToken(symbol string, amount int64, sync bool, options ...Option) (*FreezeTokenResult, error)
+	UnfreezeToken(symbol string, amount int64, sync bool, options ...Option) (*UnfreezeTokenResult, error)
+	IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error)
+	SendToken(transfers []msg.Transfer, sync bool, options ...Option) (*SendTokenResult, error)
+	MintToken(symbol string, amount int64, sync bool, options ...Option) (*MintTokenResult, error)
 
-	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error)
-	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool) (*SubmitProposalResult, error)
-	DepositProposal(proposalID int64, amount int64, sync bool) (*DepositProposalResult, error)
-	VoteProposal(proposalID int64, option msg.VoteOption, sync bool) (*VoteProposalResult, error)
+	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
+	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
+	DepositProposal(proposalID int64, amount int64, sync bool, options ...Option) (*DepositProposalResult, error)
+	VoteProposal(proposalID int64, option msg.VoteOption, sync bool, options ...Option) (*VoteProposalResult, error)
 
 	GetKeyManager() keys.KeyManager
 }
@@ -46,7 +45,23 @@ func (c *client) GetKeyManager() keys.KeyManager {
 	return c.keyManager
 }
 
-func (c *client) broadcastMsg(m msg.Msg, sync bool) (*tx.TxCommitResult, error) {
+type Option func(*tx.StdSignMsg) *tx.StdSignMsg
+
+func WithSource(source int64) Option {
+	return func(txMsg *tx.StdSignMsg) *tx.StdSignMsg {
+		txMsg.Source = source
+		return txMsg
+	}
+}
+
+func WithMemo(memo string) Option {
+	return func(txMsg *tx.StdSignMsg) *tx.StdSignMsg {
+		txMsg.Memo = memo
+		return txMsg
+	}
+}
+
+func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCommitResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	acc, err := c.queryClient.GetAccount(fromAddr.String())
 	if err != nil {
@@ -54,17 +69,21 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool) (*tx.TxCommitResult, error) 
 	}
 	sequence := acc.Sequence
 	// prepare message to sign
-	signMsg := tx.StdSignMsg{
+	signMsg := &tx.StdSignMsg{
 		ChainID:       c.chainId,
 		AccountNumber: acc.Number,
 		Sequence:      sequence,
 		Memo:          "",
 		Msgs:          []msg.Msg{m},
-		Source:        types.GoSdkSource,
+		Source:        tx.Source,
+	}
+
+	for _, op := range options {
+		signMsg = op(signMsg)
 	}
 
 	// Hex encoded signed transaction, ready to be posted to BncChain API
-	hexTx, err := c.keyManager.Sign(signMsg)
+	hexTx, err := c.keyManager.Sign(*signMsg)
 	if err != nil {
 		return nil, err
 	}

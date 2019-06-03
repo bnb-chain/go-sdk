@@ -11,7 +11,7 @@ type FreezeTokenResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) FreezeToken(symbol string, amount int64, sync bool) (*FreezeTokenResult, error) {
+func (c *client) FreezeToken(symbol string, amount int64, sync bool, options ...Option) (*FreezeTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
@@ -26,7 +26,7 @@ func (c *client) FreezeToken(symbol string, amount int64, sync bool) (*FreezeTok
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(freezeMsg, sync)
+	commit, err := c.broadcastMsg(freezeMsg, sync, options...)
 	if err != nil {
 		return nil, err
 	}
