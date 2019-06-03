@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"sync/atomic"
 
 	"fmt"
 	"strings"
@@ -492,7 +493,7 @@ type WSClient struct {
 	wg sync.WaitGroup
 
 	mtx     sync.RWMutex
-	dialing bool
+	dialing atomic.Value
 
 	// Maximum reconnect attempts (0 or greater; default: 25).
 	// Less than 0 means always try to reconnect.
@@ -532,8 +533,8 @@ func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSCli
 		writeWait:            defaultWriteWait,
 		pingPeriod:           defaultPingPeriod,
 		protocol:             protocol,
-		dialing:              true,
 	}
+	c.dialing.Store(true)
 	c.BaseService = *cmn.NewBaseService(nil, "WSClient", c)
 	for _, option := range options {
 		option(c)
@@ -572,7 +573,7 @@ func (c *WSClient) OnStart() error {
 		c.wg.Add(1)
 		go c.dialRoutine()
 	} else {
-		c.dialing = false
+		c.dialing.Store(false)
 	}
 
 	c.startReadWriteRoutines()
@@ -596,7 +597,7 @@ func (c *WSClient) Stop() error {
 
 // IsDialing returns true if the client is dialing right now.
 func (c *WSClient) IsDialing() bool {
-	return c.dialing
+	return c.dialing.Load().(bool)
 }
 
 // IsActive returns true if the client is running and not dialing.
@@ -681,9 +682,9 @@ func (c *WSClient) dial() error {
 func (c *WSClient) reconnect() error {
 	attempt := 0
 
-	c.dialing = true
+	c.dialing.Store(true)
 	defer func() {
-		c.dialing = false
+		c.dialing.Store(false)
 	}()
 	backOffDuration := 1 * time.Second
 	for {
@@ -722,9 +723,9 @@ func (c *WSClient) startReadWriteRoutines() {
 func (c *WSClient) dialRoutine() {
 	dialTicker := time.NewTicker(defaultDialPeriod)
 	defer dialTicker.Stop()
-	c.dialing = true
+	c.dialing.Store(true)
 	defer func() {
-		c.dialing = false
+		c.dialing.Store(false)
 		c.wg.Done()
 	}()
 	for {
