@@ -640,6 +640,18 @@ func (c *WSClient) CallWithArrayParams(ctx context.Context, method string, param
 	return c.Send(ctx, request)
 }
 
+func (c *WSClient) GetConnection() *websocket.Conn {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+	return c.conn
+}
+
+func (c *WSClient) SetConnection(conn *websocket.Conn) {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+	c.conn = conn
+}
+
 func (c *WSClient) Codec() *amino.Codec {
 	return c.cdc
 }
@@ -673,7 +685,7 @@ func (c *WSClient) dial() error {
 	if err != nil {
 		return err
 	}
-	c.conn = conn
+	c.SetConnection(conn)
 	return nil
 }
 
@@ -781,7 +793,7 @@ func (c *WSClient) writeRoutine() {
 
 	defer func() {
 		ticker.Stop()
-		if err := c.conn.Close(); err != nil {
+		if err := c.GetConnection().Close(); err != nil {
 			// ignore error; it will trigger in tests
 			// likely because it's closing an already closed connection
 		}
@@ -791,28 +803,28 @@ func (c *WSClient) writeRoutine() {
 		select {
 		case request := <-c.send:
 			if c.writeWait > 0 {
-				if err := c.conn.SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
+				if err := c.GetConnection().SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
 					c.Logger.Error("failed to set write deadline", "err", err)
 				}
 			}
-			if err := c.conn.WriteJSON(request); err != nil {
+			if err := c.GetConnection().WriteJSON(request); err != nil {
 				c.Logger.Error("failed to send request", "err", err)
 				c.reconnectAfter <- err
 			}
 		case <-ticker.C:
 			if c.writeWait > 0 {
-				if err := c.conn.SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
+				if err := c.GetConnection().SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
 					c.Logger.Error("failed to set write deadline", "err", err)
 				}
 			}
-			if err := c.conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+			if err := c.GetConnection().WriteMessage(websocket.PingMessage, []byte{}); err != nil {
 				c.Logger.Error("failed to write ping", "err", err)
 				c.reconnectAfter <- err
 				continue
 			}
 			c.Logger.Debug("sent ping")
 		case <-c.Quit():
-			if err := c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+			if err := c.GetConnection().WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 				c.Logger.Error("failed to write message", "err", err)
 			}
 			return
@@ -824,13 +836,13 @@ func (c *WSClient) writeRoutine() {
 // executing all reads from this goroutine.
 func (c *WSClient) readRoutine() {
 	defer func() {
-		if err := c.conn.Close(); err != nil {
+		if err := c.GetConnection().Close(); err != nil {
 			// ignore error; it will trigger in tests
 			// likely because it's closing an already closed connection
 		}
 	}()
 	c.wg.Wait()
-	c.conn.SetPongHandler(func(string) error {
+	c.GetConnection().SetPongHandler(func(string) error {
 		c.Logger.Debug("got pong")
 		return nil
 	})
@@ -838,11 +850,11 @@ func (c *WSClient) readRoutine() {
 	for {
 		// reset deadline for every message type (control or data)
 		if c.readWait > 0 {
-			if err := c.conn.SetReadDeadline(time.Now().Add(c.readWait)); err != nil {
+			if err := c.GetConnection().SetReadDeadline(time.Now().Add(c.readWait)); err != nil {
 				c.Logger.Error("failed to set read deadline", "err", err)
 			}
 		}
-		_, data, err := c.conn.ReadMessage()
+		_, data, err := c.GetConnection().ReadMessage()
 		if err != nil {
 			c.Logger.Error("failed to read response", "err", err)
 			c.reconnectAfter <- err

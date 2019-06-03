@@ -144,7 +144,7 @@ If you want broadcast some transactions, like send coins, create orders or cance
 
 Create a `buy` order: 
 ```go
-createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 100000000, 100000000, true, "", tx.Source)
+createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 100000000, 100000000, true)
 ```
 
 For more API usage documentation, please check the [wiki](https://github.com/binance-chain/go-sdk/wiki)..
