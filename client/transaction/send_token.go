@@ -10,7 +10,7 @@ type SendTokenResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) SendToken(transfers []msg.Transfer, sync bool) (*SendTokenResult, error) {
+func (c *client) SendToken(transfers []msg.Transfer, sync bool, memo string, source int64) (*SendTokenResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	fromCoins := types.Coins{}
 	for _, t := range transfers {
@@ -21,7 +21,7 @@ func (c *client) SendToken(transfers []msg.Transfer, sync bool) (*SendTokenResul
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(sendMsg, sync)
+	commit, err := c.broadcastMsg(sendMsg, sync, memo, source)
 	if err != nil {
 		return nil, err
 	}

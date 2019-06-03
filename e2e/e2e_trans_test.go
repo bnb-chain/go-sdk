@@ -12,7 +12,7 @@ import (
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
-	tx2 "github.com/binance-chain/go-sdk/types/tx"
+	txtype "github.com/binance-chain/go-sdk/types/tx"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -83,8 +83,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("Get time: %v \n", time)
 
 	//----- Create order -----------
-	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.SELL, 30000000000, 100000000, true)
-	fmt.Println(err)
+	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, "", txtype.Source)
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
@@ -102,7 +101,7 @@ func TestTransProcess(t *testing.T) {
 
 	//---- Cancel Order  ---------
 	time2.Sleep(2 * time2.Second)
-	cancelOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true)
+	cancelOrderResult, err := client.CancelOrder(tradeSymbol, nativeSymbol, orderId, true, "", txtype.Source)
 	assert.NoError(t, err)
 	assert.True(t, cancelOrderResult.Ok)
 	fmt.Printf("cancelOrderResult:  %v \n", cancelOrderResult)
@@ -120,7 +119,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("GetTx: %v\n", tx)
 
 	//----   Send tx  -----------
-	send, err := client.SendToken([]msg.Transfer{{testAccount2, []ctypes.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true)
+	send, err := client.SendToken([]msg.Transfer{{testAccount2, []ctypes.Coin{{nativeSymbol, 100000000}}}, {testAccount3, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true, "", txtype.Source)
 	assert.NoError(t, err)
 	assert.True(t, send.Ok)
 	fmt.Printf("Send token: %v\n", send)
@@ -135,19 +134,19 @@ func TestTransProcess(t *testing.T) {
 	}
 
 	//----   Freeze Token ---------
-	freeze, err := client.FreezeToken(nativeSymbol, 100, true)
+	freeze, err := client.FreezeToken(nativeSymbol, 100, true, "", txtype.Source)
 	assert.NoError(t, err)
 	assert.True(t, freeze.Ok)
 	fmt.Printf("freeze token: %v\n", freeze)
 
 	//----   Unfreeze Token ---------
-	unfreeze, err := client.UnfreezeToken(nativeSymbol, 100, true)
+	unfreeze, err := client.UnfreezeToken(nativeSymbol, 100, true, "", txtype.Source)
 	assert.NoError(t, err)
 	assert.True(t, unfreeze.Ok)
 	fmt.Printf("Unfreeze token: %v\n", unfreeze)
 
 	//----   issue token ---------
-	issue, err := client.IssueToken("Client-Token", "sdk", 10000000000, true, true)
+	issue, err := client.IssueToken("Client-Token", "sdk", 10000000000, true, true, "", txtype.Source)
 	assert.NoError(t, err)
 	fmt.Printf("Issue token: %v\n", issue)
 
@@ -155,16 +154,16 @@ func TestTransProcess(t *testing.T) {
 	time2.Sleep(2 * time2.Second)
 	issueresult, err := client.GetTx(issue.Hash)
 	assert.NoError(t, err)
-	assert.True(t, issueresult.Code == tx2.CodeOk)
+	assert.True(t, issueresult.Code == txtype.CodeOk)
 
 	//--- mint token -----------
-	mint, err := client.MintToken(issue.Symbol, 100000000, true)
+	mint, err := client.MintToken(issue.Symbol, 100000000, true, "", txtype.Source)
 	assert.NoError(t, err)
 	fmt.Printf("Mint token: %v\n", mint)
 
 	//---- Submit Proposal ------
 	time2.Sleep(2 * time2.Second)
-	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, 20*time2.Second, true)
+	listTradingProposal, err := client.SubmitListPairProposal("New trading pair", msg.ListTradingPairParams{issue.Symbol, nativeSymbol, 1000000000, "my trade", time2.Now().Add(1 * time2.Hour)}, 200000000000, 20*time2.Second, true, "", txtype.Source)
 	assert.NoError(t, err)
 	fmt.Printf("Submit list trading pair: %v\n", listTradingProposal)
 
@@ -172,7 +171,7 @@ func TestTransProcess(t *testing.T) {
 	time2.Sleep(2 * time2.Second)
 	submitPorposalStatus, err := client.GetTx(listTradingProposal.Hash)
 	assert.NoError(t, err)
-	assert.True(t, submitPorposalStatus.Code == tx2.CodeOk)
+	assert.True(t, submitPorposalStatus.Code == txtype.CodeOk)
 
 	//---- Vote Proposal  -------
 	for _, m := range validatorMnemonics {
@@ -181,14 +180,14 @@ func TestTransProcess(t *testing.T) {
 		assert.NoError(t, err)
 		client, err := sdk.NewDexClient(baeUrl, ctypes.TestNetwork, k)
 		assert.NoError(t, err)
-		vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true)
+		vote, err := client.VoteProposal(listTradingProposal.ProposalId, msg.OptionYes, true, "", txtype.Source)
 		assert.NoError(t, err)
 		fmt.Printf("Vote: %v\n", vote)
 	}
 
 	//--- List trade pair ------
 	time2.Sleep(20 * time2.Second)
-	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
+	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true, "", txtype.Source)
 	assert.NoError(t, err)
 	fmt.Printf("List trading pair: %v\n", l)
 }

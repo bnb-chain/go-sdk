@@ -11,7 +11,7 @@ type BurnTokenResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) BurnToken(symbol string, amount int64, sync bool) (*BurnTokenResult, error) {
+func (c *client) BurnToken(symbol string, amount int64, sync bool, memo string, source int64) (*BurnTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Burn token symbol can'c be empty ")
 	}
@@ -26,7 +26,7 @@ func (c *client) BurnToken(symbol string, amount int64, sync bool) (*BurnTokenRe
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(burnMsg, sync)
+	commit, err := c.broadcastMsg(burnMsg, sync, memo, source)
 	if err != nil {
 		return nil, err
 	}

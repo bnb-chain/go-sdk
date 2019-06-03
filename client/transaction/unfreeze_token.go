@@ -11,7 +11,7 @@ type UnfreezeTokenResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) UnfreezeToken(symbol string, amount int64, sync bool) (*UnfreezeTokenResult, error) {
+func (c *client) UnfreezeToken(symbol string, amount int64, sync bool, memo string, source int64) (*UnfreezeTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
@@ -26,7 +26,7 @@ func (c *client) UnfreezeToken(symbol string, amount int64, sync bool) (*Unfreez
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(unfreezeMsg, sync)
+	commit, err := c.broadcastMsg(unfreezeMsg, sync, memo, source)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ type ListPairResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool) (*ListPairResult, error) {
+func (c *client) ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, memo string, source int64) (*ListPairResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 
 	burnMsg := msg.NewDexListMsg(fromAddr, proposalId, baseAssetSymbol, quoteAssetSymbol, initPrice)
@@ -17,7 +17,7 @@ func (c *client) ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSy
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(burnMsg, sync)
+	commit, err := c.broadcastMsg(burnMsg, sync, memo, source)
 	if err != nil {
 		return nil, err
 	}

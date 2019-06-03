@@ -11,7 +11,7 @@ type MintTokenResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) MintToken(symbol string, amount int64, sync bool) (*MintTokenResult, error) {
+func (c *client) MintToken(symbol string, amount int64, sync bool, memo string, source int64) (*MintTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
@@ -26,7 +26,7 @@ func (c *client) MintToken(symbol string, amount int64, sync bool) (*MintTokenRe
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(mintMsg, sync)
+	commit, err := c.broadcastMsg(mintMsg, sync, memo, source)
 	if err != nil {
 		return nil, err
 	}
