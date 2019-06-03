@@ -26,6 +26,8 @@ type DexClient interface {
 	GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
 	GetTradingPairs(offset int, limit int) ([]types.TradingPair, error)
 	GetDepth(tradePair string) (*types.OrderBook, error)
+	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
+	GetProposal(proposalId int64) (types.Proposal, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -212,6 +214,48 @@ func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
 		return nil, err
 	}
 	return &ob, nil
+}
+
+func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error) {
+	params := types.QueryProposalsParams{}
+	if status != types.StatusNil {
+		params.ProposalStatus = status
+	}
+	if numLatest > 0 {
+		params.NumLatestProposals = numLatest
+	}
+
+	bz, err := c.cdc.MarshalJSON(&params)
+	if err != nil {
+		return nil, err
+	}
+	rawProposals, err := c.ABCIQuery("custom/gov/proposals", bz)
+	if err != nil {
+		return nil, err
+	}
+	proposals := make([]types.Proposal, 0)
+
+	err = c.cdc.UnmarshalJSON(rawProposals.Response.GetValue(), &proposals)
+	return proposals, err
+}
+
+func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
+	params := types.QueryProposalParams{
+		ProposalID: proposalId,
+	}
+	bz, err := c.cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(string(bz))
+	rawProposals, err := c.ABCIQuery("custom/gov/proposal", bz)
+	if err != nil {
+		return nil, err
+	}
+	var proposal types.Proposal
+
+	err = c.cdc.UnmarshalJSON(rawProposals.Response.GetValue(), &proposal)
+	return proposal, err
 }
 
 func (c *HTTP) existsCC(symbol string) bool {
