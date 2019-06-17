@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/tendermint/tendermint/crypto"
 	"github.com/binance-chain/go-sdk/common/bech32"
 )
 
@@ -16,6 +17,11 @@ type AccAddress []byte
 type ChainNetwork uint8
 
 const (
+	AddrLen = 20
+
+	bech32PrefixConsPub  = "bcap"
+	bech32PrefixConsAddr = "bca"
+
 	TestNetwork ChainNetwork = iota
 	ProdNetwork
 )
@@ -118,4 +124,19 @@ func (bz AccAddress) String() string {
 		panic(err)
 	}
 	return bech32Addr
+}
+
+func MustBech32ifyConsPub(pub crypto.PubKey) string {
+	enc, err := Bech32ifyConsPub(pub)
+	if err != nil {
+		panic(err)
+	}
+
+	return enc
+}
+
+// Bech32ifyConsPub returns a Bech32 encoded string containing the
+// Bech32PrefixConsPub prefixfor a given consensus node's PubKey.
+func Bech32ifyConsPub(pub crypto.PubKey) (string, error) {
+	return bech32.ConvertAndEncode(bech32PrefixConsPub, pub.Bytes())
 }

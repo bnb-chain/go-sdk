@@ -100,7 +100,6 @@ func (pt ProposalKind) String() string {
 	}
 }
 
-
 type ProposalStatus byte
 
 //nolint

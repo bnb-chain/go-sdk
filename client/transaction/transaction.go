@@ -6,6 +6,7 @@ import (
 
 	"github.com/binance-chain/go-sdk/client/basic"
 	"github.com/binance-chain/go-sdk/client/query"
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
@@ -21,6 +22,9 @@ type TransactionClient interface {
 	IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error)
 	SendToken(transfers []msg.Transfer, sync bool, options ...Option) (*SendTokenResult, error)
 	MintToken(symbol string, amount int64, sync bool, options ...Option) (*MintTokenResult, error)
+	TimeLock(description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeLockResult, error)
+	TimeUnLock(id int64, sync bool, options ...Option) (*TimeUnLockResult, error)
+	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
 
 	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
