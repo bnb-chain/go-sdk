@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/tendermint/tendermint/crypto"
 	"github.com/binance-chain/go-sdk/common/bech32"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 // AccAddress a wrapper around bytes meant to represent an account address.
@@ -17,13 +17,15 @@ type AccAddress []byte
 type ChainNetwork uint8
 
 const (
+	TestNetwork ChainNetwork = iota
+	ProdNetwork
+)
+
+const (
 	AddrLen = 20
 
 	bech32PrefixConsPub  = "bcap"
 	bech32PrefixConsAddr = "bca"
-
-	TestNetwork ChainNetwork = iota
-	ProdNetwork
 )
 
 var Network = ProdNetwork
