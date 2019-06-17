@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/tendermint/tendermint/crypto"
 	"github.com/binance-chain/go-sdk/common/bech32"
 )
 

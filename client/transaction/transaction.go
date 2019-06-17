@@ -2,11 +2,11 @@ package transaction
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/types"
 	"time"
 
 	"github.com/binance-chain/go-sdk/client/basic"
 	"github.com/binance-chain/go-sdk/client/query"
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
