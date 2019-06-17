@@ -113,6 +113,15 @@ func (coins Coins) IsEqual(coinsB Coins) bool {
 	return true
 }
 
+func (coins Coins) IsZero() bool {
+	for _, coin := range coins {
+		if !coin.IsZero() {
+			return false
+		}
+	}
+	return true
+}
+
 func (coins Coins) IsNotNegative() bool {
 	if len(coins) == 0 {
 		return true
