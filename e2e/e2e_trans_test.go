@@ -83,6 +83,22 @@ func TestTransProcess(t *testing.T) {
 	assert.NoError(t, err)
 	fmt.Printf("Get time: %v \n", time)
 
+	//-----   time lock  -----------
+	lockResult,err:=client.TimeLock("test lock",ctypes.Coins{{"BNB",100000000}},int64(time2.Now().Add(65*time2.Second).Unix()),true)
+	assert.NoError(t,err)
+	fmt.Printf("timelock %d",lockResult.LockId)
+
+	//----- time relock ---------
+	relockResult,err:=client.TimeReLock(lockResult.LockId,"test lock",ctypes.Coins{{"BNB",200000000}},int64(time2.Now().Add(65*time2.Second).Unix()),true)
+	assert.NoError(t,err)
+	fmt.Printf("timelock %d",relockResult.LockId)
+
+	//------ time unlock --------
+	time2.Sleep(70*time2.Second)
+	unlockResult,err:= client.TimeUnLock(relockResult.LockId,true)
+	assert.NoError(t,err)
+	fmt.Printf("timelock %d",unlockResult.LockId)
+
 	//----- Create order -----------
 	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
 	assert.NoError(t, err)
