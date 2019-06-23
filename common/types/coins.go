@@ -1,6 +1,9 @@
 package types
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // Coin def
 type Coin struct {
@@ -155,4 +158,17 @@ func (coins Coins) AmountOf(denom string) int64 {
 			return coins[midIdx+1:].AmountOf(denom)
 		}
 	}
+}
+
+// Sort interface
+
+//nolint
+func (coins Coins) Len() int           { return len(coins) }
+func (coins Coins) Less(i, j int) bool { return coins[i].Denom < coins[j].Denom }
+func (coins Coins) Swap(i, j int)      { coins[i], coins[j] = coins[j], coins[i] }
+
+// Sort is a helper function to sort the set of coins inplace
+func (coins Coins) Sort() Coins {
+	sort.Sort(coins)
+	return coins
 }

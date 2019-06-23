@@ -173,6 +173,7 @@ func CreateSendMsg(from types.AccAddress, fromCoins types.Coins, transfers []Tra
 
 	output := make([]Output, 0, len(transfers))
 	for _, t := range transfers {
+		t.Coins = t.Coins.Sort()
 		output = append(output, NewOutput(t.ToAddr, t.Coins))
 	}
 	msg := NewMsgSend([]Input{input}, output)
