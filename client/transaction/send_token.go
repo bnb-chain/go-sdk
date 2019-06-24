@@ -14,6 +14,7 @@ func (c *client) SendToken(transfers []msg.Transfer, sync bool, options ...Optio
 	fromAddr := c.keyManager.GetAddr()
 	fromCoins := types.Coins{}
 	for _, t := range transfers {
+		t.Coins = t.Coins.Sort()
 		fromCoins = fromCoins.Plus(t.Coins)
 	}
 	sendMsg := msg.CreateSendMsg(fromAddr, fromCoins, transfers)
