@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	atypes "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -81,7 +82,14 @@ func (c *HTTP) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.
 	if err := ValidateABCIData(data); err != nil {
 		return nil, err
 	}
-	return c.WSEvents.ABCIQueryWithOptions(path, data, opts)
+	queryResp, err := c.WSEvents.ABCIQueryWithOptions(path, data, opts)
+	if err != nil {
+		return queryResp, err
+	} else if queryResp.Response.Code != atypes.CodeTypeOK {
+		return nil, fmt.Errorf("query failed error code %d, log %s", queryResp.Response.Code, queryResp.Response.Log)
+	}
+	return queryResp, nil
+
 }
 
 func (c *HTTP) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
