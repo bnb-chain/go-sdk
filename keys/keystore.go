@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/sha3"
 )
 
 var (
@@ -27,7 +27,7 @@ type EncryptedKeyJSON struct {
 	Address string     `json:"address"`
 	Crypto  CryptoJSON `json:"crypto"`
 	Id      string     `json:"id"`
-	Version string     `json:"version"`
+	Version int        `json:"version"`
 }
 type CryptoJSON struct {
 	Cipher       string                 `json:"cipher"`
@@ -57,7 +57,6 @@ func decryptKey(keyProtected *EncryptedKeyJSON, auth string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	derivedKey, err := getKDFKey(keyProtected.Crypto, auth)
 	if err != nil {
 		return nil, err
@@ -66,12 +65,16 @@ func decryptKey(keyProtected *EncryptedKeyJSON, auth string) ([]byte, error) {
 	bufferValue := make([]byte, len(cipherText)+16)
 	copy(bufferValue[0:16], derivedKey[16:32])
 	copy(bufferValue[16:], cipherText[:])
-	calculatedMAC := sha256.Sum256([]byte((bufferValue)))
+	hasher := sha3.NewLegacyKeccak512()
+	_, err = hasher.Write([]byte(bufferValue))
+	if err != nil {
+		return nil, err
+	}
+	calculatedMAC := hasher.Sum(nil)
 	if !bytes.Equal(calculatedMAC[:], mac) {
 		return nil, ErrDecrypt
 	}
-
-	plainText, err := aesCTRXOR(derivedKey[:16], cipherText, iv)
+	plainText, err := aesCTRXOR(derivedKey[:32], cipherText, iv)
 	if err != nil {
 		return nil, err
 	}

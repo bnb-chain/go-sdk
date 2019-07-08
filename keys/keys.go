@@ -10,6 +10,7 @@ import (
 
 	"github.com/cosmos/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
@@ -257,7 +258,7 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 		return nil, err
 	}
 
-	hasher := sha256.New()
+	hasher := sha3.NewLegacyKeccak512()
 	hasher.Write(derivedKey[16:32])
 	hasher.Write(cipherText)
 	mac := hasher.Sum(nil)
@@ -278,6 +279,6 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 		Address: addr.String(),
 		Crypto:  cryptoStruct,
 		Id:      id.String(),
-		Version: "1",
+		Version: 1,
 	}, nil
 }
