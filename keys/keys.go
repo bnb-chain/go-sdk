@@ -248,7 +248,7 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 
 	cipherParamsJSON := cipherparamsJSON{IV: hex.EncodeToString(iv)}
 	derivedKey := pbkdf2.Key([]byte(password), salt, 262144, 32, sha256.New)
-	encryptKey := derivedKey[:16]
+	encryptKey := derivedKey[:32]
 	secpPrivateKey, ok := privateKey.(secp256k1.PrivKeySecp256k1)
 	if !ok {
 		return nil, fmt.Errorf(" Only PrivKeySecp256k1 key is supported ")

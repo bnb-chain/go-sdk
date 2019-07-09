@@ -72,7 +72,12 @@ func decryptKey(keyProtected *EncryptedKeyJSON, auth string) ([]byte, error) {
 	}
 	calculatedMAC := hasher.Sum(nil)
 	if !bytes.Equal(calculatedMAC[:], mac) {
-		return nil, ErrDecrypt
+		// to compatible previous sha256 algorithm
+		calculatedMAC256 := sha256.Sum256([]byte((bufferValue)))
+		if !bytes.Equal(calculatedMAC256[:], mac) {
+			return nil, ErrDecrypt
+		}
+		calculatedMAC = calculatedMAC256[:]
 	}
 	plainText, err := aesCTRXOR(derivedKey[:32], cipherText, iv)
 	if err != nil {
