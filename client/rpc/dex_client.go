@@ -3,8 +3,6 @@ package rpc
 import (
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
@@ -71,15 +69,19 @@ func (c *HTTP) GetTokenInfo(symbol string) (*types.Token, error) {
 }
 
 func (c *HTTP) GetAccount(addr types.AccAddress) (acc types.Account, err error) {
-	key := append([]byte("account:"), addr.Bytes()...)
-	bz, err := c.QueryStore(key, AccountStoreName)
+	result, err := c.ABCIQuery(fmt.Sprintf("/account/%s", addr.String()), nil)
 	if err != nil {
 		return nil, err
 	}
-	if bz == nil {
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.New(resp.Log)
+	}
+	value := result.Response.GetValue()
+	if len(value) == 0 {
 		return nil, nil
 	}
-	err = c.cdc.UnmarshalBinaryBare(bz, &acc)
+	err = c.cdc.UnmarshalBinaryBare(value, &acc)
 	if err != nil {
 		return nil, err
 	}
@@ -95,13 +97,7 @@ func (c *HTTP) GetBalances(addr types.AccAddress) ([]types.TokenBalance, error) 
 	var denoms map[string]bool
 	denoms = map[string]bool{}
 	for _, coin := range coins {
-		denom := coin.Denom
-		exists := c.existsCC(denom)
-		// TODO: we probably actually want to show zero balances.
-		// if exists && !sdk.Int.IsZero(coins.AmountOf(denom)) {
-		if exists {
-			denoms[denom] = true
-		}
+		denoms[coin.Denom] = true
 	}
 
 	symbs := make([]string, 0, len(denoms))
@@ -259,13 +255,20 @@ func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
 }
 
 func (c *HTTP) existsCC(symbol string) bool {
-	key := []byte(strings.ToUpper(symbol))
-	bz, err := c.QueryStore(key, TokenStoreName)
+	resp, err := c.ABCIQuery(fmt.Sprintf("tokens/info/%s", symbol), nil)
 	if err != nil {
 		return false
 	}
-	if bz != nil {
-		return true
+	if !resp.Response.IsOK() {
+		return false
 	}
-	return false
+	if len(resp.Response.GetValue()) == 0 {
+		return false
+	}
+	var token types.Token
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(resp.Response.GetValue(), &token)
+	if err != nil {
+		return false
+	}
+	return true
 }
