@@ -18,6 +18,8 @@ type DexClient interface {
 	ListAllTokens(offset int, limit int) ([]types.Token, error)
 	GetTokenInfo(symbol string) (*types.Token, error)
 	GetAccount(addr types.AccAddress) (acc types.Account, err error)
+	GetCommitAccount(addr types.AccAddress) (acc types.Account, err error)
+
 	GetBalances(addr types.AccAddress) ([]types.TokenBalance, error)
 	GetBalance(addr types.AccAddress, symbol string) (*types.TokenBalance, error)
 	GetFee() ([]types.FeeParam, error)
@@ -68,6 +70,37 @@ func (c *HTTP) GetTokenInfo(symbol string) (*types.Token, error) {
 	return token, err
 }
 
+// Always fetch the account from the commit store at (currentHeight-1) in node.
+// example:
+// 1. currentCommitHeight: 1000, accountA(balance: 10BNB, sequence: 10)
+// 2. height: 999, accountA(balance: 11BNB, sequence: 9)
+// 3. GetCommitAccount will return accountA(balance: 11BNB, sequence: 9).
+// If the (currentHeight-1) do not exist, will return  account at currentHeight.
+// 1. currentCommitHeight: 1000, accountA(balance: 10BNB, sequence: 10)
+// 2. height: 999. the state do not exist
+// 3. GetCommitAccount will return accountA(balance: 10BNB, sequence: 10).
+func (c *HTTP) GetCommitAccount(addr types.AccAddress) (acc types.Account, err error) {
+	key := append([]byte("account:"), addr.Bytes()...)
+	bz, err := c.QueryStore(key, AccountStoreName)
+	if err != nil {
+		return nil, err
+	}
+	if bz == nil {
+		return nil, nil
+	}
+	err = c.cdc.UnmarshalBinaryBare(bz, &acc)
+	if err != nil {
+		return nil, err
+	}
+	return acc, err
+}
+
+// Always fetch the latest account from the cache in node even the previous transaction from
+// this account is not included in block yet.
+// example:
+// 1. AccountA(Balance: 10BNB, sequence: 1), AccountB(Balance: 5BNB, sequence: 1)
+// 2. Node receive Tx(AccountA --> AccountB 2BNB) and check have passed, but not included in block yet.
+// 3. GetAccount will return AccountA(Balance: 8BNB, sequence: 2), AccountB(Balance: 7BNB, sequence: 1)
 func (c *HTTP) GetAccount(addr types.AccAddress) (acc types.Account, err error) {
 	result, err := c.ABCIQuery(fmt.Sprintf("/account/%s", addr.String()), nil)
 	if err != nil {
