@@ -3,8 +3,6 @@ package rpc
 import (
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
@@ -20,6 +18,8 @@ type DexClient interface {
 	ListAllTokens(offset int, limit int) ([]types.Token, error)
 	GetTokenInfo(symbol string) (*types.Token, error)
 	GetAccount(addr types.AccAddress) (acc types.Account, err error)
+	GetCommitAccount(addr types.AccAddress) (acc types.Account, err error)
+
 	GetBalances(addr types.AccAddress) ([]types.TokenBalance, error)
 	GetBalance(addr types.AccAddress, symbol string) (*types.TokenBalance, error)
 	GetFee() ([]types.FeeParam, error)
@@ -70,7 +70,16 @@ func (c *HTTP) GetTokenInfo(symbol string) (*types.Token, error) {
 	return token, err
 }
 
-func (c *HTTP) GetAccount(addr types.AccAddress) (acc types.Account, err error) {
+// Always fetch the account from the commit store at (currentHeight-1) in node.
+// example:
+// 1. currentCommitHeight: 1000, accountA(balance: 10BNB, sequence: 10)
+// 2. height: 999, accountA(balance: 11BNB, sequence: 9)
+// 3. GetCommitAccount will return accountA(balance: 11BNB, sequence: 9).
+// If the (currentHeight-1) do not exist, will return  account at currentHeight.
+// 1. currentCommitHeight: 1000, accountA(balance: 10BNB, sequence: 10)
+// 2. height: 999. the state do not exist
+// 3. GetCommitAccount will return accountA(balance: 10BNB, sequence: 10).
+func (c *HTTP) GetCommitAccount(addr types.AccAddress) (acc types.Account, err error) {
 	key := append([]byte("account:"), addr.Bytes()...)
 	bz, err := c.QueryStore(key, AccountStoreName)
 	if err != nil {
@@ -86,38 +95,53 @@ func (c *HTTP) GetAccount(addr types.AccAddress) (acc types.Account, err error) 
 	return acc, err
 }
 
+// Always fetch the latest account from the cache in node even the previous transaction from
+// this account is not included in block yet.
+// example:
+// 1. AccountA(Balance: 10BNB, sequence: 1), AccountB(Balance: 5BNB, sequence: 1)
+// 2. Node receive Tx(AccountA --> AccountB 2BNB) and check have passed, but not included in block yet.
+// 3. GetAccount will return AccountA(Balance: 8BNB, sequence: 2), AccountB(Balance: 7BNB, sequence: 1)
+func (c *HTTP) GetAccount(addr types.AccAddress) (acc types.Account, err error) {
+	result, err := c.ABCIQuery(fmt.Sprintf("/account/%s", addr.String()), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.New(resp.Log)
+	}
+	value := result.Response.GetValue()
+	if len(value) == 0 {
+		return nil, nil
+	}
+	err = c.cdc.UnmarshalBinaryBare(value, &acc)
+	if err != nil {
+		return nil, err
+	}
+	return acc, err
+}
+
 func (c *HTTP) GetBalances(addr types.AccAddress) ([]types.TokenBalance, error) {
 	account, err := c.GetAccount(addr)
 	if err != nil {
 		return nil, err
 	}
 	coins := account.GetCoins()
-	var denoms map[string]bool
-	denoms = map[string]bool{}
-	for _, coin := range coins {
-		denom := coin.Denom
-		exists := c.existsCC(denom)
-		// TODO: we probably actually want to show zero balances.
-		// if exists && !sdk.Int.IsZero(coins.AmountOf(denom)) {
-		if exists {
-			denoms[denom] = true
-		}
-	}
 
-	symbs := make([]string, 0, len(denoms))
-	bals := make([]types.TokenBalance, 0, len(denoms))
-	for symb := range denoms {
-		symbs = append(symbs, symb)
+	symbs := make([]string, 0, len(coins))
+	bals := make([]types.TokenBalance, 0, len(coins))
+	for _,coin := range coins {
+		symbs = append(symbs, coin.Denom)
 		// count locked and frozen coins
 		var locked, frozen int64
 		nacc := account.(types.NamedAccount)
 		if nacc != nil {
-			locked = nacc.GetLockedCoins().AmountOf(symb)
-			frozen = nacc.GetFrozenCoins().AmountOf(symb)
+			locked = nacc.GetLockedCoins().AmountOf(coin.Denom)
+			frozen = nacc.GetFrozenCoins().AmountOf(coin.Denom)
 		}
 		bals = append(bals, types.TokenBalance{
-			Symbol: symb,
-			Free:   types.Fixed8(coins.AmountOf(symb)),
+			Symbol: coin.Denom,
+			Free:   types.Fixed8(coins.AmountOf(coin.Denom)),
 			Locked: types.Fixed8(locked),
 			Frozen: types.Fixed8(frozen),
 		})
@@ -259,13 +283,20 @@ func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
 }
 
 func (c *HTTP) existsCC(symbol string) bool {
-	key := []byte(strings.ToUpper(symbol))
-	bz, err := c.QueryStore(key, TokenStoreName)
+	resp, err := c.ABCIQuery(fmt.Sprintf("tokens/info/%s", symbol), nil)
 	if err != nil {
 		return false
 	}
-	if bz != nil {
-		return true
+	if !resp.Response.IsOK() {
+		return false
 	}
-	return false
+	if len(resp.Response.GetValue()) == 0 {
+		return false
+	}
+	var token types.Token
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(resp.Response.GetValue(), &token)
+	if err != nil {
+		return false
+	}
+	return true
 }
