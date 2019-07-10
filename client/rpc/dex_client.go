@@ -94,26 +94,21 @@ func (c *HTTP) GetBalances(addr types.AccAddress) ([]types.TokenBalance, error) 
 		return nil, err
 	}
 	coins := account.GetCoins()
-	var denoms map[string]bool
-	denoms = map[string]bool{}
-	for _, coin := range coins {
-		denoms[coin.Denom] = true
-	}
 
-	symbs := make([]string, 0, len(denoms))
-	bals := make([]types.TokenBalance, 0, len(denoms))
-	for symb := range denoms {
-		symbs = append(symbs, symb)
+	symbs := make([]string, 0, len(coins))
+	bals := make([]types.TokenBalance, 0, len(coins))
+	for _,coin := range coins {
+		symbs = append(symbs, coin.Denom)
 		// count locked and frozen coins
 		var locked, frozen int64
 		nacc := account.(types.NamedAccount)
 		if nacc != nil {
-			locked = nacc.GetLockedCoins().AmountOf(symb)
-			frozen = nacc.GetFrozenCoins().AmountOf(symb)
+			locked = nacc.GetLockedCoins().AmountOf(coin.Denom)
+			frozen = nacc.GetFrozenCoins().AmountOf(coin.Denom)
 		}
 		bals = append(bals, types.TokenBalance{
-			Symbol: symb,
-			Free:   types.Fixed8(coins.AmountOf(symb)),
+			Symbol: coin.Denom,
+			Free:   types.Fixed8(coins.AmountOf(coin.Denom)),
 			Locked: types.Fixed8(locked),
 			Frozen: types.Fixed8(frozen),
 		})
