@@ -10,6 +10,7 @@ import (
 
 	"github.com/cosmos/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
@@ -247,7 +248,7 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 
 	cipherParamsJSON := cipherparamsJSON{IV: hex.EncodeToString(iv)}
 	derivedKey := pbkdf2.Key([]byte(password), salt, 262144, 32, sha256.New)
-	encryptKey := derivedKey[:16]
+	encryptKey := derivedKey[:32]
 	secpPrivateKey, ok := privateKey.(secp256k1.PrivKeySecp256k1)
 	if !ok {
 		return nil, fmt.Errorf(" Only PrivKeySecp256k1 key is supported ")
@@ -257,7 +258,7 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 		return nil, err
 	}
 
-	hasher := sha256.New()
+	hasher := sha3.NewLegacyKeccak512()
 	hasher.Write(derivedKey[16:32])
 	hasher.Write(cipherText)
 	mac := hasher.Sum(nil)
@@ -278,6 +279,6 @@ func generateKeyStore(privateKey crypto.PrivKey, password string) (*EncryptedKey
 		Address: addr.String(),
 		Crypto:  cryptoStruct,
 		Id:      id.String(),
-		Version: "1",
+		Version: 1,
 	}, nil
 }
