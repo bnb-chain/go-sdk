@@ -2,6 +2,8 @@ package query
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/binance-chain/go-sdk/common/types"
 )
 
@@ -12,8 +14,11 @@ func (c *client) GetAccount(address string) (*types.BalanceAccount, error) {
 	}
 
 	qp := map[string]string{}
-	resp, err := c.baseClient.Get("/account/"+address, qp)
+	resp, err, code := c.baseClient.Get("/account/"+address, qp)
 	if err != nil {
+		if code == http.StatusNotFound {
+			return &types.BalanceAccount{}, nil
+		}
 		return nil, err
 	}
 	var account types.BalanceAccount

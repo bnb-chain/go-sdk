@@ -152,8 +152,7 @@ If want to attach memo or source to the transaction, more `WithSource` and `With
 createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
 ```
 
-In some scenarios, continuously send multi transactions very fast. Before the previous transaction being included in the chain, the next
-transaction is being sent, to avoid sequence mismatch error, option `WithAcNumAndSequence` is required:
+In some scenarios, continuously send multi transactions very fast. Before the previous transaction being included in the chain, the next transaction is being sent, to avoid sequence mismatch error, option `WithAcNumAndSequence` is required:
 ```
 acc,err:=client.GetAccount(client.GetKeyManager().GetAddr().String())
 _, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence))

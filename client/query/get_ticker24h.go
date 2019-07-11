@@ -14,7 +14,7 @@ func (c *client) GetTicker24h(query *types.Ticker24hQuery) ([]types.Ticker24h, e
 		return nil, err
 	}
 
-	resp, err := c.baseClient.Get("/ticker/24hr", qp)
+	resp, err, _ := c.baseClient.Get("/ticker/24hr", qp)
 	if err != nil {
 		return nil, err
 	}

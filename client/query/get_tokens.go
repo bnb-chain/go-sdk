@@ -9,7 +9,7 @@ import (
 // GetTokens returns list of tokens
 func (c *client) GetTokens() ([]types.Token, error) {
 	qp := map[string]string{}
-	resp, err := c.baseClient.Get("/tokens", qp)
+	resp, err, _ := c.baseClient.Get("/tokens", qp)
 	if err != nil {
 		return nil, err
 	}

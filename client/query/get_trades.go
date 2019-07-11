@@ -18,7 +18,7 @@ func (c *client) GetTrades(query *types.TradesQuery) (*types.Trades, error) {
 		return nil, err
 	}
 
-	resp, err := c.baseClient.Get("/trades", qp)
+	resp, err, _ := c.baseClient.Get("/trades", qp)
 	if err != nil {
 		return nil, err
 	}

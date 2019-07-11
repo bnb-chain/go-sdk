@@ -19,7 +19,7 @@ const (
 )
 
 type BasicClient interface {
-	Get(path string, qp map[string]string) ([]byte, error)
+	Get(path string, qp map[string]string) ([]byte, error, int)
 	Post(path string, body interface{}, param map[string]string) ([]byte, error)
 
 	GetTx(txHash string) (*tx.TxResult, error)
@@ -36,15 +36,15 @@ func NewClient(baseUrl string) BasicClient {
 	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix)}
 }
 
-func (c *client) Get(path string, qp map[string]string) ([]byte, error) {
+func (c *client) Get(path string, qp map[string]string) ([]byte, error, int) {
 	resp, err := resty.R().SetQueryParams(qp).Get(c.apiUrl + path)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 	if resp.StatusCode() >= http.StatusMultipleChoices || resp.StatusCode() < http.StatusOK {
 		err = fmt.Errorf("bad response, status code %d, response: %s", resp.StatusCode(), string(resp.Body()))
 	}
-	return resp.Body(), err
+	return resp.Body(), err, resp.StatusCode()
 }
 
 // Post generic method
@@ -71,7 +71,7 @@ func (c *client) GetTx(txHash string) (*tx.TxResult, error) {
 	}
 
 	qp := map[string]string{}
-	resp, err := c.Get("/tx/"+txHash, qp)
+	resp, err ,_:= c.Get("/tx/"+txHash, qp)
 	if err != nil {
 		return nil, err
 	}

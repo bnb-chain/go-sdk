@@ -9,7 +9,7 @@ import (
 // GetTime returns market depth records
 func (c *client) GetTime() (*types.Time, error) {
 	qp := map[string]string{}
-	resp, err := c.baseClient.Get("/time", qp)
+	resp, err, _ := c.baseClient.Get("/time", qp)
 	if err != nil {
 		return nil, err
 	}

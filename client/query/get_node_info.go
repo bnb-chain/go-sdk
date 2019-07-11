@@ -7,7 +7,7 @@ import (
 
 func (c *client) GetNodeInfo() (*types.ResultStatus, error) {
 	qp := map[string]string{}
-	resp, err := c.baseClient.Get("/node-info", qp)
+	resp, err, _ := c.baseClient.Get("/node-info", qp)
 	if err != nil {
 		return nil, err
 	}

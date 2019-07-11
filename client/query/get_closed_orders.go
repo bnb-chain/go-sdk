@@ -17,7 +17,7 @@ func (c *client) GetClosedOrders(query *types.ClosedOrdersQuery) (*types.CloseOr
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.baseClient.Get("/orders/closed", qp)
+	resp, err, _ := c.baseClient.Get("/orders/closed", qp)
 	if err != nil {
 		return nil, err
 	}
