@@ -103,20 +103,23 @@ type Trades struct {
 
 // Trade def
 type Trade struct {
-	BuyerOrderID  string `json:"buyerOrderId"`
+	BaseAsset     string `json:"baseAsset"`
+	BlockHeight   int64  `json:"blockHeight"`
 	BuyFee        string `json:"buyFee"`
+	BuySingleFee  string `json:"buySingleFee"`
 	BuyerId       string `json:"buyerId"`
+	BuyerOrderID  string `json:"buyerOrderId"`
 	Price         string `json:"price"`
 	Quantity      string `json:"quantity"`
+	QuoteAsset    string `json:"quoteAsset"`
 	SellFee       string `json:"sellFee"`
+	sellSingleFee string `json:"sellSingleFee"`
 	SellerId      string `json:"sellerId"`
 	SellerOrderID string `json:"sellerOrderId"`
 	Symbol        string `json:"symbol"`
 	Time          int64  `json:"time"`
 	TradeID       string `json:"tradeId"`
-	BlockHeight   int64  `json:"blockHeight"`
-	BaseAsset     string `json:"baseAsset"`
-	QuoteAsset    string `json:"quoteAsset"`
+	TickType      string `json:"tickType"`
 }
 
 type Order struct {

@@ -104,6 +104,17 @@ func TestTransProcess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
+	//---- Create order by sequence --
+	acc,err:=client.GetAccount(client.GetKeyManager().GetAddr().String())
+	assert.NoError(t,err)
+
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence))
+	assert.NoError(t, err)
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+1))
+	assert.NoError(t, err)
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+2))
+	assert.NoError(t, err)
+
 	//---- Get Open Order ---------
 	openOrders, err := client.GetOpenOrders(ctypes.NewOpenOrdersQuery(testAccount1.String(), true))
 	assert.NoError(t, err)

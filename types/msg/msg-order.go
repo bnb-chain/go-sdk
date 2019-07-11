@@ -207,11 +207,6 @@ func (msg CreateOrderMsg) ValidateBasic() error {
 		return fmt.Errorf("ErrUnknownAddress %s", msg.Sender.String())
 	}
 
-	// `-` is required in the compound order id: <address>-<sequence>
-	if len(msg.ID) == 0 || !strings.Contains(msg.ID, "-") {
-		return fmt.Errorf("Invalid order ID:%s", msg.ID)
-	}
-
 	if msg.Quantity <= 0 {
 		return fmt.Errorf("Invalid order Quantity, Zero/Negative Number:%d", msg.Quantity)
 	}

@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/binance-chain/go-sdk/common"
@@ -18,22 +19,15 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
 	}
 	fromAddr := c.keyManager.GetAddr()
-	acc, err := c.queryClient.GetAccount(fromAddr.String())
-	if err != nil {
-		return nil, err
-	}
-	sequence := acc.Sequence
-
-	orderId := msg.GenerateOrderID(sequence+1, c.keyManager.GetAddr())
 	newOrderMsg := msg.NewCreateOrderMsg(
 		fromAddr,
-		orderId,
+		"",
 		op,
 		common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol),
 		price,
 		quantity,
 	)
-	err = newOrderMsg.ValidateBasic()
+	err := newOrderMsg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
@@ -41,5 +35,14 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 	if err != nil {
 		return nil, err
 	}
-	return &CreateOrderResult{*commit, orderId}, nil
+	type commitData struct {
+		OrderId string `json:"order_id"`
+	}
+	var cdata commitData
+	err = json.Unmarshal([]byte(commit.Data), &cdata)
+	if err != nil {
+		return nil, err
+	}
+
+	return &CreateOrderResult{*commit, cdata.OrderId}, nil
 }
