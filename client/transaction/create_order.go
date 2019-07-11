@@ -27,10 +27,6 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 		price,
 		quantity,
 	)
-	err := newOrderMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(newOrderMsg, sync, options...)
 	if err != nil {
 		return nil, err

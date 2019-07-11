@@ -28,10 +28,6 @@ func (c *client) SubmitProposal(title string, description string, proposalType m
 	fromAddr := c.keyManager.GetAddr()
 	coins := ctypes.Coins{ctypes.Coin{Denom: types.NativeSymbol, Amount: initialDeposit}}
 	proposalMsg := msg.NewMsgSubmitProposal(title, description, proposalType, fromAddr, coins, votingPeriod)
-	err := proposalMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(proposalMsg, sync, options...)
 	if err != nil {
 		return nil, err

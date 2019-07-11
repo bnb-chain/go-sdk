@@ -74,7 +74,7 @@ func TestTransProcess(t *testing.T) {
 
 	//-----  Get Trades  -----------
 	fmt.Println(testAccount1.String())
-	trades, err := client.GetTrades(ctypes.NewTradesQuery(testAccount1.String(), true).WithSymbol(tradeSymbol, nativeSymbol))
+	trades, err := client.GetTrades(ctypes.NewTradesQuery(true).WithSymbol(tradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	fmt.Printf("GetTrades: %v \n", trades)
 

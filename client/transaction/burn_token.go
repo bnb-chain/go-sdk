@@ -22,10 +22,6 @@ func (c *client) BurnToken(symbol string, amount int64, sync bool, options ...Op
 		symbol,
 		amount,
 	)
-	err := burnMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(burnMsg, sync, options...)
 	if err != nil {
 		return nil, err

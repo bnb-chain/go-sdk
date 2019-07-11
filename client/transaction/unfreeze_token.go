@@ -22,10 +22,6 @@ func (c *client) UnfreezeToken(symbol string, amount int64, sync bool, options .
 		symbol,
 		amount,
 	)
-	err := unfreezeMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(unfreezeMsg, sync, options...)
 	if err != nil {
 		return nil, err

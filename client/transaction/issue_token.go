@@ -34,10 +34,6 @@ func (c *client) IssueToken(name, symbol string, supply int64, sync bool, mintab
 		supply,
 		mintable,
 	)
-	err := issueMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(issueMsg, sync, options...)
 	if err != nil {
 		return nil, err

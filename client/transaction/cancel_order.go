@@ -23,10 +23,6 @@ func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sy
 	fromAddr := c.keyManager.GetAddr()
 
 	cancelOrderMsg := msg.NewCancelOrderMsg(fromAddr, common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol), refId)
-	err := cancelOrderMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(cancelOrderMsg, sync, options...)
 	if err != nil {
 		return nil, err

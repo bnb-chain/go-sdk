@@ -104,6 +104,12 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCo
 		signMsg.Msgs[0] = orderMsg
 	}
 
+	for _, m := range signMsg.Msgs {
+		if err := m.ValidateBasic(); err != nil {
+			return nil, err
+		}
+	}
+
 	// Hex encoded signed transaction, ready to be posted to BncChain API
 	hexTx, err := c.keyManager.Sign(*signMsg)
 	if err != nil {
