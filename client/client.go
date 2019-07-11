@@ -31,9 +31,9 @@ func init() {
 	resty.DefaultClient.SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
 }
 
-func NewDexClient(baseUrl string, network types.ChainNetwork, keyManager keys.KeyManager) (DexClient, error) {
+func NewDexClient(baseUrl string, network types.ChainNetwork, keyManager keys.KeyManager, apikey string) (DexClient, error) {
 	types.Network = network
-	c := basic.NewClient(baseUrl)
+	c := basic.NewClient(baseUrl, apikey)
 	w := websocket.NewClient(c)
 	q := query.NewClient(c)
 	n, err := q.GetNodeInfo()

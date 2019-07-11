@@ -30,14 +30,15 @@ type BasicClient interface {
 type client struct {
 	baseUrl string
 	apiUrl  string
+	apikey  string
 }
 
-func NewClient(baseUrl string) BasicClient {
-	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix)}
+func NewClient(baseUrl, apikey string) BasicClient {
+	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix, apikey)}
 }
 
 func (c *client) Get(path string, qp map[string]string) ([]byte, int, error) {
-	resp, err := resty.R().SetQueryParams(qp).Get(c.apiUrl + path)
+	resp, err := resty.R().SetQueryParams(qp).SetHeader("apikey", c.apikey).Get(c.apiUrl + path)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -52,6 +53,7 @@ func (c *client) Post(path string, body interface{}, param map[string]string) ([
 	resp, err := resty.R().
 		SetHeader("Content-Type", "text/plain").
 		SetBody(body).
+		SetHeader("apikey", c.apikey).
 		SetQueryParams(param).
 		Post(c.apiUrl + path)
 
