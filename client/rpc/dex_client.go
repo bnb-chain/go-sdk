@@ -130,7 +130,7 @@ func (c *HTTP) GetBalances(addr types.AccAddress) ([]types.TokenBalance, error) 
 
 	symbs := make([]string, 0, len(coins))
 	bals := make([]types.TokenBalance, 0, len(coins))
-	for _,coin := range coins {
+	for _, coin := range coins {
 		symbs = append(symbs, coin.Denom)
 		// count locked and frozen coins
 		var locked, frozen int64

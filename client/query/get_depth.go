@@ -17,7 +17,7 @@ func (c *client) GetDepth(query *types.DepthQuery) (*types.MarketDepth, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err, _ := c.baseClient.Get("/depth", qp)
+	resp, _, err := c.baseClient.Get("/depth", qp)
 	if err != nil {
 		return nil, err
 	}

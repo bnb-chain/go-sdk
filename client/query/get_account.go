@@ -14,7 +14,7 @@ func (c *client) GetAccount(address string) (*types.BalanceAccount, error) {
 	}
 
 	qp := map[string]string{}
-	resp, err, code := c.baseClient.Get("/account/"+address, qp)
+	resp, code, err := c.baseClient.Get("/account/"+address, qp)
 	if err != nil {
 		if code == http.StatusNotFound {
 			return &types.BalanceAccount{}, nil

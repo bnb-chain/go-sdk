@@ -18,7 +18,7 @@ func (c *client) GetOpenOrders(query *types.OpenOrdersQuery) (*types.OpenOrders,
 		return nil, err
 	}
 
-	resp, err, _ := c.baseClient.Get("/orders/open", qp)
+	resp, _, err := c.baseClient.Get("/orders/open", qp)
 	if err != nil {
 		return nil, err
 	}
