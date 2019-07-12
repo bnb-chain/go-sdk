@@ -34,7 +34,7 @@ type client struct {
 }
 
 func NewClient(baseUrl, apikey string) BasicClient {
-	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix, apikey)}
+	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix),apikey:apikey}
 }
 
 func (c *client) Get(path string, qp map[string]string) ([]byte, int, error) {
