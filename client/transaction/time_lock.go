@@ -17,10 +17,6 @@ func (c *client) TimeLock(description string, amount types.Coins, lockTime int64
 	fromAddr := c.keyManager.GetAddr()
 
 	lockMsg := msg.NewTimeLockMsg(fromAddr, description, amount, lockTime)
-	err := lockMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(lockMsg, sync, options...)
 	if err != nil {
 		return nil, err

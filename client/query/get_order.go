@@ -12,7 +12,7 @@ func (c *client) GetOrder(orderID string) (*types.Order, error) {
 	}
 
 	qp := map[string]string{}
-	resp, err := c.baseClient.Get("/orders/"+orderID, qp)
+	resp, _, err := c.baseClient.Get("/orders/"+orderID, qp)
 	if err != nil {
 		return nil, err
 	}

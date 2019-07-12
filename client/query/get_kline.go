@@ -19,7 +19,7 @@ func (c *client) GetKlines(query *types.KlineQuery) ([]types.Kline, error) {
 		return nil, err
 	}
 
-	resp, err := c.baseClient.Get("/klines", qp)
+	resp, _, err := c.baseClient.Get("/klines", qp)
 	if err != nil {
 		return nil, err
 	}

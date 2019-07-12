@@ -15,10 +15,6 @@ func (c *client) DepositProposal(proposalID int64, amount int64, sync bool, opti
 	fromAddr := c.keyManager.GetAddr()
 	coins := ctypes.Coins{ctypes.Coin{Denom: types.NativeSymbol, Amount: amount}}
 	depositMsg := msg.NewDepositMsg(fromAddr, proposalID, coins)
-	err := depositMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(depositMsg, sync, options...)
 	if err != nil {
 		return nil, err

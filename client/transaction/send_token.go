@@ -18,10 +18,6 @@ func (c *client) SendToken(transfers []msg.Transfer, sync bool, options ...Optio
 		fromCoins = fromCoins.Plus(t.Coins)
 	}
 	sendMsg := msg.CreateSendMsg(fromAddr, fromCoins, transfers)
-	err := sendMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(sendMsg, sync, options...)
 	if err != nil {
 		return nil, err

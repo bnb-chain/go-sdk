@@ -98,10 +98,77 @@ func (param *ClosedOrdersQuery) WithSide(side string) *ClosedOrdersQuery {
 }
 
 // TradesQuery definition
-type TradesQuery = ClosedOrdersQuery
+type TradesQuery struct {
+	SenderAddress *string `json:"address,omitempty"`       // option
+	Symbol        string  `json:"symbol,omitempty"`        //option
+	Offset        *uint32 `json:"offset,omitempty,string"` //option
+	Limit         *uint32 `json:"limit,omitempty,string"`  //option
+	Start         *int64  `json:"start,omitempty,string"`  //option
+	End           *int64  `json:"end,omitempty,string"`    //option
+	Side          *string `json:"side,omitempty"`          //option
+	Total         int     `json:"total,string"`            //0 for not required and 1 for required; default not required, return total=-1 in response
+}
 
-func NewTradesQuery(senderAddres string, withTotal bool) *TradesQuery {
-	return NewClosedOrdersQuery(senderAddres, withTotal)
+func NewTradesQuery(withTotal bool) *TradesQuery {
+	totalQuery := 0
+	if withTotal {
+		totalQuery = 1
+	}
+	return &TradesQuery{Total: totalQuery}
+}
+
+func (param *TradesQuery) Check() error {
+	if param.Side != nil && *param.Side != SideBuy && *param.Side != SideSell && *param.Side != "" {
+		return TradeSideMisMatchError
+	}
+	if param.Limit != nil && *param.Limit <= 0 {
+		return LimitOutOfRangeError
+	}
+	if param.Start != nil && *param.Start <= 0 {
+		return StartTimeOutOfRangeError
+	}
+	if param.End != nil && *param.End <= 0 {
+		return EndTimeOutOfRangeError
+	}
+	if param.Start != nil && param.End != nil && *param.Start > *param.End {
+		return EndTimeLessThanStartTimeError
+	}
+	return nil
+}
+
+func (param *TradesQuery) WithSymbol(baseAssetSymbol, quoteAssetSymbol string) *TradesQuery {
+	param.Symbol = common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol)
+	return param
+}
+
+func (param *TradesQuery) WithOffset(offset uint32) *TradesQuery {
+	param.Offset = &offset
+	return param
+}
+
+func (param *TradesQuery) WithLimit(limit uint32) *TradesQuery {
+	param.Limit = &limit
+	return param
+}
+
+func (param *TradesQuery) WithStart(start int64) *TradesQuery {
+	param.Start = &start
+	return param
+}
+
+func (param *TradesQuery) WithEnd(end int64) *TradesQuery {
+	param.End = &end
+	return param
+}
+
+func (param *TradesQuery) WithSide(side string) *TradesQuery {
+	param.Side = &side
+	return param
+}
+
+func (param *TradesQuery) WithAddress(addr string) *TradesQuery {
+	param.SenderAddress = &addr
+	return param
 }
 
 // Ticker24hQuery definition

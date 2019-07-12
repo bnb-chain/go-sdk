@@ -22,10 +22,6 @@ func (c *client) MintToken(symbol string, amount int64, sync bool, options ...Op
 		symbol,
 		amount,
 	)
-	err := mintMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(mintMsg, sync, options...)
 	if err != nil {
 		return nil, err

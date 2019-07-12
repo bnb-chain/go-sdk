@@ -22,10 +22,6 @@ func (c *client) FreezeToken(symbol string, amount int64, sync bool, options ...
 		symbol,
 		amount,
 	)
-	err := freezeMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(freezeMsg, sync, options...)
 	if err != nil {
 		return nil, err

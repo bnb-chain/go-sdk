@@ -13,10 +13,6 @@ func (c *client) ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSy
 	fromAddr := c.keyManager.GetAddr()
 
 	burnMsg := msg.NewDexListMsg(fromAddr, proposalId, baseAssetSymbol, quoteAssetSymbol, initPrice)
-	err := burnMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(burnMsg, sync, options...)
 	if err != nil {
 		return nil, err
