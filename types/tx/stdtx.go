@@ -6,7 +6,7 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 )
 
-const Source int64 = 2
+const Source int64 = 0
 
 type Tx interface {
 
