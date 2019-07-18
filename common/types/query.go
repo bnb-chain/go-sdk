@@ -328,3 +328,30 @@ func (param *MarketsQuery) Check() error {
 	}
 	return nil
 }
+
+// OrdersQuery definition
+type OrdersQuery struct {
+	Offset *uint32 `json:"offset,omitempty,string"` //Option
+	Limit  *uint32 `json:"limit,omitempty,string"`  //Option
+}
+
+func NewOrdersQuery() *OrdersQuery {
+	return &OrdersQuery{}
+}
+
+func (param *OrdersQuery) WithOffset(offset uint32) *OrdersQuery {
+	param.Offset = &offset
+	return param
+}
+
+func (param *OrdersQuery) WithLimit(limit uint32) *OrdersQuery {
+	param.Limit = &limit
+	return param
+}
+
+func (param *OrdersQuery) Check() error {
+	if param.Limit != nil && *param.Limit <= 0 {
+		return LimitOutOfRangeError
+	}
+	return nil
+}
