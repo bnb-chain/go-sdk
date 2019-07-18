@@ -236,6 +236,7 @@ func (w *WSEvents) WaitForResponse(ctx context.Context, outChan chan rpctypes.RP
 		}
 		return w.cdc.UnmarshalJSON(resp.Result, result)
 	case <-ctx.Done():
+		w.ws.reconnectAfter <- ctx.Err()
 		return ctx.Err()
 	}
 }
@@ -649,6 +650,9 @@ func (c *WSClient) GetConnection() *websocket.Conn {
 func (c *WSClient) SetConnection(conn *websocket.Conn) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
+	if c.conn != nil {
+		c.conn.Close()
+	}
 	c.conn = conn
 }
 
