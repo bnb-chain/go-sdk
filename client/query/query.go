@@ -16,7 +16,7 @@ type QueryClient interface {
 	GetTrades(query *types.TradesQuery) (*types.Trades, error)
 	GetAccount(string) (*types.BalanceAccount, error)
 	GetTime() (*types.Time, error)
-	GetTokens() ([]types.Token, error)
+	GetTokens(query *types.TokensQuery) ([]types.Token, error)
 	GetNodeInfo() (*types.ResultStatus, error)
 }
 

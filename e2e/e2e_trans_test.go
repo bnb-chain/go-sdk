@@ -68,7 +68,7 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, len(ticker24h) > 0)
 
 	//-----  Get Tokens  -----------
-	tokens, err := client.GetTokens()
+	tokens, err := client.GetTokens(ctypes.NewTokensQuery().WithLimit(101))
 	assert.NoError(t, err)
 	fmt.Printf("GetTokens: %v \n", tokens)
 
@@ -84,35 +84,35 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("Get time: %v \n", time)
 
 	//-----   time lock  -----------
-	lockResult,err:=client.TimeLock("test lock",ctypes.Coins{{"BNB",100000000}},int64(time2.Now().Add(65*time2.Second).Unix()),true)
-	assert.NoError(t,err)
-	fmt.Printf("timelock %d",lockResult.LockId)
+	lockResult, err := client.TimeLock("test lock", ctypes.Coins{{"BNB", 100000000}}, int64(time2.Now().Add(65*time2.Second).Unix()), true)
+	assert.NoError(t, err)
+	fmt.Printf("timelock %d", lockResult.LockId)
 
 	//----- time relock ---------
-	relockResult,err:=client.TimeReLock(lockResult.LockId,"test lock",ctypes.Coins{{"BNB",200000000}},int64(time2.Now().Add(65*time2.Second).Unix()),true)
-	assert.NoError(t,err)
-	fmt.Printf("timelock %d",relockResult.LockId)
+	relockResult, err := client.TimeReLock(lockResult.LockId, "test lock", ctypes.Coins{{"BNB", 200000000}}, int64(time2.Now().Add(65*time2.Second).Unix()), true)
+	assert.NoError(t, err)
+	fmt.Printf("timelock %d", relockResult.LockId)
 
 	//------ time unlock --------
-	time2.Sleep(70*time2.Second)
-	unlockResult,err:= client.TimeUnLock(relockResult.LockId,true)
-	assert.NoError(t,err)
-	fmt.Printf("timelock %d",unlockResult.LockId)
+	time2.Sleep(70 * time2.Second)
+	unlockResult, err := client.TimeUnLock(relockResult.LockId, true)
+	assert.NoError(t, err)
+	fmt.Printf("timelock %d", unlockResult.LockId)
 
 	//----- Create order -----------
-	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
+	createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100), transaction.WithMemo("test memo"))
 	assert.NoError(t, err)
 	assert.True(t, true, createOrderResult.Ok)
 
 	//---- Create order by sequence --
-	acc,err:=client.GetAccount(client.GetKeyManager().GetAddr().String())
-	assert.NoError(t,err)
+	acc, err := client.GetAccount(client.GetKeyManager().GetAddr().String())
+	assert.NoError(t, err)
 
-	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence))
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number, acc.Sequence))
 	assert.NoError(t, err)
-	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+1))
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number, acc.Sequence+1))
 	assert.NoError(t, err)
-	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+2))
+	_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number, acc.Sequence+2))
 	assert.NoError(t, err)
 
 	//---- Get Open Order ---------
