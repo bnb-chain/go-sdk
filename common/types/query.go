@@ -353,7 +353,7 @@ func (param *TokensQuery) Check() error {
 	if param.Limit != nil && *param.Limit <= 0 {
 		return LimitOutOfRangeError
 	}
-	if param.Offset!=nil && *param.Limit < 0{
+	if param.Offset != nil && *param.Offset < 0 {
 		return OffsetOutOfRangeError
 	}
 	return nil
