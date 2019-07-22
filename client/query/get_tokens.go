@@ -8,7 +8,7 @@ import (
 )
 
 // GetTokens returns list of tokens
-func (c *client) GetTokens(query *types.OrdersQuery) ([]types.Token, error) {
+func (c *client) GetTokens(query *types.TokensQuery) ([]types.Token, error) {
 	qp, err := common.QueryParamToMap(*query)
 	if err != nil {
 		return nil, err

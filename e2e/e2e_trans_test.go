@@ -68,7 +68,7 @@ func TestTransProcess(t *testing.T) {
 	assert.True(t, len(ticker24h) > 0)
 
 	//-----  Get Tokens  -----------
-	tokens, err := client.GetTokens(ctypes.NewOrdersQuery().WithLimit(101))
+	tokens, err := client.GetTokens(ctypes.NewTokensQuery().WithLimit(101))
 	assert.NoError(t, err)
 	fmt.Printf("GetTokens: %v \n", tokens)
 
