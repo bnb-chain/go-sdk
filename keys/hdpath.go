@@ -19,7 +19,8 @@ const (
 	BIPCoinType        = 714
 	BIPChange          = false
 	BIP44Prefix        = "44'/714'/"
-	FullFundraiserPath = BIP44Prefix + "0'/0/0"
+	PartialFundraiserPath = "0'/0/0"
+	FullFundraiserPath = BIP44Prefix + PartialFundraiserPath
 )
 
 // BIP44Params wraps BIP 44 params (5 level BIP 32 path).

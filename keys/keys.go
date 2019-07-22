@@ -39,7 +39,15 @@ type KeyManager interface {
 
 func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
 	k := keyManager{}
-	err := k.recoveryFromKMnemonic(mnemonic)
+	err := k.recoveryFromMnemonic(mnemonic, FullFundraiserPath)
+	return &k, err
+}
+
+// The full fundraiser path is  "purpose' / coin_type' / account' / change / address_index".
+// "purpose' / coin_type'" is fixed as "44'/714'/", user can customize the rest part.
+func NewMnemonicPathKeyManager(mnemonic, keyPath string) (KeyManager, error) {
+	k := keyManager{}
+	err := k.recoveryFromMnemonic(mnemonic, BIP44Prefix+keyPath)
 	return &k, err
 }
 
@@ -98,7 +106,7 @@ func NewKeyManager() (KeyManager, error) {
 	return NewMnemonicKeyManager(mnemonic)
 }
 
-func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
+func (m *keyManager) recoveryFromMnemonic(mnemonic, keyPath string) error {
 	words := strings.Split(mnemonic, " ")
 	if len(words) != 12 && len(words) != 24 {
 		return fmt.Errorf("mnemonic length should either be 12 or 24")
@@ -109,7 +117,7 @@ func (m *keyManager) recoveryFromKMnemonic(mnemonic string) error {
 	}
 	// create master key and derive first key:
 	masterPriv, ch := ComputeMastersFromSeed(seed)
-	derivedPriv, err := DerivePrivateKeyForPath(masterPriv, ch, FullFundraiserPath)
+	derivedPriv, err := DerivePrivateKeyForPath(masterPriv, ch, keyPath)
 	if err != nil {
 		return err
 	}

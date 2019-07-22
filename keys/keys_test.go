@@ -21,12 +21,11 @@ func TestRecoveryFromKeyWordsNoError(t *testing.T) {
 	assert.NoError(t, err)
 	acc := keyManger.GetAddr()
 	key := keyManger.GetPrivKey()
-	if acc.String() != "bnb1ddt3ls9fjcd8mh69ujdg3fxc89qle2a7km33aa" {
-		t.Fatalf("RecoveryFromKeyWords get unstable account")
-	}
-	if key == nil {
-		t.Fatalf("Failed to recover private key")
-	}
+	assert.Equal(t,"bnb1ddt3ls9fjcd8mh69ujdg3fxc89qle2a7km33aa",acc.String())
+	assert.NotNil(t,key)
+	customPathKey, err:= NewMnemonicPathKeyManager(mnemonic,"1'/1/1")
+	assert.NoError(t, err)
+	assert.Equal(t,"bnb1c67nwp7u5adl7gw0ffn3d47kttcm4crjy9mrye",customPathKey.GetAddr().String())
 }
 
 func TestRecoveryFromKeyBaseNoError(t *testing.T) {
