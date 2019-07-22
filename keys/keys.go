@@ -43,7 +43,7 @@ func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
 	return &k, err
 }
 
-// The full fundraiser path is  "purpose' / coin_type' / account' / change / address_index".
+// The full path is  "purpose' / coin_type' / account' / change / address_index".
 // "purpose' / coin_type'" is fixed as "44'/714'/", user can customize the rest part.
 func NewMnemonicPathKeyManager(mnemonic, keyPath string) (KeyManager, error) {
 	k := keyManager{}
