@@ -39,7 +39,7 @@ type KeyManager interface {
 
 func NewMnemonicKeyManager(mnemonic string) (KeyManager, error) {
 	k := keyManager{}
-	err := k.recoveryFromMnemonic(mnemonic, FullFundraiserPath)
+	err := k.recoveryFromMnemonic(mnemonic, FullPath)
 	return &k, err
 }
 

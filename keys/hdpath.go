@@ -15,12 +15,12 @@ import (
 
 // BIP44Prefix is the parts of the BIP32 HD path that are fixed by what we used during the fundraiser.
 const (
-	BIPPurpose         = 44
-	BIPCoinType        = 714
-	BIPChange          = false
-	BIP44Prefix        = "44'/714'/"
-	PartialFundraiserPath = "0'/0/0"
-	FullFundraiserPath = BIP44Prefix + PartialFundraiserPath
+	BIPPurpose  = 44
+	BIPCoinType = 714
+	BIPChange   = false
+	BIP44Prefix = "44'/714'/"
+	PartialPath = "0'/0/0"
+	FullPath    = BIP44Prefix + PartialPath
 )
 
 // BIP44Params wraps BIP 44 params (5 level BIP 32 path).
