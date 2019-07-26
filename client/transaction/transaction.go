@@ -25,6 +25,7 @@ type TransactionClient interface {
 	TimeLock(description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeLockResult, error)
 	TimeUnLock(id int64, sync bool, options ...Option) (*TimeUnLockResult, error)
 	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
+	SetAccountFlagsResult(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 
 	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)

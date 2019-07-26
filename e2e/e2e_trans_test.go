@@ -83,6 +83,11 @@ func TestTransProcess(t *testing.T) {
 	assert.NoError(t, err)
 	fmt.Printf("Get time: %v \n", time)
 
+	//---- set Account flags
+	setFlags, err := client.SetAccountFlagsResult(1, true)
+	assert.NoError(t, err)
+	fmt.Printf("Set account flags: %v \n", setFlags)
+
 	//-----   time lock  -----------
 	lockResult, err := client.TimeLock("test lock", ctypes.Coins{{"BNB", 100000000}}, int64(time2.Now().Add(65*time2.Second).Unix()), true)
 	assert.NoError(t, err)
