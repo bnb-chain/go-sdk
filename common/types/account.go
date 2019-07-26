@@ -11,6 +11,7 @@ type AppAccount struct {
 	Name        string `json:"name"`
 	FrozenCoins Coins  `json:"frozen"`
 	LockedCoins Coins  `json:"locked"`
+	Flags       uint64 `json:"flags"`
 }
 
 type Account interface {
@@ -189,4 +190,5 @@ type BalanceAccount struct {
 	Balances  []TokenBalance `json:"balances"`
 	PublicKey []uint8        `json:"public_key"`
 	Sequence  int64          `json:"sequence"`
+	Flags     uint64         `json:"flags"`
 }

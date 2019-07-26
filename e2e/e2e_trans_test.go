@@ -37,6 +37,16 @@ func TestTransProcess(t *testing.T) {
 	assert.NoError(t, err)
 	nativeSymbol := msg.NativeToken
 
+	//---- set Account flags
+	addFlags, err := client.AddAccountFlags([]ctypes.FlagOption{ctypes.TransferMemoCheckerFlag}, true)
+	assert.NoError(t, err)
+	fmt.Printf("Set account flags: %v \n", addFlags)
+	accn,_:=client.GetAccount(client.GetKeyManager().GetAddr().String())
+	fmt.Println(accn)
+	setFlags, err := client.SetAccountFlags(0, true)
+	assert.NoError(t, err)
+	fmt.Printf("Set account flags: %v \n", setFlags)
+
 	//-----  Get account  -----------
 	account, err := client.GetAccount(testAccount1.String())
 	assert.NoError(t, err)
@@ -82,11 +92,6 @@ func TestTransProcess(t *testing.T) {
 	time, err := client.GetTime()
 	assert.NoError(t, err)
 	fmt.Printf("Get time: %v \n", time)
-
-	//---- set Account flags
-	setFlags, err := client.SetAccountFlags(1, true)
-	assert.NoError(t, err)
-	fmt.Printf("Set account flags: %v \n", setFlags)
 
 	//-----   time lock  -----------
 	lockResult, err := client.TimeLock("test lock", ctypes.Coins{{"BNB", 100000000}}, int64(time2.Now().Add(65*time2.Second).Unix()), true)
