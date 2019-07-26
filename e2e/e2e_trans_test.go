@@ -84,7 +84,7 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("Get time: %v \n", time)
 
 	//---- set Account flags
-	setFlags, err := client.SetAccountFlagsResult(1, true)
+	setFlags, err := client.SetAccountFlags(1, true)
 	assert.NoError(t, err)
 	fmt.Printf("Set account flags: %v \n", setFlags)
 

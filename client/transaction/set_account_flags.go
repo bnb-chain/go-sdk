@@ -9,7 +9,7 @@ type SetAccountFlagsResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) SetAccountFlagsResult(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error) {
+func (c *client) SetAccountFlags(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 
 	setAccMsg := msg.NewSetAccountFlagsMsg(
