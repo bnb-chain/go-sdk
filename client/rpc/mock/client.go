@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/binance-chain/go-sdk/client/rpc"
+	"github.com/binance-go-sdk-candy/client/rpc"
 	"reflect"
 
 	cmn "github.com/tendermint/tendermint/libs/common"

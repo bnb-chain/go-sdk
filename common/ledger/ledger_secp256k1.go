@@ -1,7 +1,7 @@
 package ledger
 
 import (
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-go-sdk-candy/common/types"
 	ledgergo "github.com/binance-chain/ledger-cosmos-go"
 	"github.com/btcsuite/btcd/btcec"
 	tmbtcec "github.com/tendermint/btcd/btcec"

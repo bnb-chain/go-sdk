@@ -3,9 +3,9 @@ package transaction
 import (
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/binance-go-sdk-candy/common"
+	"github.com/binance-go-sdk-candy/types/msg"
+	"github.com/binance-go-sdk-candy/types/tx"
 )
 
 type CancelOrderResult struct {

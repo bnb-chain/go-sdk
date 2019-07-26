@@ -119,7 +119,7 @@ assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
 ### Init Client
 
 ```GO
-import sdk "github.com/binance-chain/go-sdk/client"
+import sdk "github.com/binance-go-sdk-candy/client"
 
 mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
 //-----   Init KeyManager  -------------
@@ -160,7 +160,7 @@ _, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000
 _, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+2))
 ```
 
-For more API usage documentation, please check the [wiki](https://github.com/binance-chain/go-sdk/wiki)..
+For more API usage documentation, please check the [wiki](https://github.com/binance-go-sdk-candy/wiki)..
 
 ## RPC Client(Beta)
 RPC endpoints may be used to interact with a node directly over HTTP or websockets. Using RPC, you may perform low-level 

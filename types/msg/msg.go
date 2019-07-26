@@ -5,11 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-go-sdk-candy/common/types"
 
 	"github.com/pkg/errors"
 
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/binance-go-sdk-candy/common"
 )
 
 // constants

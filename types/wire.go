@@ -1,8 +1,8 @@
 package types
 
 import (
-	ntypes "github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/types/tx"
+	ntypes "github.com/binance-go-sdk-candy/common/types"
+	"github.com/binance-go-sdk-candy/types/tx"
 	"github.com/tendermint/go-amino"
 	types "github.com/tendermint/tendermint/rpc/core/types"
 )

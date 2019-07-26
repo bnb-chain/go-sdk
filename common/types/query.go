@@ -3,7 +3,7 @@ package types
 import (
 	"errors"
 
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/binance-go-sdk-candy/common"
 )
 
 const (

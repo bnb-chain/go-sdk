@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/binance-chain/go-sdk/common/bech32"
+	"github.com/binance-go-sdk-candy/common/bech32"
 	"github.com/tendermint/tendermint/crypto"
 )
 

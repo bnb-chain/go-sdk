@@ -4,7 +4,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 
-	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/binance-go-sdk-candy/types/msg"
 )
 
 // cdc global variable

@@ -1,10 +1,10 @@
 package transaction
 
 import (
-	ctypes "github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/types"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	ctypes "github.com/binance-go-sdk-candy/common/types"
+	"github.com/binance-go-sdk-candy/types"
+	"github.com/binance-go-sdk-candy/types/msg"
+	"github.com/binance-go-sdk-candy/types/tx"
 )
 
 type DepositProposalResult struct {

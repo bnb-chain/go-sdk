@@ -3,7 +3,7 @@ package tx
 import (
 	"encoding/json"
 
-	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/binance-go-sdk-candy/types/msg"
 	"github.com/tendermint/tendermint/crypto"
 )
 

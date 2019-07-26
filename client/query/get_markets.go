@@ -3,8 +3,8 @@ package query
 import (
 	"encoding/json"
 
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-go-sdk-candy/common"
+	"github.com/binance-go-sdk-candy/common/types"
 )
 
 // GetMarkets returns list of trading pairs
