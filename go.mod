@@ -15,5 +15,6 @@ require (
 	github.com/zondax/hid v0.9.0 // indirect
 	github.com/zondax/ledger-go v0.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	gopkg.in/resty.v1 v1.12.0
 )

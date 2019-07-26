@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"time"
 
+	"golang.org/x/net/proxy"
 	"gopkg.in/resty.v1"
 
 	"github.com/binance-go-sdk-candy/types"
@@ -21,6 +22,7 @@ const (
 type BasicClient interface {
 	Get(path string, qp map[string]string) ([]byte, int, error)
 	Post(path string, body interface{}, param map[string]string) ([]byte, error)
+	SOCKS5(protocol, IP, port string) error
 
 	GetTx(txHash string) (*tx.TxResult, error)
 	PostTx(hexTx []byte, param map[string]string) ([]tx.TxCommitResult, error)
@@ -62,6 +64,18 @@ func (c *client) Post(path string, body interface{}, param map[string]string) ([
 		err = fmt.Errorf("bad response, status code %d, response: %s", resp.StatusCode(), string(resp.Body()))
 	}
 	return resp.Body(), err
+}
+
+// SOCKS5 set transport for resty
+func (c *client) SOCKS5(protocol, IP, port string) error {
+	p, err := proxy.SOCKS5(protocol, IP+":"+port, nil, proxy.Direct)
+	if err != nil {
+		return err
+	}
+	resty.DefaultClient.SetTransport(&http.Transport{
+		Dial: p.Dial,
+	})
+	return nil
 }
 
 // GetTx returns transaction details
