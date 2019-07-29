@@ -35,9 +35,11 @@ func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, 
 		OrderId string `json:"order_id"`
 	}
 	var cdata commitData
-	err = json.Unmarshal([]byte(commit.Data), &cdata)
-	if err != nil {
-		return nil, err
+	if sync {
+		err = json.Unmarshal([]byte(commit.Data), &cdata)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &CreateOrderResult{*commit, cdata.OrderId}, nil
