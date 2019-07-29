@@ -30,22 +30,12 @@ type Account interface {
 	GetCoins() Coins
 	SetCoins(Coins) error
 	Clone() Account
+
+	GetFlags() uint64
+	SetFlags(flags uint64)
 }
 
 type NamedAccount interface {
-	Account
-	GetName() string
-	SetName(string)
-
-	GetFrozenCoins() Coins
-	SetFrozenCoins(Coins)
-
-	//TODO: this should merge into Coin
-	GetLockedCoins() Coins
-	SetLockedCoins(Coins)
-}
-
-type NamedAcount interface {
 	Account
 	GetName() string
 	SetName(string)
@@ -64,11 +54,13 @@ func (acc AppAccount) GetFrozenCoins() Coins        { return acc.FrozenCoins }
 func (acc *AppAccount) SetFrozenCoins(frozen Coins) { acc.FrozenCoins = frozen }
 func (acc AppAccount) GetLockedCoins() Coins        { return acc.LockedCoins }
 func (acc *AppAccount) SetLockedCoins(frozen Coins) { acc.LockedCoins = frozen }
+func (acc *AppAccount) GetFlags() uint64            { return acc.Flags }
+func (acc *AppAccount) SetFlags(flags uint64)       { acc.Flags = flags }
 
 func (acc *AppAccount) Clone() Account {
-	baseAcc := acc.BaseAccount.Clone().(*BaseAccount)
+	baseAcc := acc.BaseAccount.Clone()
 	clonedAcc := &AppAccount{
-		BaseAccount: *baseAcc,
+		BaseAccount: baseAcc,
 		Name:        acc.Name,
 	}
 	if acc.FrozenCoins == nil {
@@ -159,11 +151,11 @@ func (acc *BaseAccount) SetSequence(seq int64) error {
 }
 
 // Implements sdk.Account.
-func (acc *BaseAccount) Clone() Account {
+func (acc *BaseAccount) Clone() BaseAccount {
 	// given the fact PubKey and Address doesn't change,
 	// it should be fine if not deep copy them. if both of
 	// the two interfaces can provide a Clone() method would be terrific.
-	clonedAcc := &BaseAccount{
+	clonedAcc := BaseAccount{
 		PubKey:        acc.PubKey,
 		Address:       acc.Address,
 		AccountNumber: acc.AccountNumber,
