@@ -30,6 +30,8 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(DepositMsg{}, "cosmos-sdk/MsgDeposit", nil)
 	cdc.RegisterConcrete(VoteMsg{}, "cosmos-sdk/MsgVote", nil)
 
+	cdc.RegisterConcrete(SetAccountFlagsMsg{}, "scripts/SetAccountFlagsMsg", nil)
+
 	cdc.RegisterConcrete(MsgCreateValidator{}, "cosmos-sdk/MsgCreateValidator", nil)
 	cdc.RegisterConcrete(MsgRemoveValidator{}, "cosmos-sdk/MsgRemoveValidator", nil)
 	cdc.RegisterConcrete(MsgCreateValidatorProposal{}, "cosmos-sdk/MsgCreateValidatorProposal", nil)
