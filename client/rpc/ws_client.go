@@ -1047,7 +1047,6 @@ func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
 	if err != nil {
 		return tx.Info{}, err
 	}
-
 	return tx.Info{
 		Hash:   res.Hash,
 		Height: res.Height,
