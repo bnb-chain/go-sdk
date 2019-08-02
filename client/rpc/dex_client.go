@@ -12,8 +12,6 @@ const (
 	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
 	TimeLockMsgRoute = "timelock"
-	QueryTimeLocks   = "timelocks"
-	QueryTimeLock    = "timelock"
 )
 
 type DexClient interface {
@@ -31,6 +29,8 @@ type DexClient interface {
 	GetDepth(tradePair string) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
 	GetProposal(proposalId int64) (types.Proposal, error)
+	GetTimelocks(address string) ([]types.TimeLockRecord, error)
+	GetTimelock(address string, recordID int64) (types.TimeLockRecord, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -257,13 +257,13 @@ func (c *HTTP) GetTimelocks(address string) ([]types.TimeLockRecord, error) {
 	bz, err := c.cdc.MarshalJSON(params)
 
 	if err != nil {
-		return nil, fmt.Errorf("incorrectly formatted request data %s", err.Error())
+		fmt.Errorf("marshal params failed %v", err)
 	}
 
-	rawRecords, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, QueryTimeLocks), bz)
+	rawRecords, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, "timelocks"), bz)
 
 	if err != nil {
-		return nil, fmt.Errorf("error query %s", err.Error())
+		return nil, err
 	}
 	if rawRecords == nil {
 		return nil, fmt.Errorf("zero records")
@@ -296,7 +296,7 @@ func (c *HTTP) GetTimelock(address string, recordID int64) (types.TimeLockRecord
 		return types.TimeLockRecord{}, fmt.Errorf("incorrectly formatted request data %s", err.Error())
 	}
 
-	rawRecord, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, QueryTimeLock), bz)
+	rawRecord, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, "timelock"), bz)
 
 	if err != nil {
 		return types.TimeLockRecord{}, fmt.Errorf("error query %s", err.Error())
