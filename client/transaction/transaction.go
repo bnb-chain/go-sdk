@@ -27,6 +27,9 @@ type TransactionClient interface {
 	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
 	SetAccountFlags(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 	AddAccountFlags(flagOptions []types.FlagOption, sync bool, options ...Option) (*SetAccountFlagsResult, error)
+	HashTimerLockTransfer(to types.AccAddress, toOnOtherChain []byte, randomNumberHash []byte, timestamp int64, outAmount types.Coin, inAmount int64, timespan int64, sync bool, options ...Option) (*HashTimerLockTransferResult, error)
+	ClaimHashTimerLock(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*ClaimHashTimerLockResult, error)
+	RefundHashTimerLock(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*RefundHashTimerLockResult, error)
 
 	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
