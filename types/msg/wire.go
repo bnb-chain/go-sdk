@@ -21,6 +21,11 @@ func RegisterCodec(cdc *amino.Codec) {
 
 	cdc.RegisterConcrete(TimeUnlockMsg{}, "tokens/TimeUnlockMsg", nil)
 	cdc.RegisterConcrete(TimeRelockMsg{}, "tokens/TimeRelockMsg", nil)
+
+	cdc.RegisterConcrete(HashTimerLockTransferMsg{}, "tokens/HashTimerLockTransferMsg", nil)
+	cdc.RegisterConcrete(ClaimHashTimerLockMsg{}, "tokens/ClaimHashTimerLockMsg", nil)
+	cdc.RegisterConcrete(RefundHashTimerLockMsg{}, "tokens/RefundHashTimerLockMsg", nil)
+
 	cdc.RegisterConcrete(DexListMsg{}, "dex/ListMsg", nil)
 	cdc.RegisterConcrete(MintMsg{}, "tokens/MintMsg", nil)
 	//Must use cosmos-sdk.
