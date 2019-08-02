@@ -5,17 +5,15 @@ import (
 	"fmt"
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/tx"
-
 )
 
 const (
 	AccountStoreName = "acc"
 	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
-	MsgRoute         = "timelock"
+	TimeLockMsgRoute = "timelock"
 	QueryTimeLocks   = "timelocks"
 	QueryTimeLock    = "timelock"
-
 )
 
 type DexClient interface {
@@ -245,15 +243,15 @@ func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
 	return &ob, nil
 }
 
-func (c *HTTP) GetTimelocks(address string) (types.TimeLockRecords, error) {
+func (c *HTTP) GetTimelocks(address string) ([]types.TimeLockRecord, error) {
 
-	hexaddr, err := types.AccAddressFromBech32(address)
+	addr, err := types.AccAddressFromBech32(address)
 	if err != nil {
 		return nil, err
 	}
 
 	params := types.QueryTimeLocksParams{
-		Account: hexaddr,
+		Account: addr,
 	}
 
 	bz, err := c.cdc.MarshalJSON(params)
@@ -262,7 +260,7 @@ func (c *HTTP) GetTimelocks(address string) (types.TimeLockRecords, error) {
 		return nil, fmt.Errorf("incorrectly formatted request data %s", err.Error())
 	}
 
-	rawRecords, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", MsgRoute, QueryTimeLocks), bz)
+	rawRecords, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, QueryTimeLocks), bz)
 
 	if err != nil {
 		return nil, fmt.Errorf("error query %s", err.Error())
@@ -270,7 +268,7 @@ func (c *HTTP) GetTimelocks(address string) (types.TimeLockRecords, error) {
 	if rawRecords == nil {
 		return nil, fmt.Errorf("zero records")
 	}
-	records := make(types.TimeLockRecords, 0)
+	records := make([]types.TimeLockRecord, 0)
 
 	if err = c.cdc.UnmarshalJSON(rawRecords.Response.GetValue(), &records); err != nil {
 		return nil, err
@@ -280,16 +278,16 @@ func (c *HTTP) GetTimelocks(address string) (types.TimeLockRecords, error) {
 
 }
 
-func (c *HTTP) GetTimelock(address string,recordID int64) (types.TimeLockRecord, error) {
+func (c *HTTP) GetTimelock(address string, recordID int64) (types.TimeLockRecord, error) {
 
-	hexaddr, err := types.AccAddressFromBech32(address)
+	addr, err := types.AccAddressFromBech32(address)
 	if err != nil {
 		return types.TimeLockRecord{}, err
 	}
 
 	params := types.QueryTimeLockParams{
-		Account: hexaddr,
-		Id:recordID,
+		Account: addr,
+		Id:      recordID,
 	}
 
 	bz, err := c.cdc.MarshalJSON(params)
@@ -298,7 +296,7 @@ func (c *HTTP) GetTimelock(address string,recordID int64) (types.TimeLockRecord,
 		return types.TimeLockRecord{}, fmt.Errorf("incorrectly formatted request data %s", err.Error())
 	}
 
-	rawRecord, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", MsgRoute, QueryTimeLock), bz)
+	rawRecord, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, QueryTimeLock), bz)
 
 	if err != nil {
 		return types.TimeLockRecord{}, fmt.Errorf("error query %s", err.Error())
@@ -311,7 +309,6 @@ func (c *HTTP) GetTimelock(address string,recordID int64) (types.TimeLockRecord,
 	return record, nil
 
 }
-
 
 func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error) {
 	params := types.QueryProposalsParams{}

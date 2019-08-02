@@ -5,12 +5,9 @@ import "time"
 type TimeLockRecord struct {
 	Id          int64     `json:"id"`
 	Description string    `json:"description"`
-	Amount      Coins `json:"amount"`
+	Amount      Coins     `json:"amount"`
 	LockTime    time.Time `json:"lock_time"`
 }
-
-type TimeLockRecords []TimeLockRecord
-
 
 // Params for query 'custom/timelock/timelocks'
 type QueryTimeLocksParams struct {
