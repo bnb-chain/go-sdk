@@ -11,6 +11,7 @@ const (
 	AccountStoreName = "acc"
 	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
+	TimeLockMsgRoute = "timelock"
 )
 
 type DexClient interface {
@@ -28,6 +29,8 @@ type DexClient interface {
 	GetDepth(tradePair string) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
 	GetProposal(proposalId int64) (types.Proposal, error)
+	GetTimelocks(address string) ([]types.TimeLockRecord, error)
+	GetTimelock(address string, recordID int64) (types.TimeLockRecord, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -238,6 +241,73 @@ func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
 		return nil, err
 	}
 	return &ob, nil
+}
+
+func (c *HTTP) GetTimelocks(address string) ([]types.TimeLockRecord, error) {
+
+	addr, err := types.AccAddressFromBech32(address)
+	if err != nil {
+		return nil, err
+	}
+
+	params := types.QueryTimeLocksParams{
+		Account: addr,
+	}
+
+	bz, err := c.cdc.MarshalJSON(params)
+
+	if err != nil {
+		fmt.Errorf("marshal params failed %v", err)
+	}
+
+	rawRecords, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, "timelocks"), bz)
+
+	if err != nil {
+		return nil, err
+	}
+	if rawRecords == nil {
+		return nil, fmt.Errorf("zero records")
+	}
+	records := make([]types.TimeLockRecord, 0)
+
+	if err = c.cdc.UnmarshalJSON(rawRecords.Response.GetValue(), &records); err != nil {
+		return nil, err
+	} else {
+		return records, nil
+	}
+
+}
+
+func (c *HTTP) GetTimelock(address string, recordID int64) (types.TimeLockRecord, error) {
+
+	addr, err := types.AccAddressFromBech32(address)
+	if err != nil {
+		return types.TimeLockRecord{}, err
+	}
+
+	params := types.QueryTimeLockParams{
+		Account: addr,
+		Id:      recordID,
+	}
+
+	bz, err := c.cdc.MarshalJSON(params)
+
+	if err != nil {
+		return types.TimeLockRecord{}, fmt.Errorf("incorrectly formatted request data %s", err.Error())
+	}
+
+	rawRecord, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", TimeLockMsgRoute, "timelock"), bz)
+
+	if err != nil {
+		return types.TimeLockRecord{}, fmt.Errorf("error query %s", err.Error())
+	}
+
+	var record types.TimeLockRecord
+
+	err = c.cdc.UnmarshalJSON(rawRecord.Response.GetValue(), &record)
+
+	return record, nil
+
 }
 
 func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error) {

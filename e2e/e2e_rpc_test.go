@@ -53,21 +53,38 @@ func defaultClient() *rpc.HTTP {
 
 func TestRPCGetProposals(t *testing.T) {
 	c := defaultClient()
-	statuses:= []ctypes.ProposalStatus{
+	statuses := []ctypes.ProposalStatus{
 		ctypes.StatusDepositPeriod,
 		ctypes.StatusVotingPeriod,
 		ctypes.StatusPassed,
 		ctypes.StatusRejected,
 	}
-	for _,s:=range statuses{
+	for _, s := range statuses {
 		proposals, err := c.GetProposals(s, 100)
 		assert.NoError(t, err)
-		for _,p:=range proposals{
-			assert.Equal(t,p.GetStatus(),s)
+		for _, p := range proposals {
+			assert.Equal(t, p.GetStatus(), s)
 		}
 		bz, err := json.Marshal(proposals)
 		fmt.Println(string(bz))
 	}
+}
+func TestRPCGetTimelocks(t *testing.T) {
+	c := defaultClient()
+	records, err := c.GetTimelocks(testAddress)
+	assert.NoError(t, err)
+	fmt.Println(len(records))
+	for _, record := range records {
+		fmt.Println(record)
+	}
+}
+
+func TestRPCGetTimelock(t *testing.T) {
+	c := defaultClient()
+	record, err := c.GetTimelock(testAddress, 1)
+	assert.NoError(t, err)
+	fmt.Println(record)
+
 }
 
 func TestRPCGetProposal(t *testing.T) {
