@@ -24,7 +24,7 @@ var (
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
 	testTxHeight       = 8669273
-	testAddress        = "tbnb1g9rzc0e2jf8ef3qp9ax8h0pmpmvjzwmtq4jxfr"
+	testAddress        = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
 	testDelAddr        = "tbnb12hlquylu78cjylk5zshxpdj6hf3t0tahwjt3ex"
 	testTradePair      = "X00-243_BNB"
 	testTxStr          = "xxx"
@@ -83,7 +83,7 @@ func TestRPCGetTimelocks(t *testing.T) {
 
 func TestRPCGetTimelock(t *testing.T) {
 	c := defaultClient()
-	record,err:= c.GetTimelock(testAddress,351)
+	record,err:= c.GetTimelock(testAddress,1)
 	assert.NoError(t, err)
 	fmt.Println(record)
 
