@@ -60,7 +60,7 @@ type RefundHashTimerLockResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) RefundHashTimerLock(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*RefundHashTimerLockResult, error) {
+func (c *client) RefundHashTimerLock(randomNumberHash []byte, sync bool, options ...Option) (*RefundHashTimerLockResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	refundHashTimerLockMsg := msg.NewRefundLockedAssetMsg(
 		fromAddr,

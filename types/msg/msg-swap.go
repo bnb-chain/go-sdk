@@ -1,12 +1,14 @@
 package msg
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 
 	"github.com/binance-chain/go-sdk/common/types"
 )
@@ -35,6 +37,7 @@ const (
 
 	RandomNumberHashLength = 32
 	RandomNumberLength     = 32
+	Int64Size              = 8
 )
 
 func (hexData HexData) String() string {
@@ -257,4 +260,11 @@ func (msg RefundHashTimerLockMsg) GetSignBytes() []byte {
 		panic(err)
 	}
 	return b
+}
+
+func CalculateRandomHash(randomNumber []byte, timestamp int64) []byte {
+	randomNumberAndTimestamp := make([]byte, RandomNumberLength+Int64Size)
+	copy(randomNumberAndTimestamp[:RandomNumberLength], randomNumber)
+	binary.BigEndian.PutUint64(randomNumberAndTimestamp[RandomNumberLength:], uint64(timestamp))
+	return tmhash.Sum(randomNumberAndTimestamp)
 }
