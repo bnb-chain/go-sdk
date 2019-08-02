@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://data-seed-pre-0-s1.binance.org:80"
+	nodeAddr           = "tcp://127.0.0.1:80"
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
 	testTxHeight       = 8669273
@@ -83,7 +83,7 @@ func TestRPCGetTimelocks(t *testing.T) {
 
 func TestRPCGetTimelock(t *testing.T) {
 	c := defaultClient()
-	record,err:= c.GetTimelock(testAddress,1)
+	record,err:= c.GetTimelock(testAddress,351)
 	assert.NoError(t, err)
 	fmt.Println(record)
 

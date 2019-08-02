@@ -22,7 +22,7 @@ func (a TimeLockRecords) Less(i, j int) bool {
 }
 
 
-// Params for query 'custom/gov/proposal'
+// Params for query 'custom/timelock/timelocks'
 type QueryTimeLocksParams struct {
 	Account AccAddress
 }

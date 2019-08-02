@@ -12,9 +12,9 @@ const (
 	AccountStoreName = "acc"
 	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
-	MsgRoute = "timelock"
-	QueryTimeLocks = "timelocks"
-	QueryTimeLock = "timelock"
+	MsgRoute         = "timelock"
+	QueryTimeLocks   = "timelocks"
+	QueryTimeLock    = "timelock"
 
 )
 
