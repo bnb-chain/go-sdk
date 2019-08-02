@@ -1,19 +1,24 @@
 package e2e
 
 import (
+	"encoding/hex"
 	"fmt"
-	"github.com/binance-chain/go-sdk/client/transaction"
+	"strings"
 	"testing"
 	time2 "time"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/tendermint/tendermint/types/time"
+
 	sdk "github.com/binance-chain/go-sdk/client"
+	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/common"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
 	txtype "github.com/binance-chain/go-sdk/types/tx"
+	"github.com/binance-chain/go-sdk/client/rpc"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -43,9 +48,36 @@ func TestTransProcess(t *testing.T) {
 	fmt.Printf("Set account flags: %v \n", addFlags)
 	accn,_:=client.GetAccount(client.GetKeyManager().GetAddr().String())
 	fmt.Println(accn)
-	setFlags, err := client.SetAccountFlags(0, true)
+	setFlags, err := client.SetAccountFlags(0, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+1))
 	assert.NoError(t, err)
 	fmt.Printf("Set account flags: %v \n", setFlags)
+
+	randomNumber, _ := hex.DecodeString("9d28f2c55981b9d1e6e4e9bcba11ac43dff56e521a53acbf55ff303b9adb7986")
+	timestamp := int64(time.Now().Unix())
+	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
+	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
+	outAmount := ctypes.Coin{"BNB", 10000}
+	inAmountOtherChain := int64(10000)
+	heightSpan := int64(1000)
+	hashTimerLockTransfer, err := client.HashTimerLockTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
+	assert.NoError(t, err)
+	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
+	claimHashTimerLockTransfer, err := client.ClaimHashTimerLock(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
+	assert.NoError(t, err)
+	fmt.Printf("Claim hash timer lock transfer: %v \n", claimHashTimerLockTransfer)
+
+	randomNumber, _ = hex.DecodeString("a9bb372e0076e70e3f85a6154963e8720c1a5111645b90fc7ab5baa3a81e5498")
+	timestamp = int64(time.Now().Unix())
+	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
+	heightSpan = int64(360)
+	hashTimerLockTransfer, err = client.HashTimerLockTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
+	assert.NoError(t, err)
+	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
+	//client.SubscribeBlockHeightEvent()
+	refundHashTimerLockTransfer, err := client.RefundHashTimerLock(randomNumberHash, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+5))
+	fmt.Printf("Refund hash timer lock transfer: %v \n", refundHashTimerLockTransfer)
+	assert.Error(t, err)
+	assert.True(t, strings.Contains(err.Error(), "is still not reached"))
 
 	//-----  Get account  -----------
 	account, err := client.GetAccount(testAccount1.String())
@@ -228,4 +260,20 @@ func TestTransProcess(t *testing.T) {
 	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("List trading pair: %v\n", l)
+}
+
+func TestAtomicSwap(t *testing.T) {
+	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
+	hash, _ := hex.DecodeString("0c679a11fe02600272700a74a06659ad4ae64a555d45b323d2ac9c166e2e1456")
+	swap, err := c.GetSwapByHash(hash)
+	assert.NoError(t, err)
+	fmt.Println(swap.From)
+
+	swaps, err := c.GetSwapByCreator(swap.To.String(), "Open", 0, 100)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(swaps))
+
+	swaps, err = c.GetSwapByReceiver(swap.From.String(), "Open", 0, 100)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(swaps))
 }

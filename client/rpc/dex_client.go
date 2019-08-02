@@ -3,15 +3,17 @@ package rpc
 import (
 	"errors"
 	"fmt"
+
 	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 const (
 	AccountStoreName = "acc"
-	TokenStoreName   = "tokens"
 	ParamABCIPrefix  = "param"
 	TimeLockMsgRoute = "timelock"
+	AtomicSwapStoreName = "atomic_swap"
 
 	TimeLockrcNotFoundErrorCode = 458760
 )
@@ -33,6 +35,9 @@ type DexClient interface {
 	GetProposal(proposalId int64) (types.Proposal, error)
 	GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error)
 	GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLockRecord, error)
+	GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error)
+	GetSwapByCreator(creatorAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error)
+	GetSwapByReceiver(receiverAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -369,4 +374,87 @@ func (c *HTTP) existsCC(symbol string) bool {
 		return false
 	}
 	return true
+}
+
+func (c *HTTP) GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error) {
+	hashKey := []byte{0x01}
+	hashKey = append(hashKey, randomNumberHash...)
+
+	res, err := c.QueryStore(hashKey, AtomicSwapStoreName)
+	if err != nil {
+		return types.AtomicSwap{}, err
+	}
+
+	if res == nil {
+		return types.AtomicSwap{}, fmt.Errorf("no matched swap record")
+	}
+
+	var atomicSwap types.AtomicSwap
+	err = c.cdc.UnmarshalBinaryBare(res, &atomicSwap)
+	if err != nil {
+		return types.AtomicSwap{}, err
+	}
+
+	return atomicSwap, nil
+}
+
+func (c *HTTP) GetSwapByCreator(creatorAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error) {
+	addr, err := types.AccAddressFromBech32(creatorAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	status := types.NewSwapStatusFromString(swapStatus)
+	params := types.QuerySwapByCreatorParams{
+		Creator: addr,
+		Status:  status,
+		Limit:   limit,
+		Offset:  offset,
+	}
+
+	bz, err := c.cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapcreator"), bz)
+	if err != nil {
+		return nil, err
+	}
+	var result []types.AtomicSwap
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (c *HTTP) GetSwapByReceiver(receiverAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error) {
+	addr, err := types.AccAddressFromBech32(receiverAddr)
+	if err != nil {
+		return nil, err
+	}
+	status := types.NewSwapStatusFromString(swapStatus)
+	params := types.QuerySwapByReceiverParams{
+		Receiver: addr,
+		Status:   status,
+		Limit:    limit,
+		Offset:   offset,
+	}
+
+	bz, err := c.cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapreceiver"), bz)
+	if err != nil {
+		return nil, err
+	}
+	var result []types.AtomicSwap
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

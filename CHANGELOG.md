@@ -25,6 +25,7 @@ IMPROVEMENTS
 
 FEATURES
 * [\#66](https://github.com/binance-chain/go-sdk/pull/66)  [API]  support set account flag transaction
+* [\#70](https://github.com/binance-chain/go-sdk/pull/70)  [API]  support atomic swap transactions
 
 BREAKING
 * [\#57](https://github.com/binance-chain/go-sdk/pull/57) [API] add query option to getTokens api
