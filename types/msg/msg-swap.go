@@ -117,11 +117,11 @@ type HashTimerLockTransferMsg struct {
 	Timestamp        int64            `json:"timestamp"`
 	OutAmount        types.Coin       `json:"out_amount"`
 	InAmount         int64            `json:"in_amount"`
-	TimeSpan         int64            `json:"time_span"`
+	HeightSpan       int64            `json:"height_span"`
 }
 
 func NewHashTimerLockTransferMsg(from, to types.AccAddress, toOnOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, inAmount int64, timespan int64) HashTimerLockTransferMsg {
+	outAmount types.Coin, inAmount int64, heightSpan int64) HashTimerLockTransferMsg {
 	return HashTimerLockTransferMsg{
 		From:             from,
 		To:               to,
@@ -130,7 +130,7 @@ func NewHashTimerLockTransferMsg(from, to types.AccAddress, toOnOtherChain []byt
 		Timestamp:        timestamp,
 		OutAmount:        outAmount,
 		InAmount:         inAmount,
-		TimeSpan:         timespan,
+		HeightSpan:       heightSpan,
 	}
 }
 
@@ -138,7 +138,7 @@ func (msg HashTimerLockTransferMsg) Route() string { return AtomicSwapRoute }
 func (msg HashTimerLockTransferMsg) Type() string  { return HTLT }
 func (msg HashTimerLockTransferMsg) String() string {
 	return fmt.Sprintf("hashTimerLockTransfer{%v#%v#%v#%v#%v#%v#%v#%v}", msg.From, msg.To, msg.ToOnOtherChain, msg.RandomNumberHash,
-		msg.Timestamp, msg.OutAmount, msg.InAmount, msg.TimeSpan)
+		msg.Timestamp, msg.OutAmount, msg.InAmount, msg.HeightSpan)
 }
 func (msg HashTimerLockTransferMsg) GetInvolvedAddresses() []types.AccAddress {
 	return append(msg.GetSigners(), AtomicSwapCoinsAccAddr)
@@ -163,8 +163,8 @@ func (msg HashTimerLockTransferMsg) ValidateBasic() error {
 	if !msg.OutAmount.IsPositive() {
 		return fmt.Errorf("the swapped out coin must be positive")
 	}
-	if msg.TimeSpan < 360 || msg.TimeSpan > 518400 {
-		return fmt.Errorf("the timespan should no less than 360 and no greater than 518400")
+	if msg.HeightSpan < 360 || msg.HeightSpan > 518400 {
+		return fmt.Errorf("the height span should be no less than 360 and no greater than 518400")
 	}
 	return nil
 }
