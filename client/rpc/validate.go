@@ -16,6 +16,7 @@ const (
 	maxABCIQueryStrLength = 1024
 	maxTxSearchStrLength  = 1024
 	maxUnConfirmedTxs     = 100
+	maxDepthLevel         = 1000
 
 	tokenSymbolMaxLen = 14
 	tokenSymbolMinLen = 3
@@ -35,6 +36,7 @@ var (
 	OffsetNegativeError               = fmt.Errorf("offset can't be less than 0")
 	SymbolLengthExceedRangeError      = fmt.Errorf("length of symbol should be in range [%d,%d]", tokenSymbolMinLen, tokenSymbolMaxLen)
 	PairFormatError                   = fmt.Errorf("the pair should in format 'symbol1_symbol2'")
+	DepthLevelExceedRangeError        = fmt.Errorf("the level is out of range [%d, %d]", 0, maxDepthLevel)
 )
 
 func ValidateABCIPath(path string) error {
@@ -136,6 +138,13 @@ func ValidatePair(pair string) error {
 	}
 	if err := ValidateSymbol(symbols[1]); err != nil {
 		return err
+	}
+	return nil
+}
+
+func ValidateDepthLevel(level int) error {
+	if level < 0 || level > maxDepthLevel {
+		return DepthLevelExceedRangeError
 	}
 	return nil
 }
