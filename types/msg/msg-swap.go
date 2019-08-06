@@ -2,10 +2,8 @@ package msg
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -26,94 +24,11 @@ var (
 	AtomicSwapCoinsAccAddr = types.AccAddress(crypto.AddressHash([]byte("BinanceChainAtomicSwapCoins")))
 )
 
-type SwapStatus byte
-type HexData []byte
-
-const (
-	NULL      SwapStatus = 0x00
-	Open      SwapStatus = 0x01
-	Completed SwapStatus = 0x02
-	Expired   SwapStatus = 0x03
-
-	RandomNumberHashLength = 32
-	RandomNumberLength     = 32
-	Int64Size              = 8
-)
-
-func (hexData HexData) String() string {
-	str := hex.EncodeToString(hexData)
-	if len(str) == 0 {
-		return ""
-	}
-	return "0x" + hex.EncodeToString(hexData)
-}
-
-func (hexData HexData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(hexData.String())
-}
-
-func (hexData *HexData) UnmarshalJSON(data []byte) error {
-	var s string
-	err := json.Unmarshal(data, &s)
-	if err != nil {
-		return err
-	}
-	if !strings.HasPrefix(s, "0x") {
-		return fmt.Errorf("hex string must prefix with 0x")
-	}
-	bytesArray, err := hex.DecodeString(s[2:])
-	if err != nil {
-		return err
-	}
-	*hexData = bytesArray
-	return nil
-}
-
-func NewSwapStatusFromString(str string) SwapStatus {
-	switch str {
-	case "Open", "open":
-		return Open
-	case "Completed", "completed":
-		return Completed
-	case "Expired", "expired":
-		return Expired
-	default:
-		return NULL
-	}
-}
-
-func (status SwapStatus) String() string {
-	switch status {
-	case Open:
-		return "Open"
-	case Completed:
-		return "Completed"
-	case Expired:
-		return "Expired"
-	default:
-		return "NULL"
-	}
-}
-
-func (status SwapStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(status.String())
-}
-
-func (status *SwapStatus) UnmarshalJSON(data []byte) error {
-	var s string
-	err := json.Unmarshal(data, &s)
-	if err != nil {
-		return err
-	}
-	*status = NewSwapStatusFromString(s)
-	return nil
-}
-
 type HashTimerLockTransferMsg struct {
 	From             types.AccAddress `json:"from"`
 	To               types.AccAddress `json:"to"`
-	ToOnOtherChain   HexData          `json:"to_on_other_chain"`
-	RandomNumberHash HexData          `json:"random_number_hash"`
+	ToOnOtherChain   types.HexData    `json:"to_on_other_chain"`
+	RandomNumberHash types.HexData    `json:"random_number_hash"`
 	Timestamp        int64            `json:"timestamp"`
 	OutAmount        types.Coin       `json:"out_amount"`
 	InAmount         int64            `json:"in_amount"`
@@ -157,8 +72,8 @@ func (msg HashTimerLockTransferMsg) ValidateBasic() error {
 	if len(msg.ToOnOtherChain) == 0 || len(msg.ToOnOtherChain) > 32 {
 		return fmt.Errorf("the receiver address on other chain shouldn't be nil and its length shouldn't exceed 32")
 	}
-	if len(msg.RandomNumberHash) != RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", RandomNumberHashLength)
+	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
+		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
 	}
 	if !msg.OutAmount.IsPositive() {
 		return fmt.Errorf("the swapped out coin must be positive")
@@ -179,8 +94,8 @@ func (msg HashTimerLockTransferMsg) GetSignBytes() []byte {
 
 type ClaimHashTimerLockMsg struct {
 	From             types.AccAddress `json:"from"`
-	RandomNumberHash HexData          `json:"random_number_hash"`
-	RandomNumber     HexData          `json:"random_number"`
+	RandomNumberHash types.HexData    `json:"random_number_hash"`
+	RandomNumber     types.HexData    `json:"random_number"`
 }
 
 func NewClaimHashTimerLockMsg(from types.AccAddress, randomNumberHash, randomNumber []byte) ClaimHashTimerLockMsg {
@@ -205,11 +120,11 @@ func (msg ClaimHashTimerLockMsg) ValidateBasic() error {
 	if len(msg.From) != types.AddrLen {
 		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
 	}
-	if len(msg.RandomNumberHash) != RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", RandomNumberHashLength)
+	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
+		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
 	}
-	if len(msg.RandomNumber) != RandomNumberLength {
-		return fmt.Errorf("the length of random number should be %d", RandomNumberLength)
+	if len(msg.RandomNumber) != types.RandomNumberLength {
+		return fmt.Errorf("the length of random number should be %d", types.RandomNumberLength)
 	}
 	return nil
 }
@@ -224,7 +139,7 @@ func (msg ClaimHashTimerLockMsg) GetSignBytes() []byte {
 
 type RefundHashTimerLockMsg struct {
 	From             types.AccAddress `json:"from"`
-	RandomNumberHash HexData          `json:"random_number_hash"`
+	RandomNumberHash types.HexData    `json:"random_number_hash"`
 }
 
 func NewRefundLockedAssetMsg(from types.AccAddress, randomNumberHash []byte) RefundHashTimerLockMsg {
@@ -248,8 +163,8 @@ func (msg RefundHashTimerLockMsg) ValidateBasic() error {
 	if len(msg.From) != types.AddrLen {
 		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
 	}
-	if len(msg.RandomNumberHash) != RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", RandomNumberHashLength)
+	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
+		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
 	}
 	return nil
 }
@@ -263,8 +178,8 @@ func (msg RefundHashTimerLockMsg) GetSignBytes() []byte {
 }
 
 func CalculateRandomHash(randomNumber []byte, timestamp int64) []byte {
-	randomNumberAndTimestamp := make([]byte, RandomNumberLength+Int64Size)
-	copy(randomNumberAndTimestamp[:RandomNumberLength], randomNumber)
-	binary.BigEndian.PutUint64(randomNumberAndTimestamp[RandomNumberLength:], uint64(timestamp))
+	randomNumberAndTimestamp := make([]byte, types.RandomNumberLength+types.Int64Size)
+	copy(randomNumberAndTimestamp[:types.RandomNumberLength], randomNumber)
+	binary.BigEndian.PutUint64(randomNumberAndTimestamp[types.RandomNumberLength:], uint64(timestamp))
 	return tmhash.Sum(randomNumberAndTimestamp)
 }
