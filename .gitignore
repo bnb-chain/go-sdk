@@ -1,7 +1,7 @@
 build
 vendor
 .DS_Store
-
+test/
 # Binaries for programs and plugins
 *.exe
 *.exe~
