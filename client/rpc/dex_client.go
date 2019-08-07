@@ -423,7 +423,7 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, swapStatus string, offset in
 		return nil, err
 	}
 	var result []types.AtomicSwap
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(resp.Response.GetValue(), &result)
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
 	if err != nil {
 		return nil, err
 	}
@@ -453,7 +453,7 @@ func (c *HTTP) GetSwapByReceiver(receiverAddr string, swapStatus string, offset 
 		return nil, err
 	}
 	var result []types.AtomicSwap
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(resp.Response.GetValue(), &result)
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
 	if err != nil {
 		return nil, err
 	}

@@ -39,6 +39,10 @@ func (hexData *HexData) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+	if len(s) == 0 {
+		*hexData = nil
+		return nil
+	}
 	if !strings.HasPrefix(s, "0x") {
 		return fmt.Errorf("hex string must prefix with 0x")
 	}
