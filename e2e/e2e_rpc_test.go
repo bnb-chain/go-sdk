@@ -445,7 +445,7 @@ func TestGetTradePair(t *testing.T) {
 
 func TestGetDepth(t *testing.T) {
 	c := defaultClient()
-	depth, err := c.GetDepth(testTradePair)
+	depth, err := c.GetDepth(testTradePair, 2)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(depth)
 	fmt.Println(string(bz))

@@ -26,7 +26,7 @@ type DexClient interface {
 	GetFee() ([]types.FeeParam, error)
 	GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
 	GetTradingPairs(offset int, limit int) ([]types.TradingPair, error)
-	GetDepth(tradePair string) (*types.OrderBook, error)
+	GetDepth(tradePair string, level int) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
 	GetProposal(proposalId int64) (types.Proposal, error)
 	GetTimelocks(address string) ([]types.TimeLockRecord, error)
@@ -227,11 +227,14 @@ func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, erro
 	return pairs, err
 }
 
-func (c *HTTP) GetDepth(tradePair string) (*types.OrderBook, error) {
+func (c *HTTP) GetDepth(tradePair string, level int) (*types.OrderBook, error) {
 	if err := ValidatePair(tradePair); err != nil {
 		return nil, err
 	}
-	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s", tradePair), nil)
+	if err := ValidateDepthLevel(level); err != nil {
+		return nil, err
+	}
+	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s/%d", tradePair, level), nil)
 	if err != nil {
 		return nil, err
 	}
