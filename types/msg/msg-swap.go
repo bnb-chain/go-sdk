@@ -25,35 +25,35 @@ var (
 )
 
 type HashTimerLockTransferMsg struct {
-	From             types.AccAddress `json:"from"`
-	To               types.AccAddress `json:"to"`
-	ToOnOtherChain   types.HexData    `json:"to_on_other_chain"`
-	RandomNumberHash types.HexData    `json:"random_number_hash"`
-	Timestamp        int64            `json:"timestamp"`
-	OutAmount        types.Coin       `json:"out_amount"`
-	InAmount         int64            `json:"in_amount"`
-	HeightSpan       int64            `json:"height_span"`
+	From                types.AccAddress `json:"from"`
+	To                  types.AccAddress `json:"to"`
+	RecipientOtherChain types.HexData    `json:"recipient_other_chain"`
+	RandomNumberHash    types.HexData    `json:"random_number_hash"`
+	Timestamp           int64            `json:"timestamp"`
+	OutAmount           types.Coin       `json:"out_amount"`
+	InAmountOtherChain  int64            `json:"in_amount_other_chain"`
+	HeightSpan          int64            `json:"height_span"`
 }
 
-func NewHashTimerLockTransferMsg(from, to types.AccAddress, toOnOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, inAmount int64, heightSpan int64) HashTimerLockTransferMsg {
+func NewHashTimerLockTransferMsg(from, to types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
+	outAmount types.Coin, inAmountOtherChain int64, heightSpan int64) HashTimerLockTransferMsg {
 	return HashTimerLockTransferMsg{
-		From:             from,
-		To:               to,
-		ToOnOtherChain:   toOnOtherChain,
-		RandomNumberHash: randomNumberHash,
-		Timestamp:        timestamp,
-		OutAmount:        outAmount,
-		InAmount:         inAmount,
-		HeightSpan:       heightSpan,
+		From:                from,
+		To:                  to,
+		RecipientOtherChain: recipientOtherChain,
+		RandomNumberHash:    randomNumberHash,
+		Timestamp:           timestamp,
+		OutAmount:           outAmount,
+		InAmountOtherChain:  inAmountOtherChain,
+		HeightSpan:          heightSpan,
 	}
 }
 
 func (msg HashTimerLockTransferMsg) Route() string { return AtomicSwapRoute }
 func (msg HashTimerLockTransferMsg) Type() string  { return HTLT }
 func (msg HashTimerLockTransferMsg) String() string {
-	return fmt.Sprintf("hashTimerLockTransfer{%v#%v#%v#%v#%v#%v#%v#%v}", msg.From, msg.To, msg.ToOnOtherChain, msg.RandomNumberHash,
-		msg.Timestamp, msg.OutAmount, msg.InAmount, msg.HeightSpan)
+	return fmt.Sprintf("hashTimerLockTransfer{%v#%v#%v#%v#%v#%v#%v#%v}", msg.From, msg.To, msg.RecipientOtherChain, msg.RandomNumberHash,
+		msg.Timestamp, msg.OutAmount, msg.InAmountOtherChain, msg.HeightSpan)
 }
 func (msg HashTimerLockTransferMsg) GetInvolvedAddresses() []types.AccAddress {
 	return append(msg.GetSigners(), AtomicSwapCoinsAccAddr)
@@ -69,8 +69,8 @@ func (msg HashTimerLockTransferMsg) ValidateBasic() error {
 	if len(msg.To) != types.AddrLen {
 		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.To))
 	}
-	if len(msg.ToOnOtherChain) == 0 || len(msg.ToOnOtherChain) > 32 {
-		return fmt.Errorf("the receiver address on other chain shouldn't be nil and its length shouldn't exceed 32")
+	if len(msg.RecipientOtherChain) > 32 {
+		return fmt.Errorf("the length of recipient address on other chain shouldn't exceed 32")
 	}
 	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
 		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)

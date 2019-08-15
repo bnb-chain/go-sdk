@@ -18,6 +18,7 @@ import (
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
 	txtype "github.com/binance-chain/go-sdk/types/tx"
+	"github.com/binance-chain/go-sdk/client/rpc"
 )
 
 // After bnbchain integration_test.sh has runned
@@ -54,11 +55,11 @@ func TestTransProcess(t *testing.T) {
 	randomNumber, _ := hex.DecodeString("9d28f2c55981b9d1e6e4e9bcba11ac43dff56e521a53acbf55ff303b9adb7986")
 	timestamp := int64(time.Now().Unix())
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
-	toOnOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
+	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
 	outAmount := ctypes.Coin{"BNB", 10000}
-	inAmount := int64(10000)
+	inAmountOtherChain := int64(10000)
 	heightSpan := int64(1000)
-	hashTimerLockTransfer, err := client.HashTimerLockTransfer(testAccount2, toOnOtherChain, randomNumberHash, timestamp, outAmount, inAmount, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
+	hashTimerLockTransfer, err := client.HashTimerLockTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	claimHashTimerLockTransfer, err := client.ClaimHashTimerLock(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
@@ -69,7 +70,7 @@ func TestTransProcess(t *testing.T) {
 	timestamp = int64(time.Now().Unix())
 	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
 	heightSpan = int64(360)
-	hashTimerLockTransfer, err = client.HashTimerLockTransfer(testAccount2, toOnOtherChain, randomNumberHash, timestamp, outAmount, inAmount, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
+	hashTimerLockTransfer, err = client.HashTimerLockTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	//client.SubscribeBlockHeightEvent()
@@ -259,4 +260,20 @@ func TestTransProcess(t *testing.T) {
 	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("List trading pair: %v\n", l)
+}
+
+func TestAtomicSwap(t *testing.T) {
+	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
+	hash, _ := hex.DecodeString("0c679a11fe02600272700a74a06659ad4ae64a555d45b323d2ac9c166e2e1456")
+	swap, err := c.GetSwapByHash(hash)
+	assert.NoError(t, err)
+	fmt.Println(swap.From)
+
+	swaps, err := c.GetSwapByCreator(swap.To.String(), "Open", 0, 100)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(swaps))
+
+	swaps, err = c.GetSwapByReceiver(swap.From.String(), "Open", 0, 100)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(swaps))
 }

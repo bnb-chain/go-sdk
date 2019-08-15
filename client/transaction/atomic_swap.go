@@ -10,17 +10,17 @@ type HashTimerLockTransferResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) HashTimerLockTransfer(to types.AccAddress, toOnOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, inAmount int64, heightSpan int64, sync bool, options ...Option) (*HashTimerLockTransferResult, error) {
+func (c *client) HashTimerLockTransfer(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
+	outAmount types.Coin, inAmountOtherChain int64, heightSpan int64, sync bool, options ...Option) (*HashTimerLockTransferResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	hashTimerLockTransferMsg := msg.NewHashTimerLockTransferMsg(
 		fromAddr,
-		to,
-		toOnOtherChain,
+		recipient,
+		recipientOtherChain,
 		randomNumberHash,
 		timestamp,
 		outAmount,
-		inAmount,
+		inAmountOtherChain,
 		heightSpan,
 	)
 	err := hashTimerLockTransferMsg.ValidateBasic()
