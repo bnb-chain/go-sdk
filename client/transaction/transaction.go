@@ -27,9 +27,10 @@ type TransactionClient interface {
 	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
 	SetAccountFlags(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 	AddAccountFlags(flagOptions []types.FlagOption, sync bool, options ...Option) (*SetAccountFlagsResult, error)
-	HashTimerLockTransfer(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64, outAmount types.Coin, inAmountOtherChain int64, heightSpan int64, sync bool, options ...Option) (*HashTimerLockTransferResult, error)
-	ClaimHashTimerLock(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*ClaimHashTimerLockResult, error)
-	RefundHashTimerLock(randomNumberHash []byte, sync bool, options ...Option) (*RefundHashTimerLockResult, error)
+	HashTimerLockedTransfer(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64, outAmount types.Coin, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HashTimerLockTransferResult, error)
+	DepositHashTimerLockedTransfer(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coin, sync bool, options ...Option) (*DepositHashTimerLockResult, error)
+	ClaimHashTimerLockedTransfer(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*ClaimHashTimerLockResult, error)
+	RefundHashTimerLockedTransfer(randomNumberHash []byte, sync bool, options ...Option) (*RefundHashTimerLockResult, error)
 
 	SubmitListPairProposal(title string, param msg.ListTradingPairParams, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit int64, votingPeriod time.Duration, sync bool, options ...Option) (*SubmitProposalResult, error)

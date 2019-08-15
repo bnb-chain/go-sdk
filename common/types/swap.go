@@ -15,10 +15,6 @@ const (
 	Open      SwapStatus = 0x01
 	Completed SwapStatus = 0x02
 	Expired   SwapStatus = 0x03
-
-	RandomNumberHashLength = 32
-	RandomNumberLength     = 32
-	Int64Size              = 8
 )
 
 func (hexData HexData) String() string {
@@ -98,13 +94,16 @@ type AtomicSwap struct {
 	From      AccAddress `json:"from"`
 	To        AccAddress `json:"to"`
 	OutAmount Coin       `json:"out_amount"`
+	InAmount  Coin       `json:"in_amount"`
 
-	InAmount       int64   `json:"in_amount"`
-	ToOnOtherChain HexData `json:"to_on_other_chain"`
+	ExpectedIncome      string  `json:"expected_income"`
+	RecipientOtherChain HexData `json:"recipient_other_chain"`
 
 	RandomNumberHash HexData `json:"random_number_hash"`
 	RandomNumber     HexData `json:"random_number"`
 	Timestamp        int64   `json:"timestamp"`
+
+	CrossChain bool `json:"cross_chain"`
 
 	ExpireHeight int64      `json:"expire_height"`
 	Index        int64      `json:"index"`
@@ -120,10 +119,10 @@ type QuerySwapByCreatorParams struct {
 	Offset  int64
 }
 
-// Params for query 'custom/atomicswap/swapreceiver'
-type QuerySwapByReceiverParams struct {
-	Receiver AccAddress
-	Status   SwapStatus
-	Limit    int64
-	Offset   int64
+// Params for query 'custom/atomicswap/swaprecipient'
+type QuerySwapByRecipientParams struct {
+	Recipient AccAddress
+	Status    SwapStatus
+	Limit     int64
+	Offset    int64
 }

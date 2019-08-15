@@ -37,7 +37,7 @@ type DexClient interface {
 	GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLockRecord, error)
 	GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error)
 	GetSwapByCreator(creatorAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error)
-	GetSwapByReceiver(receiverAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error)
+	GetSwapByRecipient(recipientAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -429,17 +429,17 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, swapStatus string, offset in
 	return result, nil
 }
 
-func (c *HTTP) GetSwapByReceiver(receiverAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error) {
-	addr, err := types.AccAddressFromBech32(receiverAddr)
+func (c *HTTP) GetSwapByRecipient(recipientAddr string, swapStatus string, offset int64, limit int64) ([]types.AtomicSwap, error) {
+	recipient, err := types.AccAddressFromBech32(recipientAddr)
 	if err != nil {
 		return nil, err
 	}
 	status := types.NewSwapStatusFromString(swapStatus)
-	params := types.QuerySwapByReceiverParams{
-		Receiver: addr,
-		Status:   status,
-		Limit:    limit,
-		Offset:   offset,
+	params := types.QuerySwapByRecipientParams{
+		Recipient: recipient,
+		Status:    status,
+		Limit:     limit,
+		Offset:    offset,
 	}
 
 	bz, err := c.cdc.MarshalJSON(params)
@@ -447,7 +447,7 @@ func (c *HTTP) GetSwapByReceiver(receiverAddr string, swapStatus string, offset 
 		return nil, err
 	}
 
-	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapreceiver"), bz)
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swaprecipient"), bz)
 	if err != nil {
 		return nil, err
 	}
