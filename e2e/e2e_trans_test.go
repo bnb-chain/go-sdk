@@ -273,7 +273,7 @@ func TestAtomicSwap(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(swaps))
 
-	swaps, err = c.GetSwapByReceiver(swap.From.String(), "Open", 0, 100)
+	swaps, err = c.GetSwapByRecipient(swap.From.String(), "Open", 0, 100)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(swaps))
 }

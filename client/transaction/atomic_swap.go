@@ -11,7 +11,7 @@ type HashTimerLockTransferResult struct {
 }
 
 func (c *client) HashTimerLockTransfer(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, inAmountOtherChain int64, heightSpan int64, sync bool, options ...Option) (*HashTimerLockTransferResult, error) {
+	outAmount types.Coin, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HashTimerLockTransferResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	hashTimerLockTransferMsg := msg.NewHashTimerLockTransferMsg(
 		fromAddr,
@@ -20,8 +20,9 @@ func (c *client) HashTimerLockTransfer(recipient types.AccAddress, recipientOthe
 		randomNumberHash,
 		timestamp,
 		outAmount,
-		inAmountOtherChain,
+		expectedIncome,
 		heightSpan,
+		crossChain,
 	)
 	err := hashTimerLockTransferMsg.ValidateBasic()
 	if err != nil {
@@ -32,6 +33,35 @@ func (c *client) HashTimerLockTransfer(recipient types.AccAddress, recipientOthe
 		return nil, err
 	}
 	return &HashTimerLockTransferResult{*commit}, nil
+}
+
+type DepositHashTimerLockResult struct {
+	tx.TxCommitResult
+}
+
+func (c *client) DepositHashTimerLock(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coin,
+	sync bool, options ...Option) (*DepositHashTimerLockResult, error) {
+	fromAddr := c.keyManager.GetAddr()
+	hashTimerLockTransferMsg := msg.NewHashTimerLockTransferMsg(
+		fromAddr,
+		recipient,
+		nil,
+		randomNumberHash,
+		0,
+		outAmount,
+		"",
+		msg.MinimumHeightSpan,
+		false,
+	)
+	err := hashTimerLockTransferMsg.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+	commit, err := c.broadcastMsg(hashTimerLockTransferMsg, sync, options...)
+	if err != nil {
+		return nil, err
+	}
+	return &DepositHashTimerLockResult{*commit}, nil
 }
 
 type ClaimHashTimerLockResult struct {

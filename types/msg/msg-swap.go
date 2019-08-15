@@ -16,6 +16,14 @@ const (
 	HTLT            = "HTLT"
 	ClaimHTLT       = "claimHTLT"
 	RefundHTLT      = "refundHTLT"
+
+	Int64Size                    = 8
+	RandomNumberHashLength       = 32
+	RandomNumberLength           = 32
+	MaxRecipientOtherChainLength = 32
+	MaxExpectedIncomeLength      = 64
+	MinimumHeightSpan            = 360
+	MaximumHeightSpan            = 518400
 )
 
 var (
@@ -31,12 +39,13 @@ type HashTimerLockTransferMsg struct {
 	RandomNumberHash    types.HexData    `json:"random_number_hash"`
 	Timestamp           int64            `json:"timestamp"`
 	OutAmount           types.Coin       `json:"out_amount"`
-	InAmountOtherChain  int64            `json:"in_amount_other_chain"`
+	ExpectedIncome      string           `json:"expected_income"`
 	HeightSpan          int64            `json:"height_span"`
+	CrossChain          bool             `json:"cross_chain"`
 }
 
 func NewHashTimerLockTransferMsg(from, to types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, inAmountOtherChain int64, heightSpan int64) HashTimerLockTransferMsg {
+	outAmount types.Coin, expectedIncome string, heightSpan int64, crossChain bool) HashTimerLockTransferMsg {
 	return HashTimerLockTransferMsg{
 		From:                from,
 		To:                  to,
@@ -44,16 +53,17 @@ func NewHashTimerLockTransferMsg(from, to types.AccAddress, recipientOtherChain 
 		RandomNumberHash:    randomNumberHash,
 		Timestamp:           timestamp,
 		OutAmount:           outAmount,
-		InAmountOtherChain:  inAmountOtherChain,
+		ExpectedIncome:      expectedIncome,
 		HeightSpan:          heightSpan,
+		CrossChain:          crossChain,
 	}
 }
 
 func (msg HashTimerLockTransferMsg) Route() string { return AtomicSwapRoute }
 func (msg HashTimerLockTransferMsg) Type() string  { return HTLT }
 func (msg HashTimerLockTransferMsg) String() string {
-	return fmt.Sprintf("hashTimerLockTransfer{%v#%v#%v#%v#%v#%v#%v#%v}", msg.From, msg.To, msg.RecipientOtherChain, msg.RandomNumberHash,
-		msg.Timestamp, msg.OutAmount, msg.InAmountOtherChain, msg.HeightSpan)
+	return fmt.Sprintf("HTLT{%v#%v#%v#%v#%v#%v#%v#%v#%v}", msg.From, msg.To, msg.RecipientOtherChain, msg.RandomNumberHash,
+		msg.Timestamp, msg.OutAmount, msg.ExpectedIncome, msg.HeightSpan, msg.CrossChain)
 }
 func (msg HashTimerLockTransferMsg) GetInvolvedAddresses() []types.AccAddress {
 	return append(msg.GetSigners(), AtomicSwapCoinsAccAddr)
@@ -64,22 +74,31 @@ func (msg HashTimerLockTransferMsg) GetSigners() []types.AccAddress {
 
 func (msg HashTimerLockTransferMsg) ValidateBasic() error {
 	if len(msg.From) != types.AddrLen {
-		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
+		return fmt.Errorf("Expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
 	}
 	if len(msg.To) != types.AddrLen {
-		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.To))
+		return fmt.Errorf("Expected address length is %d, actual length is %d", types.AddrLen, len(msg.To))
 	}
-	if len(msg.RecipientOtherChain) > 32 {
-		return fmt.Errorf("the length of recipient address on other chain shouldn't exceed 32")
+	if !msg.CrossChain && len(msg.RecipientOtherChain) != 0 {
+		return fmt.Errorf("Must leave recipient address on other chain to empty for single chain swap")
 	}
-	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
+	if msg.CrossChain && len(msg.RecipientOtherChain) == 0 {
+		return fmt.Errorf("Missing recipient address on other chain for cross chain swap")
+	}
+	if len(msg.RecipientOtherChain) > MaxRecipientOtherChainLength {
+		return fmt.Errorf("The length of recipient address on other chain should be less than %d", MaxRecipientOtherChainLength)
+	}
+	if len(msg.ExpectedIncome) > MaxExpectedIncomeLength {
+		return fmt.Errorf("The length of expected income should be less than %d", MaxExpectedIncomeLength)
+	}
+	if len(msg.RandomNumberHash) != RandomNumberHashLength {
+		return fmt.Errorf("The length of random number hash should be %d", RandomNumberHashLength)
 	}
 	if !msg.OutAmount.IsPositive() {
-		return fmt.Errorf("the swapped out coin must be positive")
+		return fmt.Errorf("The swapped out coin must be positive")
 	}
-	if msg.HeightSpan < 360 || msg.HeightSpan > 518400 {
-		return fmt.Errorf("the height span should be no less than 360 and no greater than 518400")
+	if msg.HeightSpan < MinimumHeightSpan || msg.HeightSpan > MaximumHeightSpan {
+		return fmt.Errorf("The height span should be no less than 360 and no greater than 518400")
 	}
 	return nil
 }
@@ -120,11 +139,11 @@ func (msg ClaimHashTimerLockMsg) ValidateBasic() error {
 	if len(msg.From) != types.AddrLen {
 		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
 	}
-	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
+	if len(msg.RandomNumberHash) != RandomNumberHashLength {
+		return fmt.Errorf("the length of random number hash should be %d", RandomNumberHashLength)
 	}
-	if len(msg.RandomNumber) != types.RandomNumberLength {
-		return fmt.Errorf("the length of random number should be %d", types.RandomNumberLength)
+	if len(msg.RandomNumber) != RandomNumberLength {
+		return fmt.Errorf("the length of random number should be %d", RandomNumberLength)
 	}
 	return nil
 }
@@ -163,8 +182,8 @@ func (msg RefundHashTimerLockMsg) ValidateBasic() error {
 	if len(msg.From) != types.AddrLen {
 		return fmt.Errorf("expected address length is %d, actual length is %d", types.AddrLen, len(msg.From))
 	}
-	if len(msg.RandomNumberHash) != types.RandomNumberHashLength {
-		return fmt.Errorf("the length of random number hash should be %d", types.RandomNumberHashLength)
+	if len(msg.RandomNumberHash) != RandomNumberHashLength {
+		return fmt.Errorf("the length of random number hash should be %d", RandomNumberHashLength)
 	}
 	return nil
 }
@@ -178,8 +197,8 @@ func (msg RefundHashTimerLockMsg) GetSignBytes() []byte {
 }
 
 func CalculateRandomHash(randomNumber []byte, timestamp int64) []byte {
-	randomNumberAndTimestamp := make([]byte, types.RandomNumberLength+types.Int64Size)
-	copy(randomNumberAndTimestamp[:types.RandomNumberLength], randomNumber)
-	binary.BigEndian.PutUint64(randomNumberAndTimestamp[types.RandomNumberLength:], uint64(timestamp))
+	randomNumberAndTimestamp := make([]byte, RandomNumberLength+Int64Size)
+	copy(randomNumberAndTimestamp[:RandomNumberLength], randomNumber)
+	binary.BigEndian.PutUint64(randomNumberAndTimestamp[RandomNumberLength:], uint64(timestamp))
 	return tmhash.Sum(randomNumberAndTimestamp)
 }
