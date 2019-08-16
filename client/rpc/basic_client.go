@@ -16,7 +16,7 @@ import (
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
-const defaultTimeout = 5 * time.Second
+const defaultTimeout = 2 * time.Second
 
 type Client interface {
 	cmn.Service
