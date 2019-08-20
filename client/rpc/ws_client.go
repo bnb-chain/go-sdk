@@ -17,6 +17,7 @@ import (
 
 	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/lib/types"
@@ -27,18 +28,19 @@ import (
 )
 
 const (
-	defaultMaxReconnectAttempts    = -1
-	defaultMaxReconnectBackOffTime = 10 * time.Second
-	defaultWriteWait               = 100 * time.Millisecond
-	defaultReadWait                = 0
-	defaultPingPeriod              = 0
-	defaultDialPeriod              = 1 * time.Second
+	defaultWsAliveCheckPeriod = 1 * time.Second
+	defaultWriteWait          = 500 * time.Millisecond
+	defaultReadWait           = 0
+	defaultPingPeriod         = 0
+	defaultDialPeriod         = 1 * time.Second
 
 	protoHTTP  = "http"
 	protoHTTPS = "https"
 	protoWSS   = "wss"
 	protoWS    = "ws"
 	protoTCP   = "tcp"
+
+	EmptyRequest = rpctypes.JSONRPCStringID("")
 )
 
 /** websocket event stuff here... **/
@@ -49,12 +51,14 @@ type WSEvents struct {
 	endpoint string
 	ws       *WSClient
 
-	mtx sync.RWMutex
-	// query -> chan
+	mtx       sync.RWMutex
+	reconnect chan *WSClient
 
 	subscriptionsQuitMap map[string]chan struct{}
 	subscriptionsIdMap   map[string]rpctypes.JSONRPCStringID
 	subscriptionSet      map[rpctypes.JSONRPCStringID]bool
+
+	responsesCh chan rpctypes.RPCResponse
 
 	responseChanMap sync.Map
 
@@ -70,6 +74,8 @@ func newWSEvents(cdc *amino.Codec, remote, endpoint string) *WSEvents {
 		subscriptionsIdMap:   make(map[string]rpctypes.JSONRPCStringID),
 		subscriptionSet:      make(map[rpctypes.JSONRPCStringID]bool),
 		timeout:              defaultTimeout,
+		responsesCh:          make(chan rpctypes.RPCResponse),
+		reconnect:            make(chan *WSClient),
 	}
 
 	wsEvents.BaseService = *cmn.NewBaseService(nil, "WSEvents", wsEvents)
@@ -78,23 +84,30 @@ func newWSEvents(cdc *amino.Codec, remote, endpoint string) *WSEvents {
 
 // OnStart implements cmn.Service by starting WSClient and event loop.
 func (w *WSEvents) OnStart() error {
-	w.ws = NewWSClient(w.remote, w.endpoint, OnReconnect(func() {
-		w.redoSubscriptionsAfter(0 * time.Second)
-	}))
-	w.ws.SetCodec(w.cdc)
-
-	err := w.ws.Start()
+	wsClient := NewWSClient(w.remote, w.endpoint, w.responsesCh, setOnDialSuccess(w.redoSubscriptionsAfter))
+	wsClient.SetCodec(w.cdc)
+	err := wsClient.Start()
 	if err != nil {
 		return err
 	}
+	w.setWsClient(wsClient)
 
 	go w.eventListener()
+	go w.reconnectRoutine()
 	return nil
+}
+
+func (w *WSEvents) SetLogger(logger log.Logger) {
+	w.BaseService.SetLogger(logger)
+	wsClient := w.getWsClient()
+	if wsClient != nil {
+		w.getWsClient().SetLogger(logger)
+	}
 }
 
 // OnStop implements cmn.Service by stopping WSClient.
 func (w *WSEvents) OnStop() {
-	_ = w.ws.Stop()
+	w.getWsClient().Stop()
 }
 
 // OnStop implements cmn.Service by stopping WSClient.
@@ -108,7 +121,7 @@ func (w *WSEvents) PendingRequest() int {
 }
 
 func (c *WSEvents) IsActive() bool {
-	return c.ws.IsActive()
+	return c.getWsClient().IsActive()
 }
 
 // Subscribe implements EventsClient by using WSClient to subscribe given
@@ -121,7 +134,7 @@ func (w *WSEvents) Subscribe(query string,
 		return nil, errors.New("already subscribe")
 	}
 
-	id, err := w.ws.GenRequestId()
+	id, err := w.getWsClient().GenRequestId()
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +147,7 @@ func (w *WSEvents) Subscribe(query string,
 	w.responseChanMap.Store(id, outResp)
 	ctx, cancel := w.NewContext()
 	defer cancel()
-	err = w.ws.Subscribe(ctx, id, query)
+	err = w.getWsClient().Subscribe(ctx, id, query)
 	if err != nil {
 		w.responseChanMap.Delete(id)
 		return nil, err
@@ -156,7 +169,7 @@ func (w *WSEvents) Subscribe(query string,
 func (w *WSEvents) Unsubscribe(query string) error {
 	ctx, cancel := w.NewContext()
 	defer cancel()
-	if err := w.ws.Unsubscribe(ctx, w.ws.EmptyRequest(), query); err != nil {
+	if err := w.getWsClient().Unsubscribe(ctx, EmptyRequest, query); err != nil {
 		return err
 	}
 
@@ -180,7 +193,7 @@ func (w *WSEvents) Unsubscribe(query string) error {
 func (w *WSEvents) UnsubscribeAll() error {
 	ctx, cancel := w.NewContext()
 	defer cancel()
-	if err := w.ws.UnsubscribeAll(ctx, w.ws.EmptyRequest()); err != nil {
+	if err := w.getWsClient().UnsubscribeAll(ctx, EmptyRequest); err != nil {
 		return err
 	}
 
@@ -197,6 +210,18 @@ func (w *WSEvents) UnsubscribeAll() error {
 	w.mtx.Unlock()
 
 	return nil
+}
+
+func (w *WSEvents) setWsClient(wsClient *WSClient) {
+	w.mtx.Lock()
+	defer w.mtx.Unlock()
+	w.ws = wsClient
+}
+
+func (w *WSEvents) getWsClient() *WSClient {
+	w.mtx.Lock()
+	defer w.mtx.Unlock()
+	return w.ws
 }
 
 func (w *WSEvents) WaitForEventResponse(requestId interface{}, in chan rpctypes.RPCResponse, eventOut chan ctypes.ResultEvent, quit chan struct{}) {
@@ -225,7 +250,7 @@ func (w *WSEvents) WaitForEventResponse(requestId interface{}, in chan rpctypes.
 	}
 }
 
-func (w *WSEvents) WaitForResponse(ctx context.Context, outChan chan rpctypes.RPCResponse, result interface{}) error {
+func (w *WSEvents) WaitForResponse(ctx context.Context, outChan chan rpctypes.RPCResponse, result interface{}, ws *WSClient) error {
 	select {
 	case resp, ok := <-outChan:
 		if !ok {
@@ -236,13 +261,13 @@ func (w *WSEvents) WaitForResponse(ctx context.Context, outChan chan rpctypes.RP
 		}
 		return w.cdc.UnmarshalJSON(resp.Result, result)
 	case <-ctx.Done():
-		w.ws.reconnectAfter <- ctx.Err()
+		w.reconnect <- ws
 		return ctx.Err()
 	}
 }
 
-func (w *WSEvents) SimpleCall(doRpc func(ctx context.Context, id rpctypes.JSONRPCStringID) error, proto interface{}) error {
-	id, err := w.ws.GenRequestId()
+func (w *WSEvents) SimpleCall(doRpc func(ctx context.Context, id rpctypes.JSONRPCStringID) error, ws *WSClient, proto interface{}) error {
+	id, err := ws.GenRequestId()
 	if err != nil {
 		return err
 	}
@@ -255,148 +280,167 @@ func (w *WSEvents) SimpleCall(doRpc func(ctx context.Context, id rpctypes.JSONRP
 	if err = doRpc(ctx, id); err != nil {
 		return err
 	}
-	return w.WaitForResponse(ctx, outChan, proto)
+	return w.WaitForResponse(ctx, outChan, proto, ws)
 }
 
 func (w *WSEvents) Status() (*ctypes.ResultStatus, error) {
 	status := new(ctypes.ResultStatus)
-	err := w.SimpleCall(w.ws.Status, status)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.Status, wsClient, status)
 	return status, err
 }
 
 func (w *WSEvents) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
 	info := new(ctypes.ResultABCIInfo)
-	err := w.SimpleCall(w.ws.ABCIInfo, info)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.ABCIInfo, wsClient, info)
 	return info, err
 }
 
 func (w *WSEvents) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
 	abciQuery := new(ctypes.ResultABCIQuery)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.ABCIQueryWithOptions(ctx, id, path, data, opts)
-	}, abciQuery)
+		return wsClient.ABCIQueryWithOptions(ctx, id, path, data, opts)
+	}, wsClient, abciQuery)
 	return abciQuery, err
 }
 
 func (w *WSEvents) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
 	txCommit := new(ctypes.ResultBroadcastTxCommit)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.BroadcastTxCommit(ctx, id, tx)
-	}, txCommit)
+		return wsClient.BroadcastTxCommit(ctx, id, tx)
+	}, wsClient, txCommit)
 	return txCommit, err
 }
 
 func (w *WSEvents) BroadcastTx(route string, tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
 	txRes := new(ctypes.ResultBroadcastTx)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.BroadcastTx(ctx, id, route, tx)
-	}, txRes)
+		return wsClient.BroadcastTx(ctx, id, route, tx)
+	}, wsClient, txRes)
 	return txRes, err
 }
 
 func (w *WSEvents) UnconfirmedTxs(limit int) (*ctypes.ResultUnconfirmedTxs, error) {
 	unConfirmTxs := new(ctypes.ResultUnconfirmedTxs)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.UnconfirmedTxs(ctx, id, limit)
-	}, unConfirmTxs)
+		return wsClient.UnconfirmedTxs(ctx, id, limit)
+	}, wsClient, unConfirmTxs)
 	return unConfirmTxs, err
 }
 
 func (w *WSEvents) NumUnconfirmedTxs() (*ctypes.ResultUnconfirmedTxs, error) {
 	numUnConfirmTxs := new(ctypes.ResultUnconfirmedTxs)
-	err := w.SimpleCall(w.ws.NumUnconfirmedTxs, numUnConfirmTxs)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.NumUnconfirmedTxs, wsClient, numUnConfirmTxs)
 	return numUnConfirmTxs, err
 }
 
 func (w *WSEvents) NetInfo() (*ctypes.ResultNetInfo, error) {
 	netInfo := new(ctypes.ResultNetInfo)
-	err := w.SimpleCall(w.ws.NetInfo, netInfo)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.NetInfo, wsClient, netInfo)
 	return netInfo, err
 }
 
 func (w *WSEvents) DumpConsensusState() (*ctypes.ResultDumpConsensusState, error) {
 	consensusState := new(ctypes.ResultDumpConsensusState)
-	err := w.SimpleCall(w.ws.DumpConsensusState, consensusState)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.DumpConsensusState, wsClient, consensusState)
 	return consensusState, err
 }
 
 func (w *WSEvents) ConsensusState() (*ctypes.ResultConsensusState, error) {
 	consensusState := new(ctypes.ResultConsensusState)
-	err := w.SimpleCall(w.ws.ConsensusState, consensusState)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.ConsensusState, wsClient, consensusState)
 	return consensusState, err
 }
 
 func (w *WSEvents) Health() (*ctypes.ResultHealth, error) {
 	health := new(ctypes.ResultHealth)
-	err := w.SimpleCall(w.ws.Health, health)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.Health, wsClient, health)
 	return health, err
 }
 
 func (w *WSEvents) BlockchainInfo(minHeight, maxHeight int64) (*ctypes.ResultBlockchainInfo, error) {
 
 	blocksInfo := new(ctypes.ResultBlockchainInfo)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.BlockchainInfo(ctx, id, minHeight, maxHeight)
-	}, blocksInfo)
+		return wsClient.BlockchainInfo(ctx, id, minHeight, maxHeight)
+	}, wsClient, blocksInfo)
 	return blocksInfo, err
 }
 
 func (w *WSEvents) Genesis() (*ctypes.ResultGenesis, error) {
 
 	genesis := new(ctypes.ResultGenesis)
-	err := w.SimpleCall(w.ws.Genesis, genesis)
+	wsClient := w.getWsClient()
+	err := w.SimpleCall(wsClient.Genesis, wsClient, genesis)
 	return genesis, err
 }
 
 func (w *WSEvents) Block(height *int64) (*ctypes.ResultBlock, error) {
 	block := new(ctypes.ResultBlock)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.Block(ctx, id, height)
-	}, block)
+		return wsClient.Block(ctx, id, height)
+	}, wsClient, block)
 	return block, err
 }
 
 func (w *WSEvents) BlockResults(height *int64) (*ctypes.ResultBlockResults, error) {
 
 	block := new(ctypes.ResultBlockResults)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.BlockResults(ctx, id, height)
-	}, block)
+		return wsClient.BlockResults(ctx, id, height)
+	}, wsClient, block)
 	return block, err
 }
 
 func (w *WSEvents) Commit(height *int64) (*ctypes.ResultCommit, error) {
 	commit := new(ctypes.ResultCommit)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.Commit(ctx, id, height)
-	}, commit)
+		return wsClient.Commit(ctx, id, height)
+	}, wsClient, commit)
 	return commit, err
 }
 
 func (w *WSEvents) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
 
 	tx := new(ctypes.ResultTx)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.Tx(ctx, id, hash, prove)
-	}, tx)
+		return wsClient.Tx(ctx, id, hash, prove)
+	}, wsClient, tx)
 	return tx, err
 }
 
 func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
 
 	txs := new(ctypes.ResultTxSearch)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.TxSearch(ctx, id, query, prove, page, perPage)
-	}, txs)
+		return wsClient.TxSearch(ctx, id, query, prove, page, perPage)
+	}, wsClient, txs)
 	return txs, err
 }
 
 func (w *WSEvents) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
 
 	txs := new(ctypes.ResultTxSearch)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.TxSearch(ctx, id, query, prove, page, perPage)
-	}, txs)
+		return wsClient.TxSearch(ctx, id, query, prove, page, perPage)
+	}, wsClient, txs)
 	if err != nil {
 		return nil, err
 	}
@@ -405,9 +449,10 @@ func (w *WSEvents) TxInfoSearch(query string, prove bool, page, perPage int) ([]
 
 func (w *WSEvents) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	validators := new(ctypes.ResultValidators)
+	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
-		return w.ws.Validators(ctx, id, height)
-	}, validators)
+		return wsClient.Validators(ctx, id, height)
+	}, wsClient, validators)
 	return validators, err
 }
 
@@ -421,14 +466,44 @@ func (w *WSEvents) NewContext() (context.Context, context.CancelFunc) {
 
 // After being reconnected, it is necessary to redo subscription to server
 // otherwise no data will be automatically received.
-func (w *WSEvents) redoSubscriptionsAfter(d time.Duration) {
-	time.Sleep(d)
+func (w *WSEvents) redoSubscriptionsAfter() {
 
 	for q, id := range w.subscriptionsIdMap {
 		ctx, _ := context.WithTimeout(context.Background(), w.timeout)
-		err := w.ws.Subscribe(ctx, id, q)
+		err := w.getWsClient().Subscribe(ctx, id, q)
 		if err != nil {
 			w.Logger.Error("Failed to resubscribe", "err", err)
+		}
+	}
+}
+
+func (w *WSEvents) reconnectRoutine() {
+	checkTicker := time.NewTicker(defaultWsAliveCheckPeriod)
+	defer checkTicker.Stop()
+	for {
+		select {
+		case <-w.Quit():
+			return
+		case wsClient := <-w.reconnect:
+			if wsClient.IsRunning() {
+				w.Logger.Error("try to stop wsClient since context deadline exceed", "server", wsClient)
+				// try to stop, may stop twice, but make no harm.
+				wsClient.Stop()
+			}
+		case <-checkTicker.C:
+			if !w.getWsClient().IsRunning() {
+				w.Logger.Info("ws client have been stopped, try start new one", "server", w.getWsClient())
+				wsClient := NewWSClient(w.remote, w.endpoint, w.responsesCh, setOnDialSuccess(w.redoSubscriptionsAfter))
+				wsClient.SetCodec(w.cdc)
+				err := wsClient.Start()
+				// should not happen
+				if err != nil {
+					w.Logger.Error("wsClient start failed", "err", err)
+					continue
+				}
+				w.Logger.Info("ws client reconnect success", "server", w.getWsClient())
+				w.setWsClient(wsClient)
+			}
 		}
 	}
 }
@@ -436,7 +511,7 @@ func (w *WSEvents) redoSubscriptionsAfter(d time.Duration) {
 func (w *WSEvents) eventListener() {
 	for {
 		select {
-		case resp, ok := <-w.ws.ResponsesCh:
+		case resp, ok := <-w.responsesCh:
 			if !ok {
 				return
 			}
@@ -481,24 +556,16 @@ type WSClient struct {
 	Endpoint string // /websocket/url/endpoint
 	Dialer   func(string, string) (net.Conn, error)
 
-	// Single user facing channel to read RPCResponses from, closed only when the client is being stopped.
-	ResponsesCh chan rpctypes.RPCResponse
-
-	// Callback, which will be called each time after successful reconnect.
-	onReconnect func()
+	// Single user facing channel to read RPCResponses from
+	responsesCh chan<- rpctypes.RPCResponse
 
 	// internal channels
-	send           chan rpctypes.RPCRequest // user requests
-	reconnectAfter chan error               // reconnect requests
+	send chan rpctypes.RPCRequest // user requests
 
 	wg sync.WaitGroup
 
 	mtx     sync.RWMutex
 	dialing atomic.Value
-
-	// Maximum reconnect attempts (0 or greater; default: 25).
-	// Less than 0 means always try to reconnect.
-	maxReconnectAttempts int
 
 	// Time allowed to write a message to the server. 0 means block until operation succeeds.
 	writeWait time.Duration
@@ -511,12 +578,14 @@ type WSClient struct {
 
 	// Support both ws and wss protocols
 	protocol string
+
+	onDialSuccess func()
 }
 
 // NewWSClient returns a new client. See the commentary on the func(*WSClient)
 // functions for a detailed description of how to configure ping period and
 // pong wait time. The endpoint argument must begin with a `/`.
-func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSClient {
+func NewWSClient(remoteAddr, endpoint string, responsesCh chan<- rpctypes.RPCResponse, options ...func(*WSClient)) *WSClient {
 	protocol, addr, dialer := makeHTTPDialer(remoteAddr)
 	// default to ws protocol, unless wss is explicitly specified
 	if protocol != "wss" {
@@ -524,16 +593,16 @@ func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSCli
 	}
 
 	c := &WSClient{
-		cdc:      amino.NewCodec(),
-		Address:  addr,
-		Dialer:   dialer,
-		Endpoint: endpoint,
-
-		maxReconnectAttempts: defaultMaxReconnectAttempts,
-		readWait:             defaultReadWait,
-		writeWait:            defaultWriteWait,
-		pingPeriod:           defaultPingPeriod,
-		protocol:             protocol,
+		cdc:         amino.NewCodec(),
+		Address:     addr,
+		Dialer:      dialer,
+		Endpoint:    endpoint,
+		readWait:    defaultReadWait,
+		writeWait:   defaultWriteWait,
+		pingPeriod:  defaultPingPeriod,
+		protocol:    protocol,
+		responsesCh: responsesCh,
+		send:        make(chan rpctypes.RPCRequest),
 	}
 	c.dialing.Store(true)
 	c.BaseService = *cmn.NewBaseService(nil, "WSClient", c)
@@ -543,32 +612,17 @@ func NewWSClient(remoteAddr, endpoint string, options ...func(*WSClient)) *WSCli
 	return c
 }
 
-// OnReconnect sets the callback, which will be called every time after
-// successful reconnect.
-func OnReconnect(cb func()) func(*WSClient) {
-	return func(c *WSClient) {
-		c.onReconnect = cb
-	}
-}
-
 // String returns WS client full address.
 func (c *WSClient) String() string {
+	if c.conn != nil {
+		return fmt.Sprintf("%s, local: %s, remote: %s", c.Address, c.conn.LocalAddr().String(), c.conn.RemoteAddr().String())
+	}
 	return fmt.Sprintf("%s (%s)", c.Address, c.Endpoint)
 }
 
 // OnStart implements cmn.Service by dialing a server and creating read and
 // write routines.
 func (c *WSClient) OnStart() error {
-
-	c.ResponsesCh = make(chan rpctypes.RPCResponse)
-
-	c.send = make(chan rpctypes.RPCRequest)
-	// 1 additional error may come from the read/write
-	// goroutine depending on which failed first.
-	c.reconnectAfter = make(chan error, 1)
-	// capacity for 1 request. a user won't be able to send more because the send
-	// channel is unbuffered.
-
 	err := c.dial()
 	if err != nil {
 		c.wg.Add(1)
@@ -578,22 +632,14 @@ func (c *WSClient) OnStart() error {
 	}
 
 	c.startReadWriteRoutines()
-	go c.reconnectRoutine()
-
 	return nil
 }
 
-// Stop overrides cmn.Service#Stop. There is no other way to wait until Quit
-// channel is closed.
-func (c *WSClient) Stop() error {
-	if err := c.BaseService.Stop(); err != nil {
-		return err
+func (c *WSClient) OnStop() {
+	if c.conn != nil {
+		c.conn.Close()
 	}
-	// only close user-facing channels when we can't write to them
-	c.wg.Wait()
-	close(c.ResponsesCh)
-
-	return nil
+	return
 }
 
 // IsDialing returns true if the client is dialing right now.
@@ -607,12 +653,12 @@ func (c *WSClient) IsActive() bool {
 }
 
 // Send the given RPC request to the server. Results will be available on
-// ResponsesCh, errors, if any, on ErrorsCh. Will block until send succeeds or
+// responsesCh, errors, if any, on ErrorsCh. Will block until send succeeds or
 // ctx.Done is closed.
 func (c *WSClient) Send(ctx context.Context, request rpctypes.RPCRequest) error {
 	select {
 	case c.send <- request:
-		c.Logger.Info("sent a request", "req", request)
+		c.Logger.Debug("sent a request", "req", request)
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -621,39 +667,14 @@ func (c *WSClient) Send(ctx context.Context, request rpctypes.RPCRequest) error 
 
 // Call the given method. See Send description.
 func (c *WSClient) Call(ctx context.Context, method string, id rpctypes.JSONRPCStringID, params map[string]interface{}) error {
-	if c.IsDialing() {
-		return errors.New("websocket is dialing, can't send any request")
+	if !c.IsActive() {
+		return errors.New("websocket client is dialing or stopped, can't send any request")
 	}
 	request, err := rpctypes.MapToRequest(c.cdc, id, method, params)
 	if err != nil {
 		return err
 	}
 	return c.Send(ctx, request)
-}
-
-// CallWithArrayParams the given method with params in a form of array. See
-// Send description.
-func (c *WSClient) CallWithArrayParams(ctx context.Context, method string, params []interface{}) error {
-	request, err := rpctypes.ArrayToRequest(c.cdc, rpctypes.JSONRPCStringID("ws-client"), method, params)
-	if err != nil {
-		return err
-	}
-	return c.Send(ctx, request)
-}
-
-func (c *WSClient) GetConnection() *websocket.Conn {
-	c.mtx.RLock()
-	defer c.mtx.RUnlock()
-	return c.conn
-}
-
-func (c *WSClient) SetConnection(conn *websocket.Conn) {
-	c.mtx.Lock()
-	defer c.mtx.Unlock()
-	if c.conn != nil {
-		c.conn.Close()
-	}
-	c.conn = conn
 }
 
 func (c *WSClient) Codec() *amino.Codec {
@@ -672,10 +693,6 @@ func (c *WSClient) GenRequestId() (rpctypes.JSONRPCStringID, error) {
 	return rpctypes.JSONRPCStringID(id.String()), nil
 }
 
-func (c *WSClient) EmptyRequest() rpctypes.JSONRPCStringID {
-	return rpctypes.JSONRPCStringID("")
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Private methods
 
@@ -689,46 +706,12 @@ func (c *WSClient) dial() error {
 	if err != nil {
 		return err
 	}
-	c.SetConnection(conn)
-	return nil
-}
-
-// reconnect tries to redial up to maxReconnectAttempts with exponential
-// backoff.
-func (c *WSClient) reconnect() error {
-	attempt := 0
-
-	c.dialing.Store(true)
-	defer func() {
-		c.dialing.Store(false)
-	}()
-	backOffDuration := 1 * time.Second
-	for {
-		// will never overflow until doomsday
-		backOffDuration := time.Duration(attempt)*time.Second + backOffDuration
-		if backOffDuration > defaultMaxReconnectBackOffTime {
-			backOffDuration = defaultMaxReconnectBackOffTime
-		}
-		c.Logger.Info("reconnecting", "attempt", attempt+1, "backoff_duration", backOffDuration)
-		time.Sleep(backOffDuration)
-
-		err := c.dial()
-		if err != nil {
-			c.Logger.Error("failed to redial", "err", err)
-		} else {
-			c.Logger.Info("reconnected")
-			if c.onReconnect != nil {
-				go c.onReconnect()
-			}
-			return nil
-		}
-
-		attempt++
-
-		if c.maxReconnectAttempts >= 0 && attempt > c.maxReconnectAttempts {
-			return errors.Wrap(err, "reached maximum reconnect attempts")
-		}
+	// only do once during the lifecycle of WSClient
+	c.conn = conn
+	if c.onDialSuccess != nil {
+		go c.onDialSuccess()
 	}
+	return nil
 }
 
 func (c *WSClient) startReadWriteRoutines() {
@@ -757,31 +740,6 @@ func (c *WSClient) dialRoutine() {
 	}
 }
 
-func (c *WSClient) reconnectRoutine() {
-	for {
-		select {
-		case originalError := <-c.reconnectAfter:
-			if err := c.reconnect(); err != nil {
-				c.Logger.Error("failed to reconnect", "err", err, "original_err", originalError)
-				c.Stop()
-				return
-			}
-			// drain reconnectAfter
-		LOOP:
-			for {
-				select {
-				case <-c.reconnectAfter:
-				default:
-					break LOOP
-				}
-			}
-
-		case <-c.Quit():
-			return
-		}
-	}
-}
-
 // The client ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
 func (c *WSClient) writeRoutine() {
@@ -794,41 +752,35 @@ func (c *WSClient) writeRoutine() {
 		// ticker that never fires
 		ticker = &time.Ticker{C: make(<-chan time.Time)}
 	}
-
-	defer func() {
-		ticker.Stop()
-		if err := c.GetConnection().Close(); err != nil {
-			// ignore error; it will trigger in tests
-			// likely because it's closing an already closed connection
-		}
-	}()
+	defer ticker.Stop()
 
 	for {
 		select {
 		case request := <-c.send:
 			if c.writeWait > 0 {
-				if err := c.GetConnection().SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
+				if err := c.conn.SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
 					c.Logger.Error("failed to set write deadline", "err", err)
 				}
 			}
-			if err := c.GetConnection().WriteJSON(request); err != nil {
+			if err := c.conn.WriteJSON(request); err != nil {
 				c.Logger.Error("failed to send request", "err", err)
-				c.reconnectAfter <- err
+				c.Stop()
+				return
 			}
 		case <-ticker.C:
 			if c.writeWait > 0 {
-				if err := c.GetConnection().SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
+				if err := c.conn.SetWriteDeadline(time.Now().Add(c.writeWait)); err != nil {
 					c.Logger.Error("failed to set write deadline", "err", err)
 				}
 			}
-			if err := c.GetConnection().WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+			if err := c.conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
 				c.Logger.Error("failed to write ping", "err", err)
-				c.reconnectAfter <- err
-				continue
+				c.Stop()
+				return
 			}
 			c.Logger.Debug("sent ping")
 		case <-c.Quit():
-			if err := c.GetConnection().WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+			if err := c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 				c.Logger.Error("failed to write message", "err", err)
 			}
 			return
@@ -839,14 +791,8 @@ func (c *WSClient) writeRoutine() {
 // The client ensures that there is at most one reader to a connection by
 // executing all reads from this goroutine.
 func (c *WSClient) readRoutine() {
-	defer func() {
-		if err := c.GetConnection().Close(); err != nil {
-			// ignore error; it will trigger in tests
-			// likely because it's closing an already closed connection
-		}
-	}()
 	c.wg.Wait()
-	c.GetConnection().SetPongHandler(func(string) error {
+	c.conn.SetPongHandler(func(string) error {
 		c.Logger.Debug("got pong")
 		return nil
 	})
@@ -854,15 +800,15 @@ func (c *WSClient) readRoutine() {
 	for {
 		// reset deadline for every message type (control or data)
 		if c.readWait > 0 {
-			if err := c.GetConnection().SetReadDeadline(time.Now().Add(c.readWait)); err != nil {
+			if err := c.conn.SetReadDeadline(time.Now().Add(c.readWait)); err != nil {
 				c.Logger.Error("failed to set read deadline", "err", err)
 			}
 		}
-		_, data, err := c.GetConnection().ReadMessage()
+		_, data, err := c.conn.ReadMessage()
 		if err != nil {
 			c.Logger.Error("failed to read response", "err", err)
-			c.reconnectAfter <- err
-			continue
+			c.Stop()
+			return
 		}
 
 		var response rpctypes.RPCResponse
@@ -871,14 +817,13 @@ func (c *WSClient) readRoutine() {
 			c.Logger.Error("failed to parse response", "err", err, "data", string(data))
 			continue
 		}
-		c.Logger.Info("got response", "resp", response.Result)
-		// Combine a non-blocking read on BaseService.Quit with a non-blocking write on ResponsesCh to avoid blocking
+		// Combine a non-blocking read on BaseService.Quit with a non-blocking write on responsesCh to avoid blocking
 		// c.wg.Wait() in c.Stop(). Note we rely on Quit being closed so that it sends unlimited Quit signals to stop
 		// both readRoutine and writeRoutine
 		select {
 		case <-c.Quit():
 			return
-		case c.ResponsesCh <- response:
+		case c.responsesCh <- response:
 		}
 	}
 }
@@ -992,6 +937,12 @@ func (c *WSClient) TxSearch(ctx context.Context, id rpctypes.JSONRPCStringID, qu
 
 func (c *WSClient) Validators(ctx context.Context, id rpctypes.JSONRPCStringID, height *int64) error {
 	return c.Call(ctx, "validators", id, map[string]interface{}{"height": height})
+}
+
+func setOnDialSuccess(onDial func()) func(c *WSClient) {
+	return func(c *WSClient) {
+		c.onDialSuccess = onDial
+	}
 }
 
 func makeHTTPDialer(remoteAddr string) (string, string, func(string, string) (net.Conn, error)) {
