@@ -1,6 +1,14 @@
 # Changelog
 
 ## latest
+IMPROVEMENT
+* [\#84](https://github.com/binance-chain/go-sdk/pull/84) [RPC] change interface of get timelock
+
+## v1.1.0
+IMPROVEMENT
+* [\#82](https://github.com/binance-chain/go-sdk/pull/82) [RPC] refactor reconnection
+
+## v1.0.9
 
 FEATURES
 * [\#71](https://github.com/binance-chain/go-sdk/pull/71) [RPC] add timelock query support 
