@@ -29,8 +29,8 @@ type DexClient interface {
 	GetDepth(tradePair string, level int) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
 	GetProposal(proposalId int64) (types.Proposal, error)
-	GetTimelocks(address string) ([]types.TimeLockRecord, error)
-	GetTimelock(address string, recordID int64) (types.TimeLockRecord, error)
+	GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error)
+	GetTimelock(addr types.AccAddress, recordID int64) (types.TimeLockRecord, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -246,12 +246,7 @@ func (c *HTTP) GetDepth(tradePair string, level int) (*types.OrderBook, error) {
 	return &ob, nil
 }
 
-func (c *HTTP) GetTimelocks(address string) ([]types.TimeLockRecord, error) {
-
-	addr, err := types.AccAddressFromBech32(address)
-	if err != nil {
-		return nil, err
-	}
+func (c *HTTP) GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error) {
 
 	params := types.QueryTimeLocksParams{
 		Account: addr,
@@ -281,12 +276,7 @@ func (c *HTTP) GetTimelocks(address string) ([]types.TimeLockRecord, error) {
 
 }
 
-func (c *HTTP) GetTimelock(address string, recordID int64) (types.TimeLockRecord, error) {
-
-	addr, err := types.AccAddressFromBech32(address)
-	if err != nil {
-		return types.TimeLockRecord{}, err
-	}
+func (c *HTTP) GetTimelock(addr types.AccAddress, recordID int64) (types.TimeLockRecord, error) {
 
 	params := types.QueryTimeLockParams{
 		Account: addr,
