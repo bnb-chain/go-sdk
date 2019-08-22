@@ -111,10 +111,14 @@ type AtomicSwap struct {
 	Status       SwapStatus `json:"status"`
 }
 
+// Params for query 'custom/atomicswap/swaphash'
+type QuerySwapByHashParams struct {
+	RandomNumberHash HexData
+}
+
 // Params for query 'custom/atomicswap/swapcreator'
 type QuerySwapByCreatorParams struct {
 	Creator AccAddress
-	Status  SwapStatus
 	Limit   int64
 	Offset  int64
 }
@@ -122,7 +126,6 @@ type QuerySwapByCreatorParams struct {
 // Params for query 'custom/atomicswap/swaprecipient'
 type QuerySwapByRecipientParams struct {
 	Recipient AccAddress
-	Status    SwapStatus
 	Limit     int64
 	Offset    int64
 }

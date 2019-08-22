@@ -57,12 +57,12 @@ func TestTransProcess(t *testing.T) {
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
 	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
 	outAmount := ctypes.Coin{"BNB", 10000}
-	inAmountOtherChain := int64(10000)
+	inAmountOtherChain := "10000:BNB"
 	heightSpan := int64(1000)
-	hashTimerLockTransfer, err := client.HashTimerLockedTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
+	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
-	claimHashTimerLockTransfer, err := client.ClaimHashTimerLockedTransfer(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
+	claimHashTimerLockTransfer, err := client.ClaimHTLT(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
 	assert.NoError(t, err)
 	fmt.Printf("Claim hash timer lock transfer: %v \n", claimHashTimerLockTransfer)
 
@@ -70,11 +70,11 @@ func TestTransProcess(t *testing.T) {
 	timestamp = int64(time.Now().Unix())
 	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
 	heightSpan = int64(360)
-	hashTimerLockTransfer, err = client.HashTimerLockedTransfer(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
+	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	//client.SubscribeBlockHeightEvent()
-	refundHashTimerLockTransfer, err := client.RefundHashTimerLockedTransfer(randomNumberHash, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+5))
+	refundHashTimerLockTransfer, err := client.RefundHTLT(randomNumberHash, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+5))
 	fmt.Printf("Refund hash timer lock transfer: %v \n", refundHashTimerLockTransfer)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "is still not reached"))
@@ -264,16 +264,16 @@ func TestTransProcess(t *testing.T) {
 
 func TestAtomicSwap(t *testing.T) {
 	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
-	hash, _ := hex.DecodeString("0c679a11fe02600272700a74a06659ad4ae64a555d45b323d2ac9c166e2e1456")
+	hash, _ := hex.DecodeString("506fec89d91c188ec5c1986cd48edccfb5973328ff3de1b921abf554082a25ce")
 	swap, err := c.GetSwapByHash(hash)
 	assert.NoError(t, err)
 	fmt.Println(swap.From)
 
-	swaps, err := c.GetSwapByCreator(swap.To.String(), "Open", 0, 100)
+	randomNumberHashList, err := c.GetSwapByCreator(swap.From.String(), 0, 100)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(swaps))
+	assert.True(t, len(randomNumberHashList) > 0)
 
-	swaps, err = c.GetSwapByRecipient(swap.From.String(), "Open", 0, 100)
+	randomNumberHashList, err = c.GetSwapByRecipient(swap.To.String(), 0, 100)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(swaps))
+	assert.True(t, len(randomNumberHashList) > 0)
 }

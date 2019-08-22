@@ -22,10 +22,10 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(TimeUnlockMsg{}, "tokens/TimeUnlockMsg", nil)
 	cdc.RegisterConcrete(TimeRelockMsg{}, "tokens/TimeRelockMsg", nil)
 
-	cdc.RegisterConcrete(HashTimerLockedTransferMsg{}, "tokens/HashTimerLockedTransferMsg", nil)
-	cdc.RegisterConcrete(DepositHashTimerLockedTransferMsg{}, "tokens/DepositHashTimerLockedTransferMsg", nil)
-	cdc.RegisterConcrete(ClaimHashTimerLockedTransferMsg{}, "tokens/ClaimHashTimerLockedTransferMsg", nil)
-	cdc.RegisterConcrete(RefundHashTimerLockedTransferMsg{}, "tokens/RefundHashTimerLockedTransferMsg", nil)
+	cdc.RegisterConcrete(HTLTMsg{}, "tokens/HTLTMsg", nil)
+	cdc.RegisterConcrete(DepositHTLTMsg{}, "tokens/DepositHTLTMsg", nil)
+	cdc.RegisterConcrete(ClaimHTLTMsg{}, "tokens/ClaimHTLTMsg", nil)
+	cdc.RegisterConcrete(RefundHTLTMsg{}, "tokens/RefundHTLTMsg", nil)
 
 	cdc.RegisterConcrete(DexListMsg{}, "dex/ListMsg", nil)
 	cdc.RegisterConcrete(MintMsg{}, "tokens/MintMsg", nil)
