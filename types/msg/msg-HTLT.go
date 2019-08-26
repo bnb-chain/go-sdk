@@ -39,14 +39,14 @@ type HTLTMsg struct {
 	RecipientOtherChain types.HexData    `json:"recipient_other_chain"`
 	RandomNumberHash    types.HexData    `json:"random_number_hash"`
 	Timestamp           int64            `json:"timestamp"`
-	OutAmount           types.Coin       `json:"out_amount"`
+	OutAmount           types.Coins      `json:"out_amount"`
 	ExpectedIncome      string           `json:"expected_income"`
 	HeightSpan          int64            `json:"height_span"`
 	CrossChain          bool             `json:"cross_chain"`
 }
 
 func NewHTLTMsg(from, to types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coin, expectedIncome string, heightSpan int64, crossChain bool) HTLTMsg {
+	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool) HTLTMsg {
 	return HTLTMsg{
 		From:                from,
 		To:                  to,
@@ -115,11 +115,11 @@ func (msg HTLTMsg) GetSignBytes() []byte {
 type DepositHTLTMsg struct {
 	From             types.AccAddress `json:"from"`
 	To               types.AccAddress `json:"to"`
-	OutAmount        types.Coin       `json:"out_amount"`
+	OutAmount        types.Coins      `json:"out_amount"`
 	RandomNumberHash types.HexData    `json:"random_number_hash"`
 }
 
-func NewDepositHTLTMsg(from, to types.AccAddress, outAmount types.Coin, randomNumberHash []byte) DepositHTLTMsg {
+func NewDepositHTLTMsg(from, to types.AccAddress, outAmount types.Coins, randomNumberHash []byte) DepositHTLTMsg {
 	return DepositHTLTMsg{
 		From:             from,
 		To:               to,

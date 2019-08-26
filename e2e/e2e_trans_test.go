@@ -56,7 +56,7 @@ func TestTransProcess(t *testing.T) {
 	timestamp := int64(time.Now().Unix())
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
 	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
-	outAmount := ctypes.Coin{"BNB", 10000}
+	outAmount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
 	inAmountOtherChain := "10000:BNB"
 	heightSpan := int64(1000)
 	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
@@ -264,7 +264,7 @@ func TestTransProcess(t *testing.T) {
 
 func TestAtomicSwap(t *testing.T) {
 	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
-	hash, _ := hex.DecodeString("506fec89d91c188ec5c1986cd48edccfb5973328ff3de1b921abf554082a25ce")
+	hash, _ := hex.DecodeString("bf70f0b578960161dc10de57e46f2e0030a7291a522d63f14bf1553fcf9660ec")
 	swap, err := c.GetSwapByHash(hash)
 	assert.NoError(t, err)
 	fmt.Println(swap.From)

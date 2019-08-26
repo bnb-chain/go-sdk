@@ -27,8 +27,8 @@ type TransactionClient interface {
 	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
 	SetAccountFlags(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 	AddAccountFlags(flagOptions []types.FlagOption, sync bool, options ...Option) (*SetAccountFlagsResult, error)
-	HTLT(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64, outAmount types.Coin, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error)
-	DepositHTLT(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coin, sync bool, options ...Option) (*DepositHTLTResult, error)
+	HTLT(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64, outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error)
+	DepositHTLT(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coins, sync bool, options ...Option) (*DepositHTLTResult, error)
 	ClaimHTLT(randomNumberHash []byte, randomNumber []byte, sync bool, options ...Option) (*ClaimHTLTResult, error)
 	RefundHTLT(randomNumberHash []byte, sync bool, options ...Option) (*RefundHTLTResult, error)
 
