@@ -71,7 +71,9 @@ func TestRPCGetProposals(t *testing.T) {
 }
 func TestRPCGetTimelocks(t *testing.T) {
 	c := defaultClient()
-	records, err := c.GetTimelocks(testAddress)
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	records, err := c.GetTimelocks(acc)
 	assert.NoError(t, err)
 	fmt.Println(len(records))
 	for _, record := range records {
@@ -81,7 +83,9 @@ func TestRPCGetTimelocks(t *testing.T) {
 
 func TestRPCGetTimelock(t *testing.T) {
 	c := defaultClient()
-	record, err := c.GetTimelock(testAddress, 1)
+	acc, err := ctypes.AccAddressFromBech32(testAddress)
+	assert.NoError(t, err)
+	record, err := c.GetTimelock(acc, 1)
 	assert.NoError(t, err)
 	fmt.Println(record)
 
