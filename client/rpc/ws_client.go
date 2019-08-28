@@ -303,7 +303,12 @@ func (w *WSEvents) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts cli
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.ABCIQueryWithOptions(ctx, id, path, data, opts)
 	}, wsClient, abciQuery)
-	return abciQuery, err
+	if err != nil {
+		return nil, err
+	} else if abciQuery != nil && abciQuery.Response.IsErr() {
+		return nil, fmt.Errorf("%s, code: %d", abciQuery.Response.Log, abciQuery.Response.Code)
+	}
+	return abciQuery, nil
 }
 
 func (w *WSEvents) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
