@@ -2,7 +2,9 @@
 
 ## latest
 IMPROVEMENT
+* [\#87](https://github.com/binance-chain/go-sdk/pull/87) [RPC] extract error log from rpc response
 * [\#84](https://github.com/binance-chain/go-sdk/pull/84) [RPC] change interface of get timelock
+
 
 ## v1.1.0
 IMPROVEMENT
