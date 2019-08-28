@@ -210,8 +210,7 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	//return bz, nil
-	return []byte(hex.EncodeToString(bz)), nil
+	return bz, nil
 }
 
 func (m *keyManager) GetPrivKey() crypto.PrivKey {

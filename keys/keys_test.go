@@ -2,6 +2,7 @@ package keys
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -21,11 +22,11 @@ func TestRecoveryFromKeyWordsNoError(t *testing.T) {
 	assert.NoError(t, err)
 	acc := keyManger.GetAddr()
 	key := keyManger.GetPrivKey()
-	assert.Equal(t,"bnb1ddt3ls9fjcd8mh69ujdg3fxc89qle2a7km33aa",acc.String())
-	assert.NotNil(t,key)
-	customPathKey, err:= NewMnemonicPathKeyManager(mnemonic,"1'/1/1")
+	assert.Equal(t, "bnb1ddt3ls9fjcd8mh69ujdg3fxc89qle2a7km33aa", acc.String())
+	assert.NotNil(t, key)
+	customPathKey, err := NewMnemonicPathKeyManager(mnemonic, "1'/1/1")
 	assert.NoError(t, err)
-	assert.Equal(t,"bnb1c67nwp7u5adl7gw0ffn3d47kttcm4crjy9mrye",customPathKey.GetAddr().String())
+	assert.Equal(t, "bnb1c67nwp7u5adl7gw0ffn3d47kttcm4crjy9mrye", customPathKey.GetAddr().String())
 }
 
 func TestRecoveryFromKeyBaseNoError(t *testing.T) {
@@ -166,7 +167,8 @@ func TestSignTxNoError(t *testing.T) {
 			Source:        0,
 		}
 
-		signResult, err := c.keyManager.Sign(signMsg)
+		rawSignResult, err := c.keyManager.Sign(signMsg)
+		signResult := []byte(hex.EncodeToString(rawSignResult))
 		assert.NoError(t, err)
 		expectHexTx := c.expectHexTx
 		assert.True(t, bytes.Equal(signResult, []byte(expectHexTx)), c.errMsg)

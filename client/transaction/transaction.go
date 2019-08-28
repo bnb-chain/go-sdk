@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -10,6 +11,14 @@ import (
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
+)
+
+type Option = tx.Option
+
+var (
+	WithSource           = tx.WithSource
+	WithMemo             = tx.WithMemo
+	WithAcNumAndSequence = tx.WithAcNumAndSequence
 )
 
 type TransactionClient interface {
@@ -55,30 +64,6 @@ func (c *client) GetKeyManager() keys.KeyManager {
 	return c.keyManager
 }
 
-type Option func(*tx.StdSignMsg) *tx.StdSignMsg
-
-func WithSource(source int64) Option {
-	return func(txMsg *tx.StdSignMsg) *tx.StdSignMsg {
-		txMsg.Source = source
-		return txMsg
-	}
-}
-
-func WithMemo(memo string) Option {
-	return func(txMsg *tx.StdSignMsg) *tx.StdSignMsg {
-		txMsg.Memo = memo
-		return txMsg
-	}
-}
-
-func WithAcNumAndSequence(accountNum, seq int64) Option {
-	return func(txMsg *tx.StdSignMsg) *tx.StdSignMsg {
-		txMsg.Sequence = seq
-		txMsg.AccountNumber = accountNum
-		return txMsg
-	}
-}
-
 func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCommitResult, error) {
 	// prepare message to sign
 	signMsg := &tx.StdSignMsg{
@@ -116,11 +101,12 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCo
 		}
 	}
 
-	// Hex encoded signed transaction, ready to be posted to BncChain API
-	hexTx, err := c.keyManager.Sign(*signMsg)
+	rawBz, err := c.keyManager.Sign(*signMsg)
 	if err != nil {
 		return nil, err
 	}
+	// Hex encoded signed transaction, ready to be posted to BncChain API
+	hexTx := []byte(hex.EncodeToString(rawBz))
 	param := map[string]string{}
 	if sync {
 		param["sync"] = "true"

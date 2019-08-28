@@ -29,5 +29,4 @@ func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sy
 	}
 
 	return &CancelOrderResult{*commit}, nil
-
 }

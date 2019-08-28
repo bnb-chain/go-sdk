@@ -14,7 +14,7 @@ const (
 
 type SetAccountFlagsMsg struct {
 	From  types.AccAddress `json:"from"`
-	Flags uint64 `json:"flags"`
+	Flags uint64           `json:"flags"`
 }
 
 func NewSetAccountFlagsMsg(from types.AccAddress, flags uint64) SetAccountFlagsMsg {

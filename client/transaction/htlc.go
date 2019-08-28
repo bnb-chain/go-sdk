@@ -24,10 +24,6 @@ func (c *client) HTLT(recipient types.AccAddress, recipientOtherChain []byte, ra
 		heightSpan,
 		crossChain,
 	)
-	err := htltMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(htltMsg, sync, options...)
 	if err != nil {
 		return nil, err
@@ -48,10 +44,6 @@ func (c *client) DepositHTLT(recipient types.AccAddress, randomNumberHash []byte
 		outAmount,
 		randomNumberHash,
 	)
-	err := depositHTLTMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(depositHTLTMsg, sync, options...)
 	if err != nil {
 		return nil, err
@@ -70,10 +62,6 @@ func (c *client) ClaimHTLT(randomNumberHash []byte, randomNumber []byte, sync bo
 		randomNumberHash,
 		randomNumber,
 	)
-	err := claimHTLTMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(claimHTLTMsg, sync, options...)
 	if err != nil {
 		return nil, err
@@ -91,10 +79,6 @@ func (c *client) RefundHTLT(randomNumberHash []byte, sync bool, options ...Optio
 		fromAddr,
 		randomNumberHash,
 	)
-	err := refundHTLTMsg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
 	commit, err := c.broadcastMsg(refundHTLTMsg, sync, options...)
 	if err != nil {
 		return nil, err

@@ -4,15 +4,27 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/keys"
+	gtypes "github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
+)
+
+type SyncType int
+
+const (
+	Async SyncType = iota
+	Sync
+	Commit
 )
 
 const (
-	AccountStoreName = "acc"
-	ParamABCIPrefix  = "param"
-	TimeLockMsgRoute = "timelock"
+	AccountStoreName    = "acc"
+	ParamABCIPrefix     = "param"
+	TimeLockMsgRoute    = "timelock"
 	AtomicSwapStoreName = "atomic_swap"
 
 	TimeLockrcNotFoundErrorCode = 458760
@@ -38,6 +50,11 @@ type DexClient interface {
 	GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error)
 	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.HexData, error)
 	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.HexData, error)
+
+	SetKeyManager(k keys.KeyManager)
+	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -470,4 +487,195 @@ func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int6
 		return nil, err
 	}
 	return result, nil
+}
+
+func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	fromCoins := types.Coins{}
+	for _, t := range transfers {
+		t.Coins = t.Coins.Sort()
+		fromCoins = fromCoins.Plus(t.Coins)
+	}
+	sendMsg := msg.CreateSendMsg(fromAddr, fromCoins, transfers)
+	return c.broadcast(sendMsg, syncType, options...)
+
+}
+
+func (c *HTTP) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
+		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
+	}
+	fromAddr := c.key.GetAddr()
+	newOrderMsg := msg.NewCreateOrderMsg(
+		fromAddr,
+		"",
+		op,
+		common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol),
+		price,
+		quantity,
+	)
+	return c.broadcast(newOrderMsg, syncType, options...)
+}
+
+func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
+		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
+	}
+	if refId == "" {
+		return nil, fmt.Errorf("OrderId or Order RefId is missing. ")
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	cancelOrderMsg := msg.NewCancelOrderMsg(fromAddr, common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol), refId)
+	return c.broadcast(cancelOrderMsg, syncType, options...)
+}
+
+func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
+	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	htltMsg := msg.NewHTLTMsg(
+		fromAddr,
+		recipient,
+		recipientOtherChain,
+		randomNumberHash,
+		timestamp,
+		outAmount,
+		expectedIncome,
+		heightSpan,
+		crossChain,
+	)
+	return c.broadcast(htltMsg, syncType, options...)
+}
+
+func (c *HTTP) DepositHTLT(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coins,
+	syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	depositHTLTMsg := msg.NewDepositHTLTMsg(
+		fromAddr,
+		recipient,
+		outAmount,
+		randomNumberHash,
+	)
+	return c.broadcast(depositHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) ClaimHTLT(randomNumberHash []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	claimHTLTMsg := msg.NewClaimHTLTMsg(
+		fromAddr,
+		randomNumberHash,
+		randomNumber,
+	)
+	return c.broadcast(claimHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) RefundHTLT(randomNumberHash []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	refundHTLTMsg := msg.NewRefundHTLTMsg(
+		fromAddr,
+		randomNumberHash,
+	)
+	return c.broadcast(refundHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	signBz, err := c.sign(m, options...)
+	if err != nil {
+		return nil, err
+	}
+	switch syncType {
+	case Async:
+		return c.BroadcastTxAsync(signBz)
+	case Sync:
+		return c.BroadcastTxSync(signBz)
+	case Commit:
+		commitRes, err := c.BroadcastTxCommit(signBz)
+		if err != nil {
+			return nil, err
+		}
+		if commitRes.CheckTx.IsErr() {
+			return &core_types.ResultBroadcastTx{
+				Code: commitRes.CheckTx.Code,
+				Log:  commitRes.CheckTx.Log,
+				Hash: commitRes.Hash,
+				Data: commitRes.CheckTx.Data,
+			}, nil
+		}
+		return &core_types.ResultBroadcastTx{
+			Code: commitRes.DeliverTx.Code,
+			Log:  commitRes.DeliverTx.Log,
+			Hash: commitRes.Hash,
+			Data: commitRes.DeliverTx.Data,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unknown synctype")
+	}
+}
+
+func (c *HTTP) sign(m msg.Msg, options ...tx.Option) ([]byte, error) {
+	if c.key == nil {
+		return nil, fmt.Errorf("keymanager is missing, use SetKeyManager to set key")
+	}
+	// prepare message to sign
+	chainID := gtypes.ProdChainID
+	if types.Network != types.ProdNetwork {
+		chainID = gtypes.TestnetChainID
+	}
+	signMsg := &tx.StdSignMsg{
+		ChainID:       chainID,
+		AccountNumber: -1,
+		Sequence:      -1,
+		Memo:          "",
+		Msgs:          []msg.Msg{m},
+		Source:        tx.Source,
+	}
+
+	for _, op := range options {
+		signMsg = op(signMsg)
+	}
+
+	if signMsg.Sequence == -1 || signMsg.AccountNumber == -1 {
+		fromAddr := c.key.GetAddr()
+		acc, err := c.GetAccount(fromAddr)
+		if err != nil {
+			return nil, err
+		}
+		signMsg.Sequence = acc.GetSequence()
+		signMsg.AccountNumber = acc.GetAccountNumber()
+	}
+
+	// special logic for createOrder, to save account query
+	if orderMsg, ok := m.(msg.CreateOrderMsg); ok {
+		orderMsg.ID = msg.GenerateOrderID(signMsg.Sequence+1, c.key.GetAddr())
+		signMsg.Msgs[0] = orderMsg
+	}
+
+	for _, m := range signMsg.Msgs {
+		if err := m.ValidateBasic(); err != nil {
+			return nil, err
+		}
+	}
+	return c.key.Sign(*signMsg)
 }

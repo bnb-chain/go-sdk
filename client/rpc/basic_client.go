@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+	"github.com/binance-chain/go-sdk/keys"
 	"time"
 
 	"github.com/pkg/errors"
@@ -42,6 +43,8 @@ func NewRPCClient(nodeURI string, network ntypes.ChainNetwork) *HTTP {
 
 type HTTP struct {
 	*WSEvents
+
+	key keys.KeyManager
 }
 
 // NewHTTP takes a remote endpoint in the form tcp://<host>:<port>
@@ -196,4 +199,8 @@ func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 		return nil, errors.Errorf(resp.Log)
 	}
 	return resp.Value, nil
+}
+
+func (c *HTTP) SetKeyManager(k keys.KeyManager) {
+	c.key = k
 }

@@ -46,7 +46,6 @@ func NewParams(purpose, coinType, account uint32, change bool, addressIdx uint32
 	}
 }
 
-
 // NewBinanceBIP44Params creates a BIP 44 parameter object from the params:
 // m / 44' / 714' / account' / 0 / address_index
 // The fixed parameters (purpose', coin_type', and change) are determined by what was used in the binance ledger app.
