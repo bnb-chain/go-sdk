@@ -111,9 +111,9 @@ type AtomicSwap struct {
 	Status       SwapStatus `json:"status"`
 }
 
-// Params for query 'custom/atomicswap/swaphash'
-type QuerySwapByHashParams struct {
-	RandomNumberHash HexData
+// Params for query 'custom/atomicswap/swapid'
+type QuerySwapByID struct {
+	SwapID HexData
 }
 
 // Params for query 'custom/atomicswap/swapcreator'

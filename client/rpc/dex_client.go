@@ -47,7 +47,7 @@ type DexClient interface {
 	GetProposal(proposalId int64) (types.Proposal, error)
 	GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error)
 	GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLockRecord, error)
-	GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error)
+	GetSwapByID(swapID types.HexData) (types.AtomicSwap, error)
 	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.HexData, error)
 	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.HexData, error)
 
@@ -393,16 +393,16 @@ func (c *HTTP) existsCC(symbol string) bool {
 	return true
 }
 
-func (c *HTTP) GetSwapByHash(randomNumberHash types.HexData) (types.AtomicSwap, error) {
-	params := types.QuerySwapByHashParams{
-		RandomNumberHash: randomNumberHash,
+func (c *HTTP) GetSwapByID(swapID types.HexData) (types.AtomicSwap, error) {
+	params := types.QuerySwapByID{
+		SwapID: swapID,
 	}
 	bz, err := c.cdc.MarshalJSON(params)
 	if err != nil {
 		return types.AtomicSwap{}, err
 	}
 
-	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swaphash"), bz)
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapid"), bz)
 	if err != nil {
 		return types.AtomicSwap{}, err
 	}
@@ -447,12 +447,12 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) (
 	if len(resp.Response.GetValue()) == 0 {
 		return nil, fmt.Errorf("zero records")
 	}
-	var result []types.HexData
-	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
+	var swapIDList []types.HexData
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &swapIDList)
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return swapIDList, nil
 }
 
 func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.HexData, error) {
@@ -481,12 +481,12 @@ func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int6
 	if len(resp.Response.GetValue()) == 0 {
 		return nil, fmt.Errorf("zero records")
 	}
-	var result []types.HexData
-	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &result)
+	var swapIDList []types.HexData
+	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &swapIDList)
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return swapIDList, nil
 }
 
 func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -540,7 +540,7 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 	return c.broadcast(cancelOrderMsg, syncType, options...)
 }
 
-func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain []byte, randomNumberHash []byte, timestamp int64,
+func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain []byte, randomNumberHash []byte, timestamp int64,
 	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -550,6 +550,7 @@ func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain []byte, rand
 		fromAddr,
 		recipient,
 		recipientOtherChain,
+		senderOtherChain,
 		randomNumberHash,
 		timestamp,
 		outAmount,
@@ -560,7 +561,7 @@ func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain []byte, rand
 	return c.broadcast(htltMsg, syncType, options...)
 }
 
-func (c *HTTP) DepositHTLT(recipient types.AccAddress, randomNumberHash []byte, outAmount types.Coins,
+func (c *HTTP) DepositHTLT(swapID []byte, outAmount types.Coins,
 	syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -568,34 +569,33 @@ func (c *HTTP) DepositHTLT(recipient types.AccAddress, randomNumberHash []byte, 
 	fromAddr := c.key.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
-		recipient,
+		swapID,
 		outAmount,
-		randomNumberHash,
 	)
 	return c.broadcast(depositHTLTMsg, syncType, options...)
 }
 
-func (c *HTTP) ClaimHTLT(randomNumberHash []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
 	fromAddr := c.key.GetAddr()
 	claimHTLTMsg := msg.NewClaimHTLTMsg(
 		fromAddr,
-		randomNumberHash,
+		swapID,
 		randomNumber,
 	)
 	return c.broadcast(claimHTLTMsg, syncType, options...)
 }
 
-func (c *HTTP) RefundHTLT(randomNumberHash []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
 	fromAddr := c.key.GetAddr()
 	refundHTLTMsg := msg.NewRefundHTLTMsg(
 		fromAddr,
-		randomNumberHash,
+		swapID,
 	)
 	return c.broadcast(refundHTLTMsg, syncType, options...)
 }

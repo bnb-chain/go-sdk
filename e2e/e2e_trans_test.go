@@ -56,10 +56,11 @@ func TestTransProcess(t *testing.T) {
 	timestamp := int64(time.Now().Unix())
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
 	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
+	senderOtherChain, _ := hex.DecodeString("833914c3A745d924bf71d98F9F9Ae126993E3C88")
 	outAmount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
 	inAmountOtherChain := "10000:BNB"
 	heightSpan := int64(1000)
-	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
+	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	claimHashTimerLockTransfer, err := client.ClaimHTLT(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
@@ -70,7 +71,7 @@ func TestTransProcess(t *testing.T) {
 	timestamp = int64(time.Now().Unix())
 	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
 	heightSpan = int64(360)
-	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
+	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	//client.SubscribeBlockHeightEvent()
@@ -264,8 +265,8 @@ func TestTransProcess(t *testing.T) {
 
 func TestAtomicSwap(t *testing.T) {
 	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
-	hash, _ := hex.DecodeString("bf70f0b578960161dc10de57e46f2e0030a7291a522d63f14bf1553fcf9660ec")
-	swap, err := c.GetSwapByHash(hash)
+	swapID, _ := hex.DecodeString("7E7D73705A5F540BCB9B693F8BDAF2F8D6923CBBF4877EF1DFB78F8C645BCA1E")
+	swap, err := c.GetSwapByID(swapID)
 	assert.NoError(t, err)
 	fmt.Println(swap.From)
 
