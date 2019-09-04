@@ -10,7 +10,7 @@ type HTLTResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain []byte, randomNumberHash []byte, timestamp int64,
+func (c *client) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
 	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	htltMsg := msg.NewHTLTMsg(

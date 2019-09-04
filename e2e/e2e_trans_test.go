@@ -55,8 +55,8 @@ func TestTransProcess(t *testing.T) {
 	randomNumber, _ := hex.DecodeString("9d28f2c55981b9d1e6e4e9bcba11ac43dff56e521a53acbf55ff303b9adb7986")
 	timestamp := int64(time.Now().Unix())
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
-	recipientOtherChain, _ := hex.DecodeString("491e71b619878c083eaf2894718383c7eb15eb17")
-	senderOtherChain, _ := hex.DecodeString("833914c3A745d924bf71d98F9F9Ae126993E3C88")
+	recipientOtherChain := "0x491e71b619878c083eaf2894718383c7eb15eb17"
+	senderOtherChain := "0x833914c3A745d924bf71d98F9F9Ae126993E3C88"
 	outAmount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
 	inAmountOtherChain := "10000:BNB"
 	heightSpan := int64(1000)
@@ -265,7 +265,7 @@ func TestTransProcess(t *testing.T) {
 
 func TestAtomicSwap(t *testing.T) {
 	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
-	swapID, _ := hex.DecodeString("7E7D73705A5F540BCB9B693F8BDAF2F8D6923CBBF4877EF1DFB78F8C645BCA1E")
+	swapID, _ := hex.DecodeString("f6ff65e6871b6601f14f15258191d5197cf191d5a44659237bbe0db06b494956")
 	swap, err := c.GetSwapByID(swapID)
 	assert.NoError(t, err)
 	fmt.Println(swap.From)
