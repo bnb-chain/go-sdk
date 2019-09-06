@@ -56,6 +56,12 @@ type DexClient interface {
 	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
+		outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount types.Coins,
+		syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
@@ -522,6 +528,66 @@ func (c *HTTP) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, pr
 		quantity,
 	)
 	return c.broadcast(newOrderMsg, syncType, options...)
+}
+
+func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
+	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	htltMsg := msg.NewHTLTMsg(
+		fromAddr,
+		recipient,
+		recipientOtherChain,
+		senderOtherChain,
+		randomNumberHash,
+		timestamp,
+		outAmount,
+		expectedIncome,
+		heightSpan,
+		crossChain,
+	)
+	return c.broadcast(htltMsg, syncType, options...)
+}
+
+func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount types.Coins,
+	syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	depositHTLTMsg := msg.NewDepositHTLTMsg(
+		fromAddr,
+		swapID,
+		outAmount,
+	)
+	return c.broadcast(depositHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	claimHTLTMsg := msg.NewClaimHTLTMsg(
+		fromAddr,
+		swapID,
+		randomNumber,
+	)
+	return c.broadcast(claimHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	refundHTLTMsg := msg.NewRefundHTLTMsg(
+		fromAddr,
+		swapID,
+	)
+	return c.broadcast(refundHTLTMsg, syncType, options...)
 }
 
 func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
