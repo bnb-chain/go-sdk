@@ -1,6 +1,9 @@
 # Changelog
 
-## latest
+## v1.1.2
+* [\#88](https://github.com/binance-chain/go-sdk/pull/88) [RPC] wrap error for abci query when abci code is not 0
+
+## v1.1.1
 IMPROVEMENT
 * [\#87](https://github.com/binance-chain/go-sdk/pull/87) [RPC] distinguish not found error for get timelock rpc
 * [\#84](https://github.com/binance-chain/go-sdk/pull/84) [RPC] change interface of get timelock
