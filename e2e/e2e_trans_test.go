@@ -57,10 +57,10 @@ func TestTransProcess(t *testing.T) {
 	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
 	recipientOtherChain := "0x491e71b619878c083eaf2894718383c7eb15eb17"
 	senderOtherChain := "0x833914c3A745d924bf71d98F9F9Ae126993E3C88"
-	outAmount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
+	amount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
 	inAmountOtherChain := "10000:BNB"
 	heightSpan := int64(1000)
-	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
+	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	claimHashTimerLockTransfer, err := client.ClaimHTLT(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
@@ -71,7 +71,7 @@ func TestTransProcess(t *testing.T) {
 	timestamp = int64(time.Now().Unix())
 	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
 	heightSpan = int64(360)
-	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, outAmount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
+	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
 	assert.NoError(t, err)
 	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
 	//client.SubscribeBlockHeightEvent()

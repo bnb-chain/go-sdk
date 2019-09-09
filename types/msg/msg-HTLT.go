@@ -6,7 +6,6 @@ import (
 
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/tendermint/tendermint/crypto"
-	cmm "github.com/tendermint/tendermint/libs/common"
 )
 
 const (
@@ -37,7 +36,7 @@ type HTLTMsg struct {
 	To                  types.AccAddress `json:"to"`
 	RecipientOtherChain string           `json:"recipient_other_chain"`
 	SenderOtherChain    string           `json:"sender_other_chain"`
-	RandomNumberHash    cmm.HexBytes     `json:"random_number_hash"`
+	RandomNumberHash    types.SwapBytes  `json:"random_number_hash"`
 	Timestamp           int64            `json:"timestamp"`
 	Amount              types.Coins      `json:"amount"`
 	ExpectedIncome      string           `json:"expected_income"`
@@ -45,7 +44,7 @@ type HTLTMsg struct {
 	CrossChain          bool             `json:"cross_chain"`
 }
 
-func NewHTLTMsg(from, to types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash cmm.HexBytes, timestamp int64,
+func NewHTLTMsg(from, to types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash types.SwapBytes, timestamp int64,
 	amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool) HTLTMsg {
 	return HTLTMsg{
 		From:                from,
@@ -121,7 +120,7 @@ func (msg HTLTMsg) GetSignBytes() []byte {
 
 type DepositHTLTMsg struct {
 	From   types.AccAddress `json:"from"`
-	SwapID cmm.HexBytes     `json:"swap_id"`
+	SwapID types.SwapBytes  `json:"swap_id"`
 	Amount types.Coins      `json:"amount"`
 }
 
@@ -168,8 +167,8 @@ func (msg DepositHTLTMsg) GetSignBytes() []byte {
 
 type ClaimHTLTMsg struct {
 	From         types.AccAddress `json:"from"`
-	SwapID       cmm.HexBytes     `json:"swap_id"`
-	RandomNumber cmm.HexBytes     `json:"random_number"`
+	SwapID       types.SwapBytes  `json:"swap_id"`
+	RandomNumber types.SwapBytes  `json:"random_number"`
 }
 
 func NewClaimHTLTMsg(from types.AccAddress, swapID, randomNumber []byte) ClaimHTLTMsg {
@@ -213,7 +212,7 @@ func (msg ClaimHTLTMsg) GetSignBytes() []byte {
 
 type RefundHTLTMsg struct {
 	From   types.AccAddress `json:"from"`
-	SwapID cmm.HexBytes     `json:"swap_id"`
+	SwapID types.SwapBytes  `json:"swap_id"`
 }
 
 func NewRefundHTLTMsg(from types.AccAddress, swapID []byte) RefundHTLTMsg {

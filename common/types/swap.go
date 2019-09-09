@@ -1,9 +1,9 @@
 package types
 
 import (
+	"encoding/hex"
 	"encoding/json"
-
-	cmm "github.com/tendermint/tendermint/libs/common"
+	"fmt"
 )
 
 type SwapStatus byte
@@ -55,6 +55,38 @@ func (status *SwapStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type SwapBytes []byte
+
+func (bz SwapBytes) Marshal() ([]byte, error) {
+	return bz, nil
+}
+
+func (bz *SwapBytes) Unmarshal(data []byte) error {
+	*bz = data
+	return nil
+}
+
+func (bz SwapBytes) MarshalJSON() ([]byte, error) {
+	s := hex.EncodeToString(bz)
+	jbz := make([]byte, len(s)+2)
+	jbz[0] = '"'
+	copy(jbz[1:], []byte(s))
+	jbz[len(jbz)-1] = '"'
+	return jbz, nil
+}
+
+func (bz *SwapBytes) UnmarshalJSON(data []byte) error {
+	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
+		return fmt.Errorf("Invalid hex string: %s", data)
+	}
+	bz2, err := hex.DecodeString(string(data[1 : len(data)-1]))
+	if err != nil {
+		return err
+	}
+	*bz = bz2
+	return nil
+}
+
 type AtomicSwap struct {
 	From      AccAddress `json:"from"`
 	To        AccAddress `json:"to"`
@@ -64,9 +96,9 @@ type AtomicSwap struct {
 	ExpectedIncome      string `json:"expected_income"`
 	RecipientOtherChain string `json:"recipient_other_chain"`
 
-	RandomNumberHash cmm.HexBytes `json:"random_number_hash"`
-	RandomNumber     cmm.HexBytes `json:"random_number"`
-	Timestamp        int64        `json:"timestamp"`
+	RandomNumberHash SwapBytes `json:"random_number_hash"`
+	RandomNumber     SwapBytes `json:"random_number"`
+	Timestamp        int64     `json:"timestamp"`
 
 	CrossChain bool `json:"cross_chain"`
 
@@ -78,7 +110,7 @@ type AtomicSwap struct {
 
 // Params for query 'custom/atomicswap/swapid'
 type QuerySwapByID struct {
-	SwapID cmm.HexBytes
+	SwapID SwapBytes
 }
 
 // Params for query 'custom/atomicswap/swapcreator'

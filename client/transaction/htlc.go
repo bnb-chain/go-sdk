@@ -11,7 +11,7 @@ type HTLTResult struct {
 }
 
 func (c *client) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error) {
+	amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	htltMsg := msg.NewHTLTMsg(
 		fromAddr,
@@ -20,7 +20,7 @@ func (c *client) HTLT(recipient types.AccAddress, recipientOtherChain, senderOth
 		senderOtherChain,
 		randomNumberHash,
 		timestamp,
-		outAmount,
+		amount,
 		expectedIncome,
 		heightSpan,
 		crossChain,
@@ -36,13 +36,13 @@ type DepositHTLTResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount types.Coins,
+func (c *client) DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins,
 	sync bool, options ...Option) (*DepositHTLTResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
 		swapID,
-		outAmount,
+		amount,
 	)
 	commit, err := c.broadcastMsg(depositHTLTMsg, sync, options...)
 	if err != nil {

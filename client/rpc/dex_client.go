@@ -10,7 +10,6 @@ import (
 	gtypes "github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	cmm "github.com/tendermint/tendermint/libs/common"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -48,17 +47,17 @@ type DexClient interface {
 	GetProposal(proposalId int64) (types.Proposal, error)
 	GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error)
 	GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLockRecord, error)
-	GetSwapByID(swapID cmm.HexBytes) (types.AtomicSwap, error)
-	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]cmm.HexBytes, error)
-	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]cmm.HexBytes, error)
+	GetSwapByID(swapID types.SwapBytes) (types.AtomicSwap, error)
+	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
+	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
 
 	SetKeyManager(k keys.KeyManager)
 	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
-		outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount types.Coins,
+		amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins,
 		syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -400,7 +399,7 @@ func (c *HTTP) existsCC(symbol string) bool {
 	return true
 }
 
-func (c *HTTP) GetSwapByID(swapID cmm.HexBytes) (types.AtomicSwap, error) {
+func (c *HTTP) GetSwapByID(swapID types.SwapBytes) (types.AtomicSwap, error) {
 	params := types.QuerySwapByID{
 		SwapID: swapID,
 	}
@@ -427,7 +426,7 @@ func (c *HTTP) GetSwapByID(swapID cmm.HexBytes) (types.AtomicSwap, error) {
 	return result, nil
 }
 
-func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]cmm.HexBytes, error) {
+func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.SwapBytes, error) {
 	addr, err := types.AccAddressFromBech32(creatorAddr)
 	if err != nil {
 		return nil, err
@@ -454,7 +453,7 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) (
 	if len(resp.Response.GetValue()) == 0 {
 		return nil, fmt.Errorf("zero records")
 	}
-	var swapIDList []cmm.HexBytes
+	var swapIDList []types.SwapBytes
 	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &swapIDList)
 	if err != nil {
 		return nil, err
@@ -462,7 +461,7 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) (
 	return swapIDList, nil
 }
 
-func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]cmm.HexBytes, error) {
+func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.SwapBytes, error) {
 	recipient, err := types.AccAddressFromBech32(recipientAddr)
 	if err != nil {
 		return nil, err
@@ -488,7 +487,7 @@ func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int6
 	if len(resp.Response.GetValue()) == 0 {
 		return nil, fmt.Errorf("zero records")
 	}
-	var swapIDList []cmm.HexBytes
+	var swapIDList []types.SwapBytes
 	err = c.cdc.UnmarshalJSON(resp.Response.GetValue(), &swapIDList)
 	if err != nil {
 		return nil, err
@@ -531,7 +530,7 @@ func (c *HTTP) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, pr
 }
 
 func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
-	outAmount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
@@ -543,7 +542,7 @@ func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOther
 		senderOtherChain,
 		randomNumberHash,
 		timestamp,
-		outAmount,
+		amount,
 		expectedIncome,
 		heightSpan,
 		crossChain,
@@ -551,7 +550,7 @@ func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOther
 	return c.broadcast(htltMsg, syncType, options...)
 }
 
-func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount types.Coins,
+func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins,
 	syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -560,7 +559,7 @@ func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, outAmount 
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
 		swapID,
-		outAmount,
+		amount,
 	)
 	return c.broadcast(depositHTLTMsg, syncType, options...)
 }
