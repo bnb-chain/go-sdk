@@ -54,6 +54,9 @@ func (c *HTTP) ListAllTokens(offset int, limit int) ([]types.Token, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !result.Response.IsOK(){
+		return nil, fmt.Errorf(result.Response.Log)
+	}
 	bz := result.Response.GetValue()
 	tokens := make([]types.Token, 0)
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &tokens)
@@ -68,6 +71,9 @@ func (c *HTTP) GetTokenInfo(symbol string) (*types.Token, error) {
 	result, err := c.ABCIQuery(path, nil)
 	if err != nil {
 		return nil, err
+	}
+	if !result.Response.IsOK(){
+		return nil, fmt.Errorf(result.Response.Log)
 	}
 	bz := result.Response.GetValue()
 	token := new(types.Token)
@@ -185,6 +191,9 @@ func (c *HTTP) GetFee() ([]types.FeeParam, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !rawFee.Response.IsOK(){
+		return nil, fmt.Errorf(rawFee.Response.Log)
+	}
 	var fees []types.FeeParam
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawFee.Response.GetValue(), &fees)
 	return fees, err
@@ -197,6 +206,9 @@ func (c *HTTP) GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOr
 	rawOrders, err := c.ABCIQuery(fmt.Sprintf("dex/openorders/%s/%s", pair, addr), nil)
 	if err != nil {
 		return nil, err
+	}
+	if !rawOrders.Response.IsOK(){
+		return nil, fmt.Errorf(rawOrders.Response.Log)
 	}
 	bz := rawOrders.Response.GetValue()
 	openOrders := make([]types.OpenOrder, 0)
@@ -221,6 +233,9 @@ func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, erro
 	if err != nil {
 		return nil, err
 	}
+	if !rawTradePairs.Response.IsOK(){
+		return nil, fmt.Errorf(rawTradePairs.Response.Log)
+	}
 	pairs := make([]types.TradingPair, 0)
 	if rawTradePairs.Response.GetValue() == nil {
 		return pairs, nil
@@ -239,6 +254,9 @@ func (c *HTTP) GetDepth(tradePair string, level int) (*types.OrderBook, error) {
 	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s/%d", tradePair, level), nil)
 	if err != nil {
 		return nil, err
+	}
+	if !rawDepth.Response.IsOK(){
+		return nil, fmt.Errorf(rawDepth.Response.Log)
 	}
 	var ob types.OrderBook
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawDepth.Response.GetValue(), &ob)
@@ -267,6 +285,9 @@ func (c *HTTP) GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, erro
 	}
 	if rawRecords == nil {
 		return nil, fmt.Errorf("zero records")
+	}
+	if !rawRecords.Response.IsOK(){
+		return nil, fmt.Errorf(rawRecords.Response.Log)
 	}
 	records := make([]types.TimeLockRecord, 0)
 
@@ -327,6 +348,9 @@ func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]typ
 	if err != nil {
 		return nil, err
 	}
+	if !rawProposals.Response.IsOK(){
+		return nil, fmt.Errorf(rawProposals.Response.Log)
+	}
 	proposals := make([]types.Proposal, 0)
 
 	err = c.cdc.UnmarshalJSON(rawProposals.Response.GetValue(), &proposals)
@@ -341,14 +365,16 @@ func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(bz))
-	rawProposals, err := c.ABCIQuery("custom/gov/proposal", bz)
+	rawProposal, err := c.ABCIQuery("custom/gov/proposal", bz)
 	if err != nil {
 		return nil, err
 	}
+	if !rawProposal.Response.IsOK(){
+		return nil, fmt.Errorf(rawProposal.Response.Log)
+	}
 	var proposal types.Proposal
 
-	err = c.cdc.UnmarshalJSON(rawProposals.Response.GetValue(), &proposal)
+	err = c.cdc.UnmarshalJSON(rawProposal.Response.GetValue(), &proposal)
 	return proposal, err
 }
 
