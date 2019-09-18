@@ -37,7 +37,7 @@ type TransactionClient interface {
 	SetAccountFlags(flags uint64, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 	AddAccountFlags(flagOptions []types.FlagOption, sync bool, options ...Option) (*SetAccountFlagsResult, error)
 	HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64, amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, sync bool, options ...Option) (*HTLTResult, error)
-	DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins, sync bool, options ...Option) (*DepositHTLTResult, error)
+	DepositHTLT(swapID []byte, amount types.Coins, sync bool, options ...Option) (*DepositHTLTResult, error)
 	ClaimHTLT(swapID []byte, randomNumber []byte, sync bool, options ...Option) (*ClaimHTLTResult, error)
 	RefundHTLT(swapID []byte, sync bool, options ...Option) (*RefundHTLTResult, error)
 

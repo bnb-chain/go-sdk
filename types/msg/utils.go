@@ -3,9 +3,10 @@ package msg
 import (
 	"encoding/binary"
 	"encoding/json"
+	"strings"
+
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
-	"strings"
 )
 
 // SortJSON takes any JSON and returns it sorted by keys. Also, all white-spaces

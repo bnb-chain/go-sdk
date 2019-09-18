@@ -5,9 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/binance-chain/go-sdk/client/transaction"
-	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types/msg"
 	"math/rand"
 	"os/exec"
 	"sync"
@@ -19,7 +16,10 @@ import (
 	"github.com/tendermint/tendermint/types"
 
 	"github.com/binance-chain/go-sdk/client/rpc"
+	"github.com/binance-chain/go-sdk/client/transaction"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/keys"
+	"github.com/binance-chain/go-sdk/types/msg"
 )
 
 var (

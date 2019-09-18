@@ -36,7 +36,7 @@ type DepositHTLTResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins,
+func (c *client) DepositHTLT(swapID []byte, amount types.Coins,
 	sync bool, options ...Option) (*DepositHTLTResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(

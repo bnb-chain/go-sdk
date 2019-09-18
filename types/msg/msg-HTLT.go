@@ -120,8 +120,8 @@ func (msg HTLTMsg) GetSignBytes() []byte {
 
 type DepositHTLTMsg struct {
 	From   types.AccAddress `json:"from"`
-	SwapID types.SwapBytes  `json:"swap_id"`
 	Amount types.Coins      `json:"amount"`
+	SwapID types.SwapBytes  `json:"swap_id"`
 }
 
 func NewDepositHTLTMsg(from types.AccAddress, swapID []byte, amount types.Coins) DepositHTLTMsg {

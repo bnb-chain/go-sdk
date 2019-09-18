@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"fmt"
-	"github.com/binance-chain/go-sdk/keys"
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,6 +13,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 
 	ntypes "github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 

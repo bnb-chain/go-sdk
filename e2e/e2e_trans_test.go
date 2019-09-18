@@ -1,8 +1,9 @@
 package e2e
 
 import (
-	"encoding/hex"
 	"fmt"
+	"github.com/binance-chain/go-sdk/client/rpc"
+	"github.com/tendermint/tendermint/crypto"
 	"strings"
 	"testing"
 	time2 "time"
@@ -12,7 +13,6 @@ import (
 	"github.com/tendermint/tendermint/types/time"
 
 	sdk "github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/client/rpc"
 	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/common"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
@@ -46,39 +46,11 @@ func TestTransProcess(t *testing.T) {
 	addFlags, err := client.AddAccountFlags([]ctypes.FlagOption{ctypes.TransferMemoCheckerFlag}, true)
 	assert.NoError(t, err)
 	fmt.Printf("Set account flags: %v \n", addFlags)
-	accn, _ := client.GetAccount(client.GetKeyManager().GetAddr().String())
+	accn,_:=client.GetAccount(client.GetKeyManager().GetAddr().String())
 	fmt.Println(accn)
-	setFlags, err := client.SetAccountFlags(0, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+1))
+	setFlags, err := client.SetAccountFlags(0, true)
 	assert.NoError(t, err)
 	fmt.Printf("Set account flags: %v \n", setFlags)
-
-	randomNumber, _ := hex.DecodeString("9d28f2c55981b9d1e6e4e9bcba11ac43dff56e521a53acbf55ff303b9adb7986")
-	timestamp := int64(time.Now().Unix())
-	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
-	recipientOtherChain := "0x491e71b619878c083eaf2894718383c7eb15eb17"
-	senderOtherChain := "0x833914c3A745d924bf71d98F9F9Ae126993E3C88"
-	amount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
-	inAmountOtherChain := "10000:BNB"
-	heightSpan := int64(1000)
-	hashTimerLockTransfer, err := client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+2))
-	assert.NoError(t, err)
-	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
-	claimHashTimerLockTransfer, err := client.ClaimHTLT(randomNumberHash, randomNumber, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+3))
-	assert.NoError(t, err)
-	fmt.Printf("Claim hash timer lock transfer: %v \n", claimHashTimerLockTransfer)
-
-	randomNumber, _ = hex.DecodeString("a9bb372e0076e70e3f85a6154963e8720c1a5111645b90fc7ab5baa3a81e5498")
-	timestamp = int64(time.Now().Unix())
-	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
-	heightSpan = int64(360)
-	hashTimerLockTransfer, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, inAmountOtherChain, heightSpan, true, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+4))
-	assert.NoError(t, err)
-	fmt.Printf("Hash timer lock transfer: %v \n", hashTimerLockTransfer)
-	//client.SubscribeBlockHeightEvent()
-	refundHashTimerLockTransfer, err := client.RefundHTLT(randomNumberHash, true, transaction.WithAcNumAndSequence(accn.Number, accn.Sequence+5))
-	fmt.Printf("Refund hash timer lock transfer: %v \n", refundHashTimerLockTransfer)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "is still not reached"))
 
 	//-----  Get account  -----------
 	account, err := client.GetAccount(testAccount1.String())
@@ -264,11 +236,71 @@ func TestTransProcess(t *testing.T) {
 }
 
 func TestAtomicSwap(t *testing.T) {
-	c := rpc.NewRPCClient("127.0.0.1:26657", ctypes.ProdNetwork)
-	swapID, _ := hex.DecodeString("f6ff65e6871b6601f14f15258191d5197cf191d5a44659237bbe0db06b494956")
+	mnemonic1 := "owner square swap resemble lift spawn hazard gift series jeans frozen client leave smooth soap quit appear bonus eagle omit again fetch rug trip"
+	mnemonic2 := "web auto pluck icon taxi cruise replace square trust grunt together hurdle sight island weasel share yard pelican demand reason diesel leaf choose biology"
+	baeUrl := "testnet-dex.binance.org"
+	keyManager, err := keys.NewMnemonicKeyManager(mnemonic1)
+	assert.NoError(t, err)
+	testAccount1 := keyManager.GetAddr()
+	testKeyManager2, err := keys.NewMnemonicKeyManager(mnemonic2)
+	assert.NoError(t, err)
+	testAccount2 := testKeyManager2.GetAddr()
+
+	client, err := sdk.NewDexClient(baeUrl, ctypes.TestNetwork, keyManager)
+	assert.NoError(t, err)
+
+	randomNumber := crypto.CRandBytes(32)
+	timestamp := int64(time.Now().Unix())
+	randomNumberHash := msg.CalculateRandomHash(randomNumber, timestamp)
+	recipientOtherChain := "0x491e71b619878c083eaf2894718383c7eb15eb17"
+	senderOtherChain := "0x833914c3A745d924bf71d98F9F9Ae126993E3C88"
+	amount := ctypes.Coins{ctypes.Coin{"BNB", 10000}}
+	expetedIncome := "10000:BNB"
+	heightSpan := int64(1000)
+	_, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, expetedIncome, heightSpan, true, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+	swapID := msg.CalculateSwapID(randomNumberHash, testAccount1, senderOtherChain)
+	_, err = client.ClaimHTLT(swapID, randomNumber, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+
+	randomNumber = crypto.CRandBytes(32)
+	timestamp = int64(time.Now().Unix())
+	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
+	heightSpan = int64(360)
+	_, err = client.HTLT(testAccount2, recipientOtherChain, senderOtherChain, randomNumberHash, timestamp, amount, expetedIncome, heightSpan, true, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+	swapID1 := msg.CalculateSwapID(randomNumberHash, testAccount1, senderOtherChain)
+	_, err = client.RefundHTLT(swapID1, true)
+	assert.Error(t, err)
+	time2.Sleep(2 * time2.Second)
+	assert.True(t, strings.Contains(err.Error(), "is still not reached"))
+
+	randomNumber = crypto.CRandBytes(32)
+	timestamp = int64(time.Now().Unix())
+	randomNumberHash = msg.CalculateRandomHash(randomNumber, timestamp)
+	amount = ctypes.Coins{ctypes.Coin{"BNB", 10000}}
+	expetedIncome = "1000:BTC-271"
+	heightSpan = int64(1000)
+	_, err = client.HTLT(testAccount2, "", "", randomNumberHash, timestamp, amount, expetedIncome, heightSpan, false, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+	swapID2 := msg.CalculateSwapID(randomNumberHash, testAccount1, "")
+	depositAmount := ctypes.Coins{ctypes.Coin{"BTC-271", 1000}}
+	client1, err := sdk.NewDexClient(baeUrl, ctypes.TestNetwork, testKeyManager2)
+	assert.NoError(t, err)
+	_, err = client1.DepositHTLT(swapID2, depositAmount, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+	_, err = client.ClaimHTLT(swapID2, randomNumber, true)
+	assert.NoError(t, err)
+	time2.Sleep(2 * time2.Second)
+
+	c := rpc.NewRPCClient("tcp://seed-pre-s3.binance.org:80", ctypes.TestNetwork)
 	swap, err := c.GetSwapByID(swapID)
 	assert.NoError(t, err)
-	fmt.Println(swap.From)
 
 	randomNumberHashList, err := c.GetSwapByCreator(swap.From.String(), 0, 100)
 	assert.NoError(t, err)
