@@ -7,9 +7,9 @@ import (
 	"math"
 	"strings"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/cbarraford/go-sdk/common/types"
 
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/cbarraford/go-sdk/common"
 )
 
 // TokenIssueMsg def

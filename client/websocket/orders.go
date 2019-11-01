@@ -3,7 +3,7 @@ package websocket
 import (
 	"encoding/json"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/cbarraford/go-sdk/common/types"
 )
 
 type OrderEvent struct {

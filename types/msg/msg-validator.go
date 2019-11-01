@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/cbarraford/go-sdk/common/types"
 	"github.com/tendermint/tendermint/crypto"
 )
 

@@ -3,8 +3,8 @@ package query
 import (
 	"encoding/json"
 
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/cbarraford/go-sdk/common"
+	"github.com/cbarraford/go-sdk/common/types"
 )
 
 // GetOpenOrders returns array of open orders

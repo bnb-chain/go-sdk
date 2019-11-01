@@ -8,18 +8,18 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/cosmos/go-bip39"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/sha3"
 
+	bip39 "github.com/cosmos/go-bip39"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/common/ledger"
-	"github.com/binance-chain/go-sdk/common/types"
-	ctypes "github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/common/uuid"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/cbarraford/go-sdk/common"
+	"github.com/cbarraford/go-sdk/common/ledger"
+	"github.com/cbarraford/go-sdk/common/types"
+	ctypes "github.com/cbarraford/go-sdk/common/types"
+	"github.com/cbarraford/go-sdk/common/uuid"
+	"github.com/cbarraford/go-sdk/types/tx"
 	"github.com/tendermint/tendermint/crypto"
 )
 
@@ -55,6 +55,14 @@ func NewKeyStoreKeyManager(file string, auth string) (KeyManager, error) {
 	k := keyManager{}
 	err := k.recoveryFromKeyStore(file, auth)
 	return &k, err
+}
+
+func NewKeyManagerPriv(priv crypto.PrivKey) KeyManager {
+	k := keyManager{
+		privKey: priv,
+		addr:    ctypes.AccAddress(priv.PubKey().Address()),
+	}
+	return &k
 }
 
 func NewPrivateKeyManager(priKey string) (KeyManager, error) {

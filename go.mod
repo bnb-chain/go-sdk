@@ -1,4 +1,4 @@
-module github.com/binance-chain/go-sdk
+module github.com/cbarraford/go-sdk
 
 require (
 	github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
@@ -32,3 +32,5 @@ require (
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
 
 replace github.com/zondax/ledger-go => github.com/binance-chain/ledger-go v0.9.1
+
+go 1.13

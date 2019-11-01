@@ -7,10 +7,8 @@ import (
 	"net/url"
 	"time"
 
-	"gopkg.in/resty.v1"
-
-	"github.com/binance-chain/go-sdk/types"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/cbarraford/go-sdk/types"
+	"github.com/cbarraford/go-sdk/types/tx"
 	"github.com/gorilla/websocket"
 )
 

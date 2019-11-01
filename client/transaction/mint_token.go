@@ -3,8 +3,8 @@ package transaction
 import (
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/cbarraford/go-sdk/types/msg"
+	"github.com/cbarraford/go-sdk/types/tx"
 )
 
 type MintTokenResult struct {
