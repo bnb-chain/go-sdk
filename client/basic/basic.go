@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 
+	resty "gopkg.in/resty.v1"
+
 	"github.com/cbarraford/go-sdk/types"
 	"github.com/cbarraford/go-sdk/types/tx"
 	"github.com/gorilla/websocket"

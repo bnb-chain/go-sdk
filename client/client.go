@@ -1,6 +1,8 @@
 package client
 
 import (
+	resty "gopkg.in/resty.v1"
+
 	"github.com/cbarraford/go-sdk/client/basic"
 	"github.com/cbarraford/go-sdk/client/query"
 	"github.com/cbarraford/go-sdk/client/transaction"
