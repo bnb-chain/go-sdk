@@ -23,13 +23,13 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://127.0.0.1:80"
+	nodeAddr           = "tcp://data-seed-pre-0-s3.binance.org:80"
 	badAddr            = "tcp://127.0.0.1:80"
-	testTxHash         = "A27C20143E6B7D8160B50883F81132C1DFD0072FF2C1FE71E0158FBD001E23E4"
-	testTxHeight       = 8669273
-	testAddress        = "tbnb1l6vgk5yyxcalm06gdsg55ay4pjkfueazkvwh58"
+	testTxHash         = "F45BAB1BA5B79609F7307A64AD1F84ECFAF73D1F2C2D010D17F41303BC1B00CA"
+	testTxHeight       = int64(47905085)
+	testAddress        = "tbnb1e803p76n4rtyeclef7pg3295nurwfuwsw8l36m"
 	testDelAddr        = "tbnb12hlquylu78cjylk5zshxpdj6hf3t0tahwjt3ex"
-	testTradePair      = "X00-243_BNB"
+	testTradePair      = "PPC-00A_BNB"
 	testTradeSymbol    = "000-0E1"
 	testTxStr          = "xxx"
 	mnemonic           = "test mnemonic"
@@ -194,7 +194,7 @@ func TestBlock(t *testing.T) {
 
 func TestBlockResults(t *testing.T) {
 	c := defaultClient()
-	block, err := c.BlockResults(nil)
+	block, err := c.BlockResults(&testTxHeight)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(block)
 	fmt.Println(string(bz))
@@ -468,7 +468,7 @@ func TestSendToken(t *testing.T) {
 	c.SetKeyManager(keyManager)
 	testacc, err := ctypes.AccAddressFromBech32(testAddress)
 	assert.NoError(t, err)
-	res, err := c.SendToken([]msg.Transfer{{testacc, []ctypes.Coin{{"BNB", 1000000}}}}, rpc.Commit, transaction.WithMemo("123"))
+	res, err := c.SendToken([]msg.Transfer{{testacc, []ctypes.Coin{{"BNB", 100000}}}}, rpc.Sync, transaction.WithMemo("123"))
 	assert.NoError(t, err)
 	bz, err := json.Marshal(res)
 	fmt.Println(string(bz))

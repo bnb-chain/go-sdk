@@ -20,8 +20,8 @@ import (
 // some parts, and swap them out them during the tests.
 type Client struct {
 	cmn.Service
-	client.ABCIClient
-	client.SignClient
+	rpc.ABCIClient
+	rpc.SignClient
 	client.HistoryClient
 	client.StatusClient
 	rpc.EventsClient
@@ -82,8 +82,8 @@ func (c Client) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client
 	return core.ABCIQuery(&rpctypes.Context{}, path, data, opts.Height, opts.Prove)
 }
 
-func (c Client) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
-	return core.BroadcastTxCommit(&rpctypes.Context{}, tx)
+func (c Client) BroadcastTxCommit(tx types.Tx) (*rpc.ResultBroadcastTxCommit, error) {
+	return &rpc.ResultBroadcastTxCommit{}, nil
 }
 
 func (c Client) BroadcastTxAsync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {

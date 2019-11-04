@@ -73,7 +73,7 @@ func newWSEvents(cdc *amino.Codec, remote, endpoint string) *WSEvents {
 		subscriptionsQuitMap: make(map[string]chan struct{}),
 		subscriptionsIdMap:   make(map[string]rpctypes.JSONRPCStringID),
 		subscriptionSet:      make(map[rpctypes.JSONRPCStringID]bool),
-		timeout:              defaultTimeout,
+		timeout:              DefaultTimeout,
 		responsesCh:          make(chan rpctypes.RPCResponse),
 		reconnect:            make(chan *WSClient),
 	}
@@ -306,8 +306,8 @@ func (w *WSEvents) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts cli
 	return abciQuery, err
 }
 
-func (w *WSEvents) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
-	txCommit := new(ctypes.ResultBroadcastTxCommit)
+func (w *WSEvents) BroadcastTxCommit(tx types.Tx) (*ResultBroadcastTxCommit, error) {
+	txCommit := new(ResultBroadcastTxCommit)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.BroadcastTxCommit(ctx, id, tx)
@@ -395,9 +395,9 @@ func (w *WSEvents) Block(height *int64) (*ctypes.ResultBlock, error) {
 	return block, err
 }
 
-func (w *WSEvents) BlockResults(height *int64) (*ctypes.ResultBlockResults, error) {
+func (w *WSEvents) BlockResults(height *int64) (*ResultBlockResults, error) {
 
-	block := new(ctypes.ResultBlockResults)
+	block := new(ResultBlockResults)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.BlockResults(ctx, id, height)
@@ -414,9 +414,9 @@ func (w *WSEvents) Commit(height *int64) (*ctypes.ResultCommit, error) {
 	return commit, err
 }
 
-func (w *WSEvents) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
+func (w *WSEvents) Tx(hash []byte, prove bool) (*ResultTx, error) {
 
-	tx := new(ctypes.ResultTx)
+	tx := new(ResultTx)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.Tx(ctx, id, hash, prove)
@@ -424,9 +424,9 @@ func (w *WSEvents) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
 	return tx, err
 }
 
-func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
+func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*ResultTxSearch, error) {
 
-	txs := new(ctypes.ResultTxSearch)
+	txs := new(ResultTxSearch)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.TxSearch(ctx, id, query, prove, page, perPage)
@@ -434,9 +434,9 @@ func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*ctype
 	return txs, err
 }
 
-func (w *WSEvents) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
+func (w *WSEvents) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
 
-	txs := new(ctypes.ResultTxSearch)
+	txs := new(ResultTxSearch)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.TxSearch(ctx, id, query, prove, page, perPage)
@@ -976,14 +976,14 @@ func makeHTTPDialer(remoteAddr string) (string, string, func(string, string) (ne
 	// replace / with . for http requests (kvstore domain)
 	trimmedAddress := strings.Replace(address, "/", ".", -1)
 	return clientProtocol, trimmedAddress, func(proto, addr string) (net.Conn, error) {
-		return net.DialTimeout(protocol, address, defaultTimeout)
+		return net.DialTimeout(protocol, address, DefaultTimeout)
 	}
 }
 
 // parse the indexed txs into an array of Info
-func FormatTxResults(cdc *amino.Codec, res []*ctypes.ResultTx) ([]tx.Info, error) {
+func FormatTxResults(cdc *amino.Codec, res []*ResultTx) ([]Info, error) {
 	var err error
-	out := make([]tx.Info, len(res))
+	out := make([]Info, len(res))
 	for i := range res {
 		out[i], err = formatTxResult(cdc, res[i])
 		if err != nil {
@@ -993,12 +993,12 @@ func FormatTxResults(cdc *amino.Codec, res []*ctypes.ResultTx) ([]tx.Info, error
 	return out, nil
 }
 
-func formatTxResult(cdc *amino.Codec, res *ctypes.ResultTx) (tx.Info, error) {
+func formatTxResult(cdc *amino.Codec, res *ResultTx) (Info, error) {
 	parsedTx, err := ParseTx(cdc, res.Tx)
 	if err != nil {
-		return tx.Info{}, err
+		return Info{}, err
 	}
-	return tx.Info{
+	return Info{
 		Hash:   res.Hash,
 		Height: res.Height,
 		Tx:     parsedTx,
