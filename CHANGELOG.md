@@ -1,4 +1,10 @@
 # Changelog
+## v2.0.0
+* [\#93](https://github.com/binance-chain/go-sdk/pull/93) [BREAKING] uprade to binance chain release 0.6.3
+
+## v1.1.3
+* [\#81](https://github.com/binance-chain/go-sdk/pull/81) [TX] support swap on a single chain 
+
 
 ## v1.1.2
 * [\#88](https://github.com/binance-chain/go-sdk/pull/88) [RPC] wrap error for abci query when abci code is not 0

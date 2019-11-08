@@ -312,6 +312,9 @@ func (w *WSEvents) BroadcastTxCommit(tx types.Tx) (*ResultBroadcastTxCommit, err
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.BroadcastTxCommit(ctx, id, tx)
 	}, wsClient, txCommit)
+	if err == nil {
+		txCommit.complement()
+	}
 	return txCommit, err
 }
 
@@ -402,6 +405,9 @@ func (w *WSEvents) BlockResults(height *int64) (*ResultBlockResults, error) {
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.BlockResults(ctx, id, height)
 	}, wsClient, block)
+	if err == nil {
+		block.complement()
+	}
 	return block, err
 }
 
@@ -421,6 +427,9 @@ func (w *WSEvents) Tx(hash []byte, prove bool) (*ResultTx, error) {
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.Tx(ctx, id, hash, prove)
 	}, wsClient, tx)
+	if err == nil {
+		tx.complement()
+	}
 	return tx, err
 }
 
@@ -431,6 +440,9 @@ func (w *WSEvents) TxSearch(query string, prove bool, page, perPage int) (*Resul
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
 		return wsClient.TxSearch(ctx, id, query, prove, page, perPage)
 	}, wsClient, txs)
+	if err == nil {
+		txs.complement()
+	}
 	return txs, err
 }
 

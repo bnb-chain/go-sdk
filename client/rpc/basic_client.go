@@ -113,11 +113,7 @@ func (c *HTTP) BroadcastTxCommit(tx types.Tx) (*ResultBroadcastTxCommit, error) 
 	if err := ValidateTx(tx); err != nil {
 		return nil, err
 	}
-	commit, err := c.WSEvents.BroadcastTxCommit(tx)
-	if err == nil {
-		commit.complement()
-	}
-	return commit, err
+	return c.WSEvents.BroadcastTxCommit(tx)
 }
 
 func (c *HTTP) BroadcastTxAsync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
@@ -183,11 +179,7 @@ func (c *HTTP) BlockResults(height *int64) (*ResultBlockResults, error) {
 	if err := ValidateHeight(height); err != nil {
 		return nil, err
 	}
-	res, err := c.WSEvents.BlockResults(height)
-	if err == nil {
-		res.complement()
-	}
-	return res, err
+	return c.WSEvents.BlockResults(height)
 }
 
 func (c *HTTP) Commit(height *int64) (*ctypes.ResultCommit, error) {
@@ -201,22 +193,14 @@ func (c *HTTP) Tx(hash []byte, prove bool) (*ResultTx, error) {
 	if err := ValidateHash(hash); err != nil {
 		return nil, err
 	}
-	res, err := c.WSEvents.Tx(hash, prove)
-	if err == nil {
-		res.complement()
-	}
-	return res, err
+	return c.WSEvents.Tx(hash, prove)
 }
 
 func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ResultTxSearch, error) {
 	if err := ValidateABCIQueryStr(query); err != nil {
 		return nil, err
 	}
-	txs, err := c.WSEvents.TxSearch(query, prove, page, perPage)
-	if err == nil {
-		txs.complement()
-	}
-	return txs, err
+	return c.WSEvents.TxSearch(query, prove, page, perPage)
 }
 
 func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
