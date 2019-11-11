@@ -17,12 +17,34 @@ import (
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
-const defaultTimeout = 2 * time.Second
+var DefaultTimeout = 2 * time.Second
+
+type ABCIClient interface {
+	// Reading from abci app
+	ABCIInfo() (*ctypes.ResultABCIInfo, error)
+	ABCIQuery(path string, data cmn.HexBytes) (*ctypes.ResultABCIQuery, error)
+	ABCIQueryWithOptions(path string, data cmn.HexBytes,
+		opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error)
+
+	// Writing to abci app
+	BroadcastTxCommit(tx types.Tx) (*ResultBroadcastTxCommit, error)
+	BroadcastTxAsync(tx types.Tx) (*ctypes.ResultBroadcastTx, error)
+	BroadcastTxSync(tx types.Tx) (*ctypes.ResultBroadcastTx, error)
+}
+
+type SignClient interface {
+	Block(height *int64) (*ctypes.ResultBlock, error)
+	BlockResults(height *int64) (*ResultBlockResults, error)
+	Commit(height *int64) (*ctypes.ResultCommit, error)
+	Validators(height *int64) (*ctypes.ResultValidators, error)
+	Tx(hash []byte, prove bool) (*ResultTx, error)
+	TxSearch(query string, prove bool, page, perPage int) (*ResultTxSearch, error)
+}
 
 type Client interface {
 	cmn.Service
-	client.ABCIClient
-	client.SignClient
+	ABCIClient
+	SignClient
 	client.HistoryClient
 	client.StatusClient
 	EventsClient
@@ -87,7 +109,7 @@ func (c *HTTP) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.
 	return c.WSEvents.ABCIQueryWithOptions(path, data, opts)
 }
 
-func (c *HTTP) BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
+func (c *HTTP) BroadcastTxCommit(tx types.Tx) (*ResultBroadcastTxCommit, error) {
 	if err := ValidateTx(tx); err != nil {
 		return nil, err
 	}
@@ -153,7 +175,7 @@ func (c *HTTP) Block(height *int64) (*ctypes.ResultBlock, error) {
 	return c.WSEvents.Block(height)
 }
 
-func (c *HTTP) BlockResults(height *int64) (*ctypes.ResultBlockResults, error) {
+func (c *HTTP) BlockResults(height *int64) (*ResultBlockResults, error) {
 	if err := ValidateHeight(height); err != nil {
 		return nil, err
 	}
@@ -167,14 +189,14 @@ func (c *HTTP) Commit(height *int64) (*ctypes.ResultCommit, error) {
 	return c.WSEvents.Commit(height)
 }
 
-func (c *HTTP) Tx(hash []byte, prove bool) (*ctypes.ResultTx, error) {
+func (c *HTTP) Tx(hash []byte, prove bool) (*ResultTx, error) {
 	if err := ValidateHash(hash); err != nil {
 		return nil, err
 	}
 	return c.WSEvents.Tx(hash, prove)
 }
 
-func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
+func (c *HTTP) TxSearch(query string, prove bool, page, perPage int) (*ResultTxSearch, error) {
 	if err := ValidateABCIQueryStr(query); err != nil {
 		return nil, err
 	}

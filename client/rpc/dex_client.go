@@ -31,7 +31,7 @@ const (
 )
 
 type DexClient interface {
-	TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error)
+	TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error)
 	ListAllTokens(offset int, limit int) ([]types.Token, error)
 	GetTokenInfo(symbol string) (*types.Token, error)
 	GetAccount(addr types.AccAddress) (acc types.Account, err error)
@@ -63,7 +63,7 @@ type DexClient interface {
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 }
 
-func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]tx.Info, error) {
+func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
 	if err := ValidateTxSearchQueryStr(query); err != nil {
 		return nil, err
 	}

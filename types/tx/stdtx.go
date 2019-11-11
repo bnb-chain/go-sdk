@@ -2,8 +2,6 @@ package tx
 
 import (
 	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/common"
 )
 
 const Source int64 = 0
@@ -36,10 +34,3 @@ func NewStdTx(msgs []msg.Msg, sigs []StdSignature, memo string, source int64, da
 
 // GetMsgs def
 func (tx StdTx) GetMsgs() []msg.Msg { return tx.Msgs }
-
-type Info struct {
-	Hash   common.HexBytes         `json:"hash"`
-	Height int64                   `json:"height"`
-	Tx     Tx                      `json:"tx"`
-	Result types.ResponseDeliverTx `json:"result"`
-}
