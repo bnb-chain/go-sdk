@@ -1,5 +1,5 @@
 # Changelog
-## v2.0.0
+## v1.2.0
 * [\#93](https://github.com/binance-chain/go-sdk/pull/93) [BREAKING] uprade to binance chain release 0.6.3
 
 ## v1.1.3
