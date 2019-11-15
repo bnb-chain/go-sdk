@@ -87,6 +87,10 @@ func NewHTTP(remote, wsEndpoint string) *HTTP {
 	return client
 }
 
+func (c *HTTP) String() string{
+	return fmt.Sprintf("rpc server: %s %s", c.ws.Address, c.ws.Endpoint)
+}
+
 func (c *HTTP) Status() (*ctypes.ResultStatus, error) {
 	return c.WSEvents.Status()
 }
