@@ -2,7 +2,7 @@ module github.com/binance-chain/go-sdk
 
 require (
 	github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1
-	github.com/btcsuite/btcd v0.20.0-beta
+	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
 	github.com/go-kit/kit v0.8.0 // indirect
