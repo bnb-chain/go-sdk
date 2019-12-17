@@ -33,7 +33,7 @@ replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino 
 ### Key Manager
 
 Before start using API, you should construct a Key Manager to help sign the transaction msg or verify signature.
-Key Manager is an Identity Manger to define who you are in the bnbchain. It provide following interface:
+Key Manager is an Identity Manager to define who you are in the bnbchain. It provide following interface:
 
 ```go
 type KeyManager interface {
@@ -47,7 +47,7 @@ type KeyManager interface {
 }
 ```
 
-We provide four construct functions to generate Key Manger:
+We provide four construct functions to generate Key Manager:
 ```go
 NewKeyManager() (KeyManager, error)
 
@@ -96,7 +96,7 @@ bip44Params := keys.NewBinanceBIP44Params(0, 0)
 keyManager, err := NewLedgerKeyManager(bip44Params.DerivationPath())
 ```
 
-We provide three export functions to persistent a Key Manger:
+We provide three export functions to persistent a Key Manager:
 
 ```go
 ExportAsMnemonic() (string, error)
