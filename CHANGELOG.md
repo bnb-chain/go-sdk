@@ -1,4 +1,11 @@
 # Changelog
+## latest
+* [\#103](https://github.com/binance-chain/go-sdk/pull/103) [RPC] change the default timeout of RPC client as 5 seconds
+* [\#102](https://github.com/binance-chain/go-sdk/pull/102) [FIX] Some typos only (managr/manger) 
+
+## 1.2.1
+* [\#99](https://github.com/binance-chain/go-sdk/pull/99) [BUILD] upgrade version of btcd to avoid retag issue 
+
 ## v1.2.0
 * [\#93](https://github.com/binance-chain/go-sdk/pull/93) [BREAKING] uprade to binance chain release 0.6.3
 
