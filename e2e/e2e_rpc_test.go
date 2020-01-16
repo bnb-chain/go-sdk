@@ -416,6 +416,7 @@ func TestGetBalances(t *testing.T) {
 	acc, err := ctypes.AccAddressFromBech32(testAddress)
 	assert.NoError(t, err)
 	balances, err := c.GetBalances(acc)
+	assert.Equal(t,0,len(balances))
 	assert.NoError(t, err)
 	bz, err := json.Marshal(balances)
 	fmt.Println(string(bz))
@@ -448,6 +449,9 @@ func TestNoneExistGetBalance(t *testing.T) {
 	acc, _ := keys.NewKeyManager()
 	balance, err := c.GetBalance(acc.GetAddr(), "BNB")
 	assert.NoError(t, err)
+	assert.Equal(t,ctypes.Fixed8Zero,balance.Free)
+	assert.Equal(t,ctypes.Fixed8Zero,balance.Locked)
+	assert.Equal(t,ctypes.Fixed8Zero,balance.Frozen)
 	bz, err := json.Marshal(balance)
 	fmt.Println(string(bz))
 }
