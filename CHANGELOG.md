@@ -1,5 +1,6 @@
 # Changelog
-## latest
+## 1.2.2
+* [\#106](https://github.com/binance-chain/go-sdk/pull/106) [RPC] fix nil point error in getBalance rpc call
 * [\#103](https://github.com/binance-chain/go-sdk/pull/103) [RPC] change the default timeout of RPC client as 5 seconds
 * [\#102](https://github.com/binance-chain/go-sdk/pull/102) [FIX] Some typos only (managr/manger) 
 
