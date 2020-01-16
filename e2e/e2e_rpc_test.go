@@ -399,7 +399,15 @@ func TestGetAccount(t *testing.T) {
 	bz, err := json.Marshal(account)
 	fmt.Println(string(bz))
 	fmt.Println(hex.EncodeToString(account.GetAddress().Bytes()))
+}
 
+func TestNoneExistGetAccount(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	c := defaultClient()
+	acc, err := keys.NewKeyManager()
+	account, err := c.GetAccount(acc.GetAddr())
+	assert.NoError(t, err)
+	assert.Nil(t,account)
 }
 
 func TestGetBalances(t *testing.T) {
@@ -413,12 +421,32 @@ func TestGetBalances(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
+func TestNoneExistGetBalances(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	c := defaultClient()
+	acc, _ := keys.NewKeyManager()
+	balances, err := c.GetBalances(acc.GetAddr())
+	assert.NoError(t, err)
+	bz, err := json.Marshal(balances)
+	fmt.Println(string(bz))
+}
+
 func TestGetBalance(t *testing.T) {
 	ctypes.Network = ctypes.TestNetwork
 	c := defaultClient()
 	acc, err := ctypes.AccAddressFromBech32(testAddress)
 	assert.NoError(t, err)
 	balance, err := c.GetBalance(acc, "BNB")
+	assert.NoError(t, err)
+	bz, err := json.Marshal(balance)
+	fmt.Println(string(bz))
+}
+
+func TestNoneExistGetBalance(t *testing.T) {
+	ctypes.Network = ctypes.TestNetwork
+	c := defaultClient()
+	acc, _ := keys.NewKeyManager()
+	balance, err := c.GetBalance(acc.GetAddr(), "BNB")
 	assert.NoError(t, err)
 	bz, err := json.Marshal(balance)
 	fmt.Println(string(bz))
