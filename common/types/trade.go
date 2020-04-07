@@ -84,8 +84,9 @@ type TradingPair struct {
 }
 
 type OrderBook struct {
-	Height int64
-	Levels []OrderBookLevel
+	Height       int64
+	Levels       []OrderBookLevel
+	PendingMatch bool
 }
 
 // OrderBookLevel represents a single order book level.
