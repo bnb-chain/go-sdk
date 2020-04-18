@@ -223,6 +223,22 @@ func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 	return resp.Value, nil
 }
 
+func (c *HTTP) QueryStoreSubspace(key cmn.HexBytes, storeName string) (res []cmn.KVPair, err error) {
+	path := fmt.Sprintf("/store/%s/subspace", storeName)
+	result, err := c.ABCIQuery(path, key)
+	if err != nil {
+		return res, err
+	}
+
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.Errorf(resp.Log)
+	}
+
+	c.cdc.MustUnmarshalBinaryLengthPrefixed(resp.Value, &res)
+	return
+}
+
 func (c *HTTP) SetKeyManager(k keys.KeyManager) {
 	c.key = k
 }
