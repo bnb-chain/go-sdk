@@ -37,7 +37,8 @@ var (
 	SymbolLengthExceedRangeError      = fmt.Errorf("length of symbol should be in range [%d,%d]", tokenSymbolMinLen, tokenSymbolMaxLen)
 	PairFormatError                   = fmt.Errorf("the pair should in format 'symbol1_symbol2'")
 	DepthLevelExceedRangeError        = fmt.Errorf("the level is out of range [%d, %d]", 0, maxDepthLevel)
-	KeyMissingError                   = fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
+	KeyMissingError                   = fmt.Errorf("keymanager is missing, use SetKeyManager to set key")
+	EmptyResultError				  = fmt.Errorf("Empty result ")
 )
 
 func ValidateABCIPath(path string) error {

@@ -50,6 +50,7 @@ type Client interface {
 	EventsClient
 	DexClient
 	OpsClient
+	StakingClient
 }
 
 type EventsClient interface {
@@ -210,6 +211,21 @@ func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	return c.WSEvents.Validators(height)
 }
 
+func (c *HTTP) QueryWithData(path string, data cmn.HexBytes) ([]byte, error) {
+	result, err := c.ABCIQuery(path, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.Errorf(resp.Log)
+	}
+
+	return resp.Value, nil
+}
+
 func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
 	result, err := c.ABCIQuery(path, key)
@@ -221,6 +237,31 @@ func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 		return nil, errors.Errorf(resp.Log)
 	}
 	return resp.Value, nil
+}
+
+func (c *HTTP) QueryStoreSubspace(key cmn.HexBytes, storeName string) (res []cmn.KVPair, err error) {
+	path := fmt.Sprintf("/store/%s/subspace", storeName)
+	result, err := c.ABCIQuery(path, key)
+	if err != nil {
+		return res, err
+	}
+
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.Errorf(resp.Log)
+	}
+
+	if len(resp.Value) == 0 {
+		return nil, EmptyResultError
+	}
+
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(resp.Value, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return
 }
 
 func (c *HTTP) SetKeyManager(k keys.KeyManager) {
