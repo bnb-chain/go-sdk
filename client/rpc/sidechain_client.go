@@ -176,7 +176,7 @@ func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAdd
 		return nil, err
 	}
 
-	delegateKey := etDelegationKey(delAddr, valAddr)
+	delegateKey := getDelegationKey(delAddr, valAddr)
 
 	key := append(storePrefix, delegateKey...)
 	res, err := c.QueryStore(key, SideChainStoreName)
@@ -325,7 +325,7 @@ func getValidatorKey(operatorAddr types.ValAddress) []byte {
 	return append(ValidatorsKey, operatorAddr.Bytes()...)
 }
 
-func etDelegationKey(delAddr types.AccAddress, valAddr types.ValAddress) []byte {
+func getDelegationKey(delAddr types.AccAddress, valAddr types.ValAddress) []byte {
 	return append(getDelegationsKey(delAddr), valAddr.Bytes()...)
 }
 
