@@ -226,13 +226,16 @@ func (c *HTTP) QuerySideChainRedelegation(sideChainId string, delAddr types.AccA
 		return nil, err
 	}
 
-	result, err := types.UnmarshalRED(c.cdc, key, res)
+	if len(res) > 0 {
+		result, err := types.UnmarshalRED(c.cdc, key, res)
+		if err != nil {
+			return nil, err
+		}
 
-	if err != nil {
-		return nil, err
+		return &result, nil
 	}
 
-	return &result, nil
+	return &types.Redelegation{}, fmt.Errorf("Query result is empty ")
 }
 
 //Query all redelegations records for one delegator
@@ -257,7 +260,11 @@ func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.Acc
 		redels = append(redels, red)
 	}
 
-	return redels, nil
+	if redels != nil && len(redels) > 0 {
+		return redels, nil
+	}else{
+		return nil, fmt.Errorf("Query result is empty ")
+	}
 }
 
 //Query an unbonding-delegation record based on delegator and validator address
