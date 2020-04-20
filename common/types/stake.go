@@ -23,6 +23,19 @@ const (
 	Bonded    BondStatus = 0x02
 )
 
+func BondStatusToString(b BondStatus) string {
+	switch b {
+	case 0x00:
+		return "Unbonded"
+	case 0x01:
+		return "Unbonding"
+	case 0x02:
+		return "Bonded"
+	default:
+		panic("improper use of BondStatusToString")
+	}
+}
+
 type (
 	// Commission defines a commission parameters for a given validator.
 	Commission struct {
@@ -145,6 +158,11 @@ type Validator struct {
 	UnbondingMinTime time.Time `json:"unbonding_time"`   // if unbonding, min time for the validator to complete unbonding
 
 	Commission Commission `json:"commission"` // commission parameters
+
+	DistributionAddr AccAddress `json:"distribution_addr"` // the address receives rewards from the side address, and distribute rewards to delegators. It's auto generated
+	SideChainId      string         `json:"side_chain_id"`     // side chain id to distinguish different side chains
+	SideConsAddr     []byte         `json:"side_cons_addr"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
+	SideFeeAddr      []byte         `json:"side_fee_addr"`     // fee address on the side chain
 }
 
 type UnbondingDelegation struct {
