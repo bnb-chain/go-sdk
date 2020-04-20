@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://data-seed-pre-0-s3.binance.org:80"
+	nodeAddr           = "tcp://127.0.0.1:27147"
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "F45BAB1BA5B79609F7307A64AD1F84ECFAF73D1F2C2D010D17F41303BC1B00CA"
 	testTxHeight       = int64(47905085)
