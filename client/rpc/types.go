@@ -3,14 +3,15 @@ package rpc
 import (
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	libbytes "github.com/tendermint/tendermint/libs/bytes"
+	libkv "github.com/tendermint/tendermint/libs/kv"
 	abci "github.com/tendermint/tendermint/types"
 )
 
 type ResultBroadcastTxCommit struct {
 	CheckTx   ResponseCheckTx   `json:"check_tx"`
 	DeliverTx ResponseDeliverTx `json:"deliver_tx"`
-	Hash      cmn.HexBytes      `json:"hash"`
+	Hash      libbytes.HexBytes `json:"hash"`
 	Height    int64             `json:"height"`
 }
 
@@ -24,15 +25,15 @@ func (r *ResultBroadcastTxCommit) complement() {
 }
 
 type ResponseCheckTx struct {
-	Code      uint32        `json:"code,omitempty"`
-	Data      []byte        `json:"data,omitempty"`
-	Log       string        `json:"log,omitempty"`
-	Info      string        `json:"info,omitempty"`
-	GasWanted int64         `json:"gas_wanted,omitempty"`
-	GasUsed   int64         `json:"gas_used,omitempty"`
-	Events    []types.Event `json:"events,omitempty"`
-	Tags      []cmn.KVPair  `json:"tags,omitempty"`
-	Codespace string        `json:"codespace,omitempty"`
+	Code      uint32         `json:"code,omitempty"`
+	Data      []byte         `json:"data,omitempty"`
+	Log       string         `json:"log,omitempty"`
+	Info      string         `json:"info,omitempty"`
+	GasWanted int64          `json:"gas_wanted,omitempty"`
+	GasUsed   int64          `json:"gas_used,omitempty"`
+	Events    []types.Event  `json:"events,omitempty"`
+	Tags      []libkv.KVPair `json:"tags,omitempty"`
+	Codespace string         `json:"codespace,omitempty"`
 }
 
 func (r *ResponseCheckTx) complement() {
@@ -44,15 +45,15 @@ func (r *ResponseCheckTx) complement() {
 }
 
 type ResponseDeliverTx struct {
-	Code      uint32        `json:"code,omitempty"`
-	Data      []byte        `json:"data,omitempty"`
-	Log       string        `json:"log,omitempty"`
-	Info      string        `json:"info,omitempty"`
-	GasWanted int64         `json:"gas_wanted,omitempty"`
-	GasUsed   int64         `json:"gas_used,omitempty"`
-	Events    []types.Event `json:"events,omitempty"`
-	Tags      []cmn.KVPair  `json:"tags,omitempty"`
-	Codespace string        `json:"codespace,omitempty"`
+	Code      uint32         `json:"code,omitempty"`
+	Data      []byte         `json:"data,omitempty"`
+	Log       string         `json:"log,omitempty"`
+	Info      string         `json:"info,omitempty"`
+	GasWanted int64          `json:"gas_wanted,omitempty"`
+	GasUsed   int64          `json:"gas_used,omitempty"`
+	Events    []types.Event  `json:"events,omitempty"`
+	Tags      []libkv.KVPair `json:"tags,omitempty"`
+	Codespace string         `json:"codespace,omitempty"`
 }
 
 func (r *ResponseDeliverTx) complement() {
@@ -96,7 +97,7 @@ type ResponseEndBlock struct {
 	ValidatorUpdates      []types.ValidatorUpdate `json:"validator_updates"`
 	ConsensusParamUpdates *types.ConsensusParams  `json:"consensus_param_updates,omitempty"`
 	Events                []types.Event           `json:"events,omitempty"`
-	Tags                  []cmn.KVPair            `json:"tags,omitempty"`
+	Tags                  []libkv.KVPair          `json:"tags,omitempty"`
 }
 
 func (r *ResponseEndBlock) complement() {
@@ -108,8 +109,8 @@ func (r *ResponseEndBlock) complement() {
 }
 
 type ResponseBeginBlock struct {
-	Events []types.Event `json:"events,omitempty"`
-	Tags   []cmn.KVPair  `json:"tags,omitempty"`
+	Events []types.Event  `json:"events,omitempty"`
+	Tags   []libkv.KVPair `json:"tags,omitempty"`
 }
 
 func (r *ResponseBeginBlock) complement() {
@@ -121,7 +122,7 @@ func (r *ResponseBeginBlock) complement() {
 }
 
 type ResultTx struct {
-	Hash     cmn.HexBytes      `json:"hash"`
+	Hash     libbytes.HexBytes `json:"hash"`
 	Height   int64             `json:"height"`
 	Index    uint32            `json:"index"`
 	TxResult ResponseDeliverTx `json:"tx_result"`
@@ -146,7 +147,7 @@ func (r *ResultTxSearch) complement() {
 }
 
 type Info struct {
-	Hash   cmn.HexBytes      `json:"hash"`
+	Hash   libbytes.HexBytes `json:"hash"`
 	Height int64             `json:"height"`
 	Tx     tx.Tx             `json:"tx"`
 	Result ResponseDeliverTx `json:"result"`

@@ -1,11 +1,13 @@
 package mock
 
 import (
-	"github.com/binance-chain/go-sdk/client/rpc"
 	"reflect"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/binance-chain/go-sdk/client/rpc"
+
+	libbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
+	libservice "github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/rpc/core"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -19,7 +21,7 @@ import (
 // Nothing hidden here, so no New function, just construct it from
 // some parts, and swap them out them during the tests.
 type Client struct {
-	cmn.Service
+	libservice.Service
 	rpc.ABCIClient
 	rpc.SignClient
 	client.HistoryClient
@@ -74,11 +76,11 @@ func (c Client) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
 	return core.ABCIInfo(&rpctypes.Context{})
 }
 
-func (c Client) ABCIQuery(path string, data cmn.HexBytes) (*ctypes.ResultABCIQuery, error) {
+func (c Client) ABCIQuery(path string, data libbytes.HexBytes) (*ctypes.ResultABCIQuery, error) {
 	return c.ABCIQueryWithOptions(path, data, client.DefaultABCIQueryOptions)
 }
 
-func (c Client) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
+func (c Client) ABCIQueryWithOptions(path string, data libbytes.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
 	return core.ABCIQuery(&rpctypes.Context{}, path, data, opts.Height, opts.Prove)
 }
 
