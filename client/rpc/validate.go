@@ -38,7 +38,7 @@ var (
 	PairFormatError                   = fmt.Errorf("the pair should in format 'symbol1_symbol2'")
 	DepthLevelExceedRangeError        = fmt.Errorf("the level is out of range [%d, %d]", 0, maxDepthLevel)
 	KeyMissingError                   = fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")
-	KeyManagerMissingError			  = fmt.Errorf("keymanager is missing, use SetKeyManager to set key")
+	KeyManagerMissingError            = fmt.Errorf("keymanager is missing, use SetKeyManager to set key")
 )
 
 func ValidateABCIPath(path string) error {

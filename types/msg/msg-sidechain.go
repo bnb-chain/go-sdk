@@ -13,12 +13,12 @@ const (
 	TypeSideChainRedelegate      = "side_redelegate"
 	TypeSideChainUndelegate      = "side_undelegate"
 
-	SideChainMsgRoute            = "stake"
-	MaxSideChainIdLength         = 20
-	MinSideChainAddrLen 		 = 16
-	MaxSideChainAddrLen 		 = 64
+	SideChainMsgRoute    = "stake"
+	MaxSideChainIdLength = 20
+	MinSideChainAddrLen  = 16
+	MaxSideChainAddrLen  = 64
 
-	MinDelegationAmount			 = 1e8
+	MinDelegationAmount = 1e8
 )
 
 type CreateSideChainValidatorMsg struct {
@@ -137,7 +137,7 @@ type EditSideChainValidatorMsg struct {
 
 	CommissionRate *types.Dec `json:"commission_rate"`
 
-	SideChainId string `json:"side_chain_id"`
+	SideChainId  string `json:"side_chain_id"`
 	SideConsAddr []byte `json:"side_cons_addr"`
 	SideFeeAddr  []byte `json:"side_fee_addr"`
 }
@@ -216,7 +216,7 @@ type SideChainDelegateMsg struct {
 	ValidatorAddr types.ValAddress `json:"validator_addr"`
 	Delegation    types.Coin       `json:"delegation"`
 
-	SideChainId	string `json:"side_chain_id"`
+	SideChainId string `json:"side_chain_id"`
 }
 
 func NewSideChainDelegateMsg(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress, delegation types.Coin) SideChainDelegateMsg {
