@@ -8,5 +8,6 @@ const (
 	NativeSymbol            = "BNB"
 
 	TestnetChainID = "Binance-Chain-Nile"
+	TmpTestnetChainId = "Binance-Chain-Kongo"
 	ProdChainID    = "Binance-Chain-Tigris"
 )
