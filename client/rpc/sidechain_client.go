@@ -258,7 +258,8 @@ func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.Acc
 
 	var redels []types.Redelegation
 	for _, kv := range resKVs {
-		red, err := types.UnmarshalRED(c.cdc, kv.Key, kv.Value)
+		k := kv.Key[len(storePrefix):]
+		red, err := types.UnmarshalRED(c.cdc, k, kv.Value)
 		if err != nil {
 			panic(err)
 		}
@@ -279,13 +280,14 @@ func (c *HTTP) QuerySideChainUnbondingDelegation(sideChainId string, valAddr typ
 		return nil, err
 	}
 
-	key := append(storePrefix, getUBDKey(delAddr, valAddr)...)
+	ubdKey := getUBDKey(delAddr, valAddr)
+	key := append(storePrefix, ubdKey...)
 	res, err := c.QueryStore(key, SideChainStoreName)
 	if err != nil {
 		return nil, err
 	}
 
-	ubd, err := unmarshalUBD(c.cdc, key, res)
+	ubd, err := unmarshalUBD(c.cdc, ubdKey, res)
 
 	if err != nil {
 		return nil, err
@@ -310,7 +312,8 @@ func (c *HTTP) QuerySideChainUnbondingDelegations(sideChainId string, delAddr ty
 
 	var ubds []types.UnbondingDelegation
 	for _, kv := range resKVs {
-		ubd, err := unmarshalUBD(c.cdc, kv.Key, kv.Value)
+		k := kv.Key[len(storePrefix):]
+		ubd, err := unmarshalUBD(c.cdc, k, kv.Value)
 		if err != nil{
 			return nil, err
 		}
