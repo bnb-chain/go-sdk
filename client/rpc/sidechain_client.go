@@ -206,7 +206,11 @@ func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAd
 
 	var delegations []types.Delegation
 	for _, kv := range resKVS {
-		delegation, _ := types.UnmarshalDelegation(c.cdc, kv.Key, kv.Value)
+		k := kv.Key[len(storePrefix):]
+		delegation, err := types.UnmarshalDelegation(c.cdc, k, kv.Value)
+		if err != nil {
+			return nil, err
+		}
 		delegations = append(delegations, delegation)
 	}
 
