@@ -224,14 +224,15 @@ func (c *HTTP) QuerySideChainRedelegation(sideChainId string, delAddr types.AccA
 		return nil, err
 	}
 
-	key := append(storePrefix, getREDKey(delAddr, valSrcAddr, valDstAddr)...)
+	redKey := getREDKey(delAddr, valSrcAddr, valDstAddr)
+	key := append(storePrefix, redKey...)
 	res, err := c.QueryStore(key, SideChainStoreName)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(res) > 0 {
-		result, err := types.UnmarshalRED(c.cdc, key, res)
+		result, err := types.UnmarshalRED(c.cdc, redKey, res)
 		if err != nil {
 			return nil, err
 		}
