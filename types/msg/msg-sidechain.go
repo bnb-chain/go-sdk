@@ -84,11 +84,6 @@ func (msg CreateSideChainValidatorMsg) ValidateBasic() error {
 		return fmt.Errorf("Expected validator address length is %d, actual length is %d ", types.AddrLen, len(msg.ValidatorAddr))
 	}
 
-	//self-delegation amount is greater than or equal to 1e8 BNB(
-	if msg.Delegation.Amount < MinDelegationAmount {
-		return fmt.Errorf("self delegation must not be less than %f ", MinDelegationAmount)
-	}
-
 	//description check
 	if msg.Description == (Description{}) {
 		return fmt.Errorf("description must be included")

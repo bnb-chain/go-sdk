@@ -53,6 +53,26 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 	return c.broadcast(m, syncType, options...)
 }
 
+func (c *HTTP) CreateSideChainValidatorOnBeHalfOf(delegatorAddress types.AccAddress, delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyManagerMissingError
+	}
+
+	if len(description.Moniker) == 0 {
+		return nil, fmt.Errorf("Moniker in description is missing ")
+	}
+
+	if err := checkDelegationCoin(delegation); err != nil {
+		return nil, err
+	}
+
+	valOpAddr := types.ValAddress(c.key.GetAddr())
+
+	m := msg.NewMsgCreateSideChainValidatorOnBehalfOf(delegatorAddress, valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr, )
+
+	return c.broadcast(m, syncType, options...)
+}
+
 func (c *HTTP) EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)  {
 	if c.key == nil {
 		return nil, KeyManagerMissingError
