@@ -18,6 +18,8 @@ type QueryClient interface {
 	GetTime() (*types.Time, error)
 	GetTokens(query *types.TokensQuery) ([]types.Token, error)
 	GetNodeInfo() (*types.ResultStatus, error)
+	GetMiniTokens(query *types.TokensQuery) ([]types.MiniToken, error)
+	GetMiniMarkets(query *types.MarketsQuery) ([]types.TradingPair, error)
 }
 
 type client struct {
