@@ -211,10 +211,10 @@ func TestQuerySideChainValidator(t *testing.T) {
 	fmt.Println(validatorHumanReadableString(*res))
 }
 
-func TestQuerySideChainValidators(t *testing.T)  {
+func TestQuerySideChainTopValidators(t *testing.T)  {
 	c := getRpcClientWithKeyManager()
 
-	res, err := c.QuerySideChainValidators(sideChainId)
+	res, err := c.QuerySideChainTopValidators(sideChainId, 5)
 
 	if err != nil {
 		fmt.Println(err)

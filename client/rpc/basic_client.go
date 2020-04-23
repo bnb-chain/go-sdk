@@ -210,6 +210,21 @@ func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	return c.WSEvents.Validators(height)
 }
 
+func (c *HTTP) QueryWithData(path string, data cmn.HexBytes) ([]byte, error) {
+	result, err := c.ABCIQuery(path, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.Errorf(resp.Log)
+	}
+
+	return resp.Value, nil
+}
+
 func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
 	result, err := c.ABCIQuery(path, key)

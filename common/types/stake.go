@@ -143,7 +143,7 @@ type Description struct {
 type Validator struct {
 	FeeAddr      AccAddress `json:"fee_addr"`         // address for fee collection
 	OperatorAddr ValAddress `json:"operator_address"` // address of the validator's operator; bech encoded in JSON
-	ConsPubKey   string     `json:"consensus_pubkey"` // the consensus public key of the validator; bech encoded in JSON
+	ConsPubKey   string     `json:"consensus_pubkey,"` // the consensus public key of the validator; bech encoded in JSON
 	Jailed       bool       `json:"jailed"`           // has the validator been jailed from bonded status?
 
 	Status          BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)

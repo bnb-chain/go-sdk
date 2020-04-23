@@ -2,6 +2,8 @@ package rpc
 
 import (
 	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	types "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/msg"
@@ -21,6 +23,15 @@ var (
 	UnbondingDelegationKey      = []byte{0x32}
 	DelegationTokenDemon        = "BNB"
 )
+
+type BaseParams struct {
+	SideChainId string
+}
+
+type QueryTopValidatorsParams struct {
+	BaseParams
+	Top int
+}
 
 func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
@@ -142,35 +153,98 @@ func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddr
 	return &validator, nil
 }
 
-//Query for all validators
-func (c *HTTP) QuerySideChainValidators(sideChainId string) ([]types.Validator, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
+type bechValidator struct {
+	FeeAddr      types.AccAddress `json:"fee_addr"`                   // the bech32 address for fee collection
+	OperatorAddr types.ValAddress `json:"operator_address"`           // the bech32 address of the validator's operator
+	ConsPubKey   string         `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
+	Jailed       bool           `json:"jailed"`                     // has the validator been jailed from bonded status?
+
+	Status          types.BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)
+	Tokens          types.Dec        `json:"tokens"`           // delegated tokens (incl. self-delegation)
+	DelegatorShares types.Dec        `json:"delegator_shares"` // total shares issued to a validator's delegators
+
+	Description        types.Description `json:"description"`           // description terms for the validator
+	BondHeight         int64       `json:"bond_height"`           // earliest height as a bonded validator
+	BondIntraTxCounter int16       `json:"bond_intra_tx_counter"` // block-local tx index of validator change
+
+	UnbondingHeight  int64     `json:"unbonding_height"` // if unbonding, height at which this validator has begun unbonding
+	UnbondingMinTime time.Time `json:"unbonding_time"`   // if unbonding, min time for the validator to complete unbonding
+
+	Commission 		 types.Commission `json:"commission"` // commission parameters
+
+	DistributionAddr types.AccAddress `json:"distribution_addr,omitempty"` // the address receives rewards from the side address, and distribute rewards to delegators. It's auto generated
+	SideChainId      string         `json:"side_chain_id,omitempty"`     // side chain id to distinguish different side chains
+	SideConsAddr     string         `json:"side_cons_addr,omitempty"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
+	SideFeeAddr      string         `json:"side_fee_addr,omitempty"`     // fee address on the side chain
+}
+
+func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error) {
+	if top > 50 || top < 1 {
+		return nil, fmt.Errorf("top must be between 1 and 50")
+	}
+
+	params := QueryTopValidatorsParams{
+		BaseParams{SideChainId:sideChainId},
+		top,
+	}
+
+	bz, err := json.Marshal(params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	keyPrefix, err := c.QueryStore(storePrefix, StakeStoreKey)
+	res, err := c.QueryWithData("custom/stake/topValidators", bz)
 	if err != nil {
 		return nil, err
 	}
 
-	key := append(keyPrefix, ValidatorsKey...)
-
-	resKVs, err := c.QueryStoreSubspace(key, StakeStoreKey)
-
-	if err != nil {
+	var bvs []bechValidator
+	if err = c.cdc.UnmarshalJSON(res, &bvs); err != nil {
 		return nil, err
+	}
+
+	if len(bvs) == 0 {
+		return nil, EmptyResultError
 	}
 
 	var validators []types.Validator
-	for _, kv := range resKVs {
-		var validator types.Validator
-		c.cdc.MustUnmarshalBinaryLengthPrefixed(kv.Value, &validator)
+	for _, v := range bvs {
+		validator := types.Validator{
+			FeeAddr:            v.FeeAddr,
+			OperatorAddr:       v.OperatorAddr,
+			ConsPubKey:         v.ConsPubKey,
+			Jailed:             v.Jailed,
+			Status:             v.Status,
+			Tokens:             v.Tokens,
+			DelegatorShares:    v.DelegatorShares,
+			Description:        v.Description,
+			BondHeight:         v.BondHeight,
+			BondIntraTxCounter: v.BondIntraTxCounter,
+			UnbondingHeight:    v.UnbondingHeight,
+			UnbondingMinTime:   v.UnbondingMinTime,
+			Commission:         v.Commission,
+		}
+
+		if len(v.SideChainId) != 0 {
+			validator.DistributionAddr = v.DistributionAddr
+			validator.SideChainId = v.SideChainId
+			if sideConsAddr, err := hex.DecodeString(v.SideConsAddr[2:]); err != nil {
+				return nil, err
+			}else{
+				validator.SideConsAddr = sideConsAddr
+			}
+			if sideFeeAddr, err := hex.DecodeString(v.SideFeeAddr[2:]); err != nil {
+				return nil, err
+			}else{
+				validator.SideFeeAddr = sideFeeAddr
+			}
+		}
+
 		validators = append(validators, validator)
 	}
 
-	return validators, err
+	return validators, nil
 }
 
 //Query a delegation based on address and validator address
