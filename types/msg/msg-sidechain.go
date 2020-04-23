@@ -138,17 +138,15 @@ type EditSideChainValidatorMsg struct {
 	CommissionRate *types.Dec `json:"commission_rate"`
 
 	SideChainId  string `json:"side_chain_id"`
-	SideConsAddr []byte `json:"side_cons_addr"`
 	SideFeeAddr  []byte `json:"side_fee_addr"`
 }
 
-func NewEditSideChainValidatorMsg(sideChainId string, validatorAddr types.ValAddress, description Description, commissionRate *types.Dec, sideConsAddr, sideFeeAddr []byte) EditSideChainValidatorMsg {
+func NewEditSideChainValidatorMsg(sideChainId string, validatorAddr types.ValAddress, description Description, commissionRate *types.Dec, sideFeeAddr []byte) EditSideChainValidatorMsg {
 	return EditSideChainValidatorMsg{
 		Description:    description,
 		ValidatorAddr:  validatorAddr,
 		CommissionRate: commissionRate,
 		SideChainId:    sideChainId,
-		SideConsAddr:   sideConsAddr,
 		SideFeeAddr:    sideFeeAddr,
 	}
 }
@@ -190,11 +188,6 @@ func (msg EditSideChainValidatorMsg) ValidateBasic() error {
 	//side chain id length 1 - 20
 	if len(msg.SideChainId) == 0 || len(msg.SideChainId) > MaxSideChainIdLength {
 		return fmt.Errorf("side chain id must be included and max length is %d bytes", MaxSideChainIdLength)
-	}
-
-	//sideConsAddr length should between 16 - 64
-	if err := checkSideChainAddr("SideConsAddr", msg.SideConsAddr); err != nil {
-		return err
 	}
 
 	//sideFeeAddr length should between 16 - 64

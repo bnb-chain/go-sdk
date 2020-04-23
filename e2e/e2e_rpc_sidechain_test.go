@@ -107,10 +107,9 @@ func TestEditSideChainValidator(t *testing.T)  {
 
 	rate, _ := ctypes.NewDecFromStr("2")
 
-	sideConsAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
 	sideFeeAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
 
-	res, err := c.EditSideChainValidatorMsg(sideChainId, des, &rate, sideConsAddr, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.EditSideChainValidatorMsg(sideChainId, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
 
 	if err != nil {
 		fmt.Println(err)

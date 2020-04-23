@@ -12,13 +12,14 @@ import (
 )
 
 var (
-	SideChainStoreName          = "stake"
+	StakeStoreKey               = "stake"
+	StakeScStoreKey				= "sc"
+	SideChainStorePrefixByIdKey = []byte{0x01}
 	ValidatorsKey               = []byte{0x21}
 	DelegationKey               = []byte{0x31}
-	SideChainStorePrefixByIdKey = []byte{0x51}
 	RedelegationKey             = []byte{0x34}
 	UnbondingDelegationKey      = []byte{0x32}
-	DelegationTokenDemon		= "BNB"
+	DelegationTokenDemon        = "BNB"
 )
 
 func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
@@ -41,14 +42,14 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 	return c.broadcast(m, syncType, options...)
 }
 
-func (c *HTTP) EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideConsAddr, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)  {
+func (c *HTTP) EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)  {
 	if c.key == nil {
 		return nil, KeyManagerMissingError
 	}
 
 	valOpAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideConsAddr, sideFeeAddr)
+	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideFeeAddr)
 
 	return c.broadcast(m, syncType, options...)
 }
@@ -107,23 +108,27 @@ func (c *HTTP) SideChainUnbond(sideChainId string, valAddr types.ValAddress, amo
 
 //Query a validator
 func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)  {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	keyPrefix, err := c.QueryStore(storePrefix, SideChainStoreName)
+	keyPrefix, err := c.QueryStore(storePrefix, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
 
 	key := append(keyPrefix, getValidatorKey(valAddr)...)
 
-	bz, err := c.QueryStore(key, SideChainStoreName)
+	bz, err := c.QueryStore(key, StakeStoreKey)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if len(bz) == 0 {
+		return nil, EmptyResultError
 	}
 
 	var validator types.Validator
@@ -139,20 +144,20 @@ func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddr
 
 //Query for all validators
 func (c *HTTP) QuerySideChainValidators(sideChainId string) ([]types.Validator, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	keyPrefix, err := c.QueryStore(storePrefix, SideChainStoreName)
+	keyPrefix, err := c.QueryStore(storePrefix, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
 
 	key := append(keyPrefix, ValidatorsKey...)
 
-	resKVs, err := c.QueryStoreSubspace(key, SideChainStoreName)
+	resKVs, err := c.QueryStoreSubspace(key, StakeStoreKey)
 
 	if err != nil {
 		return nil, err
@@ -170,7 +175,7 @@ func (c *HTTP) QuerySideChainValidators(sideChainId string) ([]types.Validator, 
 
 //Query a delegation based on address and validator address
 func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.Delegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 
 	if err != nil {
 		return nil, err
@@ -179,9 +184,13 @@ func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAdd
 	delegateKey := getDelegationKey(delAddr, valAddr)
 
 	key := append(storePrefix, delegateKey...)
-	res, err := c.QueryStore(key, SideChainStoreName)
+	res, err := c.QueryStore(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(res) == 0 {
+		return nil, EmptyResultError
 	}
 
 	delegation, err := types.UnmarshalDelegation(c.cdc, delegateKey, res)
@@ -191,7 +200,7 @@ func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAdd
 
 //Query all delegations made from one delegator
 func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.Delegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 
 	if err != nil {
 		return nil, err
@@ -199,7 +208,7 @@ func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAd
 
 	key := append(storePrefix, getDelegationsKey(delAddr)...)
 
-	resKVS, err := c.QueryStoreSubspace(key, SideChainStoreName)
+	resKVS, err := c.QueryStoreSubspace(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
@@ -219,39 +228,39 @@ func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAd
 
 //Query a redelegation record based on delegator and a source and destination validator address
 func (c *HTTP) QuerySideChainRedelegation(sideChainId string, delAddr types.AccAddress, valSrcAddr types.ValAddress, valDstAddr types.ValAddress) (*types.Redelegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 	if err != nil {
 		return nil, err
 	}
 
 	redKey := getREDKey(delAddr, valSrcAddr, valDstAddr)
 	key := append(storePrefix, redKey...)
-	res, err := c.QueryStore(key, SideChainStoreName)
+	res, err := c.QueryStore(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(res) > 0 {
-		result, err := types.UnmarshalRED(c.cdc, redKey, res)
-		if err != nil {
-			return nil, err
-		}
-
-		return &result, nil
+	if len(res) == 0 {
+		return nil, EmptyResultError
 	}
 
-	return &types.Redelegation{}, fmt.Errorf("Query result is empty ")
+	result, err := types.UnmarshalRED(c.cdc, redKey, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 //Query all redelegations records for one delegator
 func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.AccAddress) ([]types.Redelegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 	if err != nil {
 		return nil, err
 	}
 
 	key := append(storePrefix, getREDsKey(delAddr)...)
-	resKVs, err := c.QueryStoreSubspace(key, SideChainStoreName)
+	resKVs, err := c.QueryStoreSubspace(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
@@ -269,22 +278,26 @@ func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.Acc
 	if redels != nil && len(redels) > 0 {
 		return redels, nil
 	}else{
-		return nil, fmt.Errorf("Query result is empty ")
+		return nil, EmptyResultError
 	}
 }
 
 //Query an unbonding-delegation record based on delegator and validator address
 func (c *HTTP) QuerySideChainUnbondingDelegation(sideChainId string, valAddr types.ValAddress, delAddr types.AccAddress) (*types.UnbondingDelegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 	if err != nil {
 		return nil, err
 	}
 
 	ubdKey := getUBDKey(delAddr, valAddr)
 	key := append(storePrefix, ubdKey...)
-	res, err := c.QueryStore(key, SideChainStoreName)
+	res, err := c.QueryStore(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(res) == 0 {
+		return nil, EmptyResultError
 	}
 
 	ubd, err := unmarshalUBD(c.cdc, ubdKey, res)
@@ -298,14 +311,14 @@ func (c *HTTP) QuerySideChainUnbondingDelegation(sideChainId string, valAddr typ
 
 //Query all unbonding-delegations records for one delegator
 func (c *HTTP) QuerySideChainUnbondingDelegations(sideChainId string, delAddr types.AccAddress) ([]types.UnbondingDelegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId, SideChainStoreName)
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 	if err != nil {
 		return nil, err
 	}
 
 	key := append(storePrefix, getUBDsKey(delAddr)...)
 
-	resKVs, err := c.QueryStoreSubspace(key, SideChainStoreName)
+	resKVs, err := c.QueryStoreSubspace(key, StakeStoreKey)
 	if err != nil {
 		return nil, err
 	}
@@ -323,9 +336,13 @@ func (c *HTTP) QuerySideChainUnbondingDelegations(sideChainId string, delAddr ty
 	return ubds, nil
 }
 
-func (c *HTTP) getSideChainStorePrefixKey(sideChainId string, storeName string) ([]byte, error) {
+//func (c *HTTP) getSideChainConfig(sideChainId string) (prefix []byte, err error) {
+//	prefix, err  = c.QueryStore()
+//}
+
+func (c *HTTP) getSideChainStorePrefixKey(sideChainId string) ([]byte, error) {
 	key := append(SideChainStorePrefixByIdKey, []byte(sideChainId)...)
-	result, err := c.QueryStore(key, storeName)
+	result, err := c.QueryStore(key, StakeScStoreKey)
 
 	if err != nil {
 		return nil, err

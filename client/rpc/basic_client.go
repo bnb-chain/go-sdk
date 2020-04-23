@@ -235,6 +235,10 @@ func (c *HTTP) QueryStoreSubspace(key cmn.HexBytes, storeName string) (res []cmn
 		return nil, errors.Errorf(resp.Log)
 	}
 
+	if len(resp.Value) == 0 {
+		return nil, EmptyResultError
+	}
+
 	c.cdc.MustUnmarshalBinaryLengthPrefixed(resp.Value, &res)
 	return
 }
