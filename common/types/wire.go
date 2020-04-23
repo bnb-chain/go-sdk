@@ -17,5 +17,5 @@ func RegisterWire(cdc *amino.Codec) {
 	cdc.RegisterInterface((*Proposal)(nil), nil)
 	cdc.RegisterConcrete(&TextProposal{}, "gov/TextProposal", nil)
 
-	cdc.RegisterConcrete(Token{}, "bnbchain/MiniToken", nil)
+	cdc.RegisterConcrete(MiniToken{}, "bnbchain/MiniToken", nil)
 }
