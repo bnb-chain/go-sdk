@@ -5,17 +5,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	types "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/tendermint/go-amino"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
-	"time"
 )
 
 var (
 	StakeStoreKey               = "stake"
-	StakeScStoreKey				= "sc"
+	StakeScStoreKey             = "sc"
 	SideChainStorePrefixByIdKey = []byte{0x01}
 	ValidatorsKey               = []byte{0x21}
 	DelegationKey               = []byte{0x31}
@@ -33,6 +34,27 @@ type QueryTopValidatorsParams struct {
 	Top int
 }
 
+type SideChainClient interface {
+	// tx methods
+	CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	CreateSideChainValidatorOnBeHalfOf(delegatorAddress types.AccAddress, delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	SideChainDelegate(sideChainId string, valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	SideChainRedelegate(sideChainId string, valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	SideChainUnbond(sideChainId string, valAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	SideChainSlash(sideChainId string, headers [2]*types.Header, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	// query methods
+	QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)
+	QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error)
+	QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.Delegation, error)
+	QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.Delegation, error)
+	QuerySideChainRedelegation(sideChainId string, delAddr types.AccAddress, valSrcAddr types.ValAddress, valDstAddr types.ValAddress) (*types.Redelegation, error)
+	QuerySideChainRedelegations(sideChainId string, delAddr types.AccAddress) ([]types.Redelegation, error)
+	QuerySideChainUnbondingDelegation(sideChainId string, valAddr types.ValAddress, delAddr types.AccAddress) (*types.UnbondingDelegation, error)
+	QuerySideChainUnbondingDelegations(sideChainId string, delAddr types.AccAddress) ([]types.UnbondingDelegation, error)
+	getSideChainStorePrefixKey(sideChainId string) ([]byte, error)
+}
+
 func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyManagerMissingError
@@ -48,7 +70,7 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 
 	valOpAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.NewCreateSideChainValidatorMsg(valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr, )
+	m := msg.NewCreateSideChainValidatorMsg(valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
 
 	return c.broadcast(m, syncType, options...)
 }
@@ -68,12 +90,12 @@ func (c *HTTP) CreateSideChainValidatorOnBeHalfOf(delegatorAddress types.AccAddr
 
 	valOpAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.NewMsgCreateSideChainValidatorOnBehalfOf(delegatorAddress, valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr, )
+	m := msg.NewMsgCreateSideChainValidatorOnBehalfOf(delegatorAddress, valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
 
 	return c.broadcast(m, syncType, options...)
 }
 
-func (c *HTTP) EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)  {
+func (c *HTTP) EditSideChainValidatorMsg(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyManagerMissingError
 	}
@@ -137,8 +159,18 @@ func (c *HTTP) SideChainUnbond(sideChainId string, valAddr types.ValAddress, amo
 	return c.broadcast(m, syncType, options...)
 }
 
+func (c *HTTP) SideChainSlash(sideChainId string, headers [2]*types.Header, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if headers[0] == nil || headers[1] == nil {
+		return nil, fmt.Errorf("empty side chain header")
+	}
+	submitter := c.key.GetAddr()
+	m := msg.NewMsgSubmitEvidence(submitter, sideChainId, headers)
+
+	return c.broadcast(m, syncType, options...)
+}
+
 //Query a validator
-func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)  {
+func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error) {
 	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
 
 	if err != nil {
@@ -176,26 +208,26 @@ func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddr
 type bechValidator struct {
 	FeeAddr      types.AccAddress `json:"fee_addr"`                   // the bech32 address for fee collection
 	OperatorAddr types.ValAddress `json:"operator_address"`           // the bech32 address of the validator's operator
-	ConsPubKey   string         `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
-	Jailed       bool           `json:"jailed"`                     // has the validator been jailed from bonded status?
+	ConsPubKey   string           `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
+	Jailed       bool             `json:"jailed"`                     // has the validator been jailed from bonded status?
 
 	Status          types.BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)
 	Tokens          types.Dec        `json:"tokens"`           // delegated tokens (incl. self-delegation)
 	DelegatorShares types.Dec        `json:"delegator_shares"` // total shares issued to a validator's delegators
 
 	Description        types.Description `json:"description"`           // description terms for the validator
-	BondHeight         int64       `json:"bond_height"`           // earliest height as a bonded validator
-	BondIntraTxCounter int16       `json:"bond_intra_tx_counter"` // block-local tx index of validator change
+	BondHeight         int64             `json:"bond_height"`           // earliest height as a bonded validator
+	BondIntraTxCounter int16             `json:"bond_intra_tx_counter"` // block-local tx index of validator change
 
 	UnbondingHeight  int64     `json:"unbonding_height"` // if unbonding, height at which this validator has begun unbonding
 	UnbondingMinTime time.Time `json:"unbonding_time"`   // if unbonding, min time for the validator to complete unbonding
 
-	Commission 		 types.Commission `json:"commission"` // commission parameters
+	Commission types.Commission `json:"commission"` // commission parameters
 
 	DistributionAddr types.AccAddress `json:"distribution_addr,omitempty"` // the address receives rewards from the side address, and distribute rewards to delegators. It's auto generated
-	SideChainId      string         `json:"side_chain_id,omitempty"`     // side chain id to distinguish different side chains
-	SideConsAddr     string         `json:"side_cons_addr,omitempty"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
-	SideFeeAddr      string         `json:"side_fee_addr,omitempty"`     // fee address on the side chain
+	SideChainId      string           `json:"side_chain_id,omitempty"`     // side chain id to distinguish different side chains
+	SideConsAddr     string           `json:"side_cons_addr,omitempty"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
+	SideFeeAddr      string           `json:"side_fee_addr,omitempty"`     // fee address on the side chain
 }
 
 func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error) {
@@ -204,7 +236,7 @@ func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types
 	}
 
 	params := QueryTopValidatorsParams{
-		BaseParams{SideChainId:sideChainId},
+		BaseParams{SideChainId: sideChainId},
 		top,
 	}
 
@@ -251,12 +283,12 @@ func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types
 			validator.SideChainId = v.SideChainId
 			if sideConsAddr, err := hex.DecodeString(v.SideConsAddr[2:]); err != nil {
 				return nil, err
-			}else{
+			} else {
 				validator.SideConsAddr = sideConsAddr
 			}
 			if sideFeeAddr, err := hex.DecodeString(v.SideFeeAddr[2:]); err != nil {
 				return nil, err
-			}else{
+			} else {
 				validator.SideFeeAddr = sideFeeAddr
 			}
 		}
@@ -371,7 +403,7 @@ func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.Acc
 
 	if redels != nil && len(redels) > 0 {
 		return redels, nil
-	}else{
+	} else {
 		return nil, EmptyResultError
 	}
 }
@@ -421,7 +453,7 @@ func (c *HTTP) QuerySideChainUnbondingDelegations(sideChainId string, delAddr ty
 	for _, kv := range resKVs {
 		k := kv.Key[len(storePrefix):]
 		ubd, err := unmarshalUBD(c.cdc, k, kv.Value)
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 		ubds = append(ubds, ubd)
@@ -440,7 +472,7 @@ func (c *HTTP) getSideChainStorePrefixKey(sideChainId string) ([]byte, error) {
 
 	if err != nil {
 		return nil, err
-	}else if len(result) == 0 {
+	} else if len(result) == 0 {
 		return nil, fmt.Errorf("Invalid side-chain-id %s ", sideChainId)
 	}
 

@@ -50,6 +50,7 @@ type Client interface {
 	EventsClient
 	DexClient
 	OpsClient
+	SideChainClient
 }
 
 type EventsClient interface {

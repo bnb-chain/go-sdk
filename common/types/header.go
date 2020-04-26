@@ -1,4 +1,4 @@
-package bsc
+package types
 
 import (
 	"encoding/json"
@@ -6,48 +6,49 @@ import (
 	"io"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/sha3"
 
+	"github.com/binance-chain/go-sdk/common/types/bsc"
 	"github.com/binance-chain/go-sdk/common/types/bsc/rlp"
- 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 )
 
 type Header struct {
-	ParentHash  Hash       `json:"parentHash"       gencodec:"required"`
-	UncleHash   Hash       `json:"sha3Uncles"       gencodec:"required"`
-	Coinbase    Address    `json:"miner"            gencodec:"required"`
-	Root        Hash       `json:"stateRoot"        gencodec:"required"`
-	TxHash      Hash       `json:"transactionsRoot" gencodec:"required"`
-	ReceiptHash Hash       `json:"receiptsRoot"     gencodec:"required"`
-	Bloom       Bloom      `json:"logsBloom"        gencodec:"required"`
-	Difficulty  int64      `json:"difficulty"       gencodec:"required"`
-	Number      int64      `json:"number"           gencodec:"required"`
-	GasLimit    uint64     `json:"gasLimit"         gencodec:"required"`
-	GasUsed     uint64     `json:"gasUsed"          gencodec:"required"`
-	Time        uint64     `json:"timestamp"        gencodec:"required"`
-	Extra       []byte     `json:"extraData"        gencodec:"required"`
-	MixDigest   Hash       `json:"mixHash"`
-	Nonce       BlockNonce `json:"nonce"`
+	ParentHash  bsc.Hash       `json:"parentHash"       gencodec:"required"`
+	UncleHash   bsc.Hash       `json:"sha3Uncles"       gencodec:"required"`
+	Coinbase    bsc.Address    `json:"miner"            gencodec:"required"`
+	Root        bsc.Hash       `json:"stateRoot"        gencodec:"required"`
+	TxHash      bsc.Hash       `json:"transactionsRoot" gencodec:"required"`
+	ReceiptHash bsc.Hash       `json:"receiptsRoot"     gencodec:"required"`
+	Bloom       bsc.Bloom      `json:"logsBloom"        gencodec:"required"`
+	Difficulty  int64          `json:"difficulty"       gencodec:"required"`
+	Number      int64          `json:"number"           gencodec:"required"`
+	GasLimit    uint64         `json:"gasLimit"         gencodec:"required"`
+	GasUsed     uint64         `json:"gasUsed"          gencodec:"required"`
+	Time        uint64         `json:"timestamp"        gencodec:"required"`
+	Extra       []byte         `json:"extraData"        gencodec:"required"`
+	MixDigest   bsc.Hash       `json:"mixHash"`
+	Nonce       bsc.BlockNonce `json:"nonce"`
 }
 
 // MarshalJSON marshals as JSON.
 func (h Header) MarshalJSON() ([]byte, error) {
 	type Header struct {
-		ParentHash  Hash       `json:"parentHash"       gencodec:"required"`
-		UncleHash   Hash       `json:"sha3Uncles"       gencodec:"required"`
-		Coinbase    Address    `json:"miner"            gencodec:"required"`
-		Root        Hash       `json:"stateRoot"        gencodec:"required"`
-		TxHash      Hash       `json:"transactionsRoot" gencodec:"required"`
-		ReceiptHash Hash       `json:"receiptsRoot"     gencodec:"required"`
-		Bloom       Bloom      `json:"logsBloom"        gencodec:"required"`
-		Difficulty  *Big       `json:"difficulty"       gencodec:"required"`
-		Number      *Big       `json:"number"           gencodec:"required"`
-		GasLimit    Uint64     `json:"gasLimit"         gencodec:"required"`
-		GasUsed     Uint64     `json:"gasUsed"          gencodec:"required"`
-		Time        Uint64     `json:"timestamp"        gencodec:"required"`
-		Extra       Bytes      `json:"extraData"        gencodec:"required"`
-		MixDigest   Hash       `json:"mixHash"`
-		Nonce       BlockNonce `json:"nonce"`
+		ParentHash  bsc.Hash       `json:"parentHash"       gencodec:"required"`
+		UncleHash   bsc.Hash       `json:"sha3Uncles"       gencodec:"required"`
+		Coinbase    bsc.Address    `json:"miner"            gencodec:"required"`
+		Root        bsc.Hash       `json:"stateRoot"        gencodec:"required"`
+		TxHash      bsc.Hash       `json:"transactionsRoot" gencodec:"required"`
+		ReceiptHash bsc.Hash       `json:"receiptsRoot"     gencodec:"required"`
+		Bloom       bsc.Bloom      `json:"logsBloom"        gencodec:"required"`
+		Difficulty  *bsc.Big       `json:"difficulty"       gencodec:"required"`
+		Number      *bsc.Big       `json:"number"           gencodec:"required"`
+		GasLimit    bsc.Uint64     `json:"gasLimit"         gencodec:"required"`
+		GasUsed     bsc.Uint64     `json:"gasUsed"          gencodec:"required"`
+		Time        bsc.Uint64     `json:"timestamp"        gencodec:"required"`
+		Extra       bsc.Bytes      `json:"extraData"        gencodec:"required"`
+		MixDigest   bsc.Hash       `json:"mixHash"`
+		Nonce       bsc.BlockNonce `json:"nonce"`
 	}
 	var enc Header
 	enc.ParentHash = h.ParentHash
@@ -57,11 +58,11 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	enc.TxHash = h.TxHash
 	enc.ReceiptHash = h.ReceiptHash
 	enc.Bloom = h.Bloom
-	enc.Difficulty = (*Big)(big.NewInt(h.Difficulty))
-	enc.Number = (*Big)(big.NewInt(h.Number))
-	enc.GasLimit = Uint64(h.GasLimit)
-	enc.GasUsed = Uint64(h.GasUsed)
-	enc.Time = Uint64(h.Time)
+	enc.Difficulty = (*bsc.Big)(big.NewInt(h.Difficulty))
+	enc.Number = (*bsc.Big)(big.NewInt(h.Number))
+	enc.GasLimit = bsc.Uint64(h.GasLimit)
+	enc.GasUsed = bsc.Uint64(h.GasUsed)
+	enc.Time = bsc.Uint64(h.Time)
 	enc.Extra = h.Extra
 	enc.MixDigest = h.MixDigest
 	enc.Nonce = h.Nonce
@@ -71,21 +72,21 @@ func (h Header) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals from JSON.
 func (h *Header) UnmarshalJSON(input []byte) error {
 	type Header struct {
-		ParentHash  *Hash       `json:"parentHash"       gencodec:"required"`
-		UncleHash   *Hash       `json:"sha3Uncles"       gencodec:"required"`
-		Coinbase    *Address    `json:"miner"            gencodec:"required"`
-		Root        *Hash       `json:"stateRoot"        gencodec:"required"`
-		TxHash      *Hash       `json:"transactionsRoot" gencodec:"required"`
-		ReceiptHash *Hash       `json:"receiptsRoot"     gencodec:"required"`
-		Bloom       *Bloom      `json:"logsBloom"        gencodec:"required"`
-		Difficulty  *Big        `json:"difficulty"       gencodec:"required"`
-		Number      *Big        `json:"number"           gencodec:"required"`
-		GasLimit    *Uint64     `json:"gasLimit"         gencodec:"required"`
-		GasUsed     *Uint64     `json:"gasUsed"          gencodec:"required"`
-		Time        *Uint64     `json:"timestamp"        gencodec:"required"`
-		Extra       *Bytes      `json:"extraData"        gencodec:"required"`
-		MixDigest   *Hash       `json:"mixHash"`
-		Nonce       *BlockNonce `json:"nonce"`
+		ParentHash  *bsc.Hash       `json:"parentHash"       gencodec:"required"`
+		UncleHash   *bsc.Hash       `json:"sha3Uncles"       gencodec:"required"`
+		Coinbase    *bsc.Address    `json:"miner"            gencodec:"required"`
+		Root        *bsc.Hash       `json:"stateRoot"        gencodec:"required"`
+		TxHash      *bsc.Hash       `json:"transactionsRoot" gencodec:"required"`
+		ReceiptHash *bsc.Hash       `json:"receiptsRoot"     gencodec:"required"`
+		Bloom       *bsc.Bloom      `json:"logsBloom"        gencodec:"required"`
+		Difficulty  *bsc.Big        `json:"difficulty"       gencodec:"required"`
+		Number      *bsc.Big        `json:"number"           gencodec:"required"`
+		GasLimit    *bsc.Uint64     `json:"gasLimit"         gencodec:"required"`
+		GasUsed     *bsc.Uint64     `json:"gasUsed"          gencodec:"required"`
+		Time        *bsc.Uint64     `json:"timestamp"        gencodec:"required"`
+		Extra       *bsc.Bytes      `json:"extraData"        gencodec:"required"`
+		MixDigest   *bsc.Hash       `json:"mixHash"`
+		Nonce       *bsc.BlockNonce `json:"nonce"`
 	}
 	var dec Header
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -162,7 +163,7 @@ func (h *Header) GetSignature() ([]byte, error) {
 	return signature, nil
 }
 
-func (h *Header) ExtractSignerFromHeader() (signer Address, err error) {
+func (h *Header) ExtractSignerFromHeader() (signer bsc.Address, err error) {
 	signature, err := h.GetSignature()
 	if err != nil {
 		return
@@ -185,7 +186,7 @@ func Keccak256(data ...[]byte) []byte {
 }
 
 // SealHash returns the hash of a block prior to it being sealed.
-func SealHash(header *Header) (hash Hash) {
+func SealHash(header *Header) (hash bsc.Hash) {
 	hasher := sha3.NewLegacyKeccak256()
 	encodeSigHeader(hasher, header)
 	hasher.Sum(hash[:0])

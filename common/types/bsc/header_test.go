@@ -2,12 +2,13 @@ package bsc
 
 import (
 	"encoding/hex"
+	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestHeader_UnmarshalJSON(t *testing.T) {
-	h := &Header{}
+	h := &types.Header{}
 	jsonStr := `{"difficulty":"0x2",
         "extraData":"0xd98301090a846765746889676f312e31322e3137856c696e75780000000000005b28385ac3a02a84c391c5d90b3aa0a62365136d80892c5e6158797b394f436c70c697f8d44d6dcfa49d4871897d2ff132356496f066d0adf28ddb3b7099ff5d00",
         "gasLimit":"0x2625a00",
