@@ -5,6 +5,7 @@ require (
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
+	github.com/ethereum/go-ethereum v1.9.1
 	github.com/go-kit/kit v0.8.0 // indirect
 	github.com/gorilla/websocket v1.4.0
 	github.com/pkg/errors v0.8.1
@@ -23,3 +24,5 @@ require (
 replace github.com/tendermint/go-amino => github.com/binance-chain/bnc-go-amino v0.14.1-binance.1
 
 replace github.com/zondax/ledger-go => github.com/binance-chain/ledger-go v0.9.1
+
+go 1.13
