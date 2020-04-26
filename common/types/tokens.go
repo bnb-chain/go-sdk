@@ -20,6 +20,6 @@ type TokenBalance struct {
 // MiniToken definition
 type MiniToken struct {
 	Token
-	MaxTotalSupply int64          `json:"max_total_supply"`
+	MaxTotalSupply Fixed8          `json:"max_total_supply"`
 	TokenURI       string         `json:"token_uri"`
 }
