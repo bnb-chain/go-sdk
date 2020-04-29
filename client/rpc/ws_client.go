@@ -16,11 +16,12 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/tendermint/go-amino"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	libbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
+	libservice "github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/lib/types"
+	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	"github.com/tendermint/tendermint/types"
 
 	"github.com/binance-chain/go-sdk/common/uuid"
@@ -45,7 +46,7 @@ const (
 
 /** websocket event stuff here... **/
 type WSEvents struct {
-	cmn.BaseService
+	libservice.BaseService
 	cdc      *amino.Codec
 	remote   string
 	endpoint string
@@ -78,11 +79,11 @@ func newWSEvents(cdc *amino.Codec, remote, endpoint string) *WSEvents {
 		reconnect:            make(chan *WSClient),
 	}
 
-	wsEvents.BaseService = *cmn.NewBaseService(nil, "WSEvents", wsEvents)
+	wsEvents.BaseService = *libservice.NewBaseService(nil, "WSEvents", wsEvents)
 	return wsEvents
 }
 
-// OnStart implements cmn.Service by starting WSClient and event loop.
+// OnStart implements libservice.Service by starting WSClient and event loop.
 func (w *WSEvents) OnStart() error {
 	wsClient := NewWSClient(w.remote, w.endpoint, w.responsesCh, setOnDialSuccess(w.redoSubscriptionsAfter))
 	wsClient.SetCodec(w.cdc)
@@ -105,12 +106,12 @@ func (w *WSEvents) SetLogger(logger log.Logger) {
 	}
 }
 
-// OnStop implements cmn.Service by stopping WSClient.
+// OnStop implements libservice.Service by stopping WSClient.
 func (w *WSEvents) OnStop() {
 	w.getWsClient().Stop()
 }
 
-// OnStop implements cmn.Service by stopping WSClient.
+// OnStop implements libservice.Service by stopping WSClient.
 func (w *WSEvents) PendingRequest() int {
 	size := 0
 	w.responseChanMap.Range(func(key, value interface{}) bool {
@@ -297,7 +298,7 @@ func (w *WSEvents) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
 	return info, err
 }
 
-func (w *WSEvents) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
+func (w *WSEvents) ABCIQueryWithOptions(path string, data libbytes.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
 	abciQuery := new(ctypes.ResultABCIQuery)
 	wsClient := w.getWsClient()
 	err := w.SimpleCall(func(ctx context.Context, id rpctypes.JSONRPCStringID) error {
@@ -559,7 +560,7 @@ func (w *WSEvents) eventListener() {
 // WSClient is a WebSocket client. The methods of WSClient are safe for use by
 // multiple goroutines.
 type WSClient struct {
-	cmn.BaseService
+	libservice.BaseService
 
 	conn *websocket.Conn
 	cdc  *amino.Codec
@@ -617,7 +618,7 @@ func NewWSClient(remoteAddr, endpoint string, responsesCh chan<- rpctypes.RPCRes
 		send:        make(chan rpctypes.RPCRequest),
 	}
 	c.dialing.Store(true)
-	c.BaseService = *cmn.NewBaseService(nil, "WSClient", c)
+	c.BaseService = *libservice.NewBaseService(nil, "WSClient", c)
 	for _, option := range options {
 		option(c)
 	}
@@ -632,7 +633,7 @@ func (c *WSClient) String() string {
 	return fmt.Sprintf("%s (%s)", c.Address, c.Endpoint)
 }
 
-// OnStart implements cmn.Service by dialing a server and creating read and
+// OnStart implements libservice.Service by dialing a server and creating read and
 // write routines.
 func (c *WSClient) OnStart() error {
 	err := c.dial()
@@ -873,7 +874,7 @@ func (c *WSClient) ABCIInfo(ctx context.Context, id rpctypes.JSONRPCStringID) er
 	return c.Call(ctx, "abci_info", id, map[string]interface{}{})
 }
 
-func (c *WSClient) ABCIQueryWithOptions(ctx context.Context, id rpctypes.JSONRPCStringID, path string, data cmn.HexBytes, opts client.ABCIQueryOptions) error {
+func (c *WSClient) ABCIQueryWithOptions(ctx context.Context, id rpctypes.JSONRPCStringID, path string, data libbytes.HexBytes, opts client.ABCIQueryOptions) error {
 	return c.Call(ctx, "abci_query", id, map[string]interface{}{"path": path, "data": data, "height": opts.Height, "prove": opts.Prove})
 }
 

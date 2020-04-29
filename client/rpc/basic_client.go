@@ -2,14 +2,16 @@ package rpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/pkg/errors"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
+	libbytes "github.com/tendermint/tendermint/libs/bytes"
+	libservice "github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/lib/client"
+	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
 	"github.com/tendermint/tendermint/types"
 
 	ntypes "github.com/binance-chain/go-sdk/common/types"
@@ -22,8 +24,8 @@ var DefaultTimeout = 5 * time.Second
 type ABCIClient interface {
 	// Reading from abci app
 	ABCIInfo() (*ctypes.ResultABCIInfo, error)
-	ABCIQuery(path string, data cmn.HexBytes) (*ctypes.ResultABCIQuery, error)
-	ABCIQueryWithOptions(path string, data cmn.HexBytes,
+	ABCIQuery(path string, data libbytes.HexBytes) (*ctypes.ResultABCIQuery, error)
+	ABCIQueryWithOptions(path string, data libbytes.HexBytes,
 		opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error)
 
 	// Writing to abci app
@@ -42,7 +44,7 @@ type SignClient interface {
 }
 
 type Client interface {
-	cmn.Service
+	libservice.Service
 	ABCIClient
 	SignClient
 	client.HistoryClient
@@ -72,7 +74,10 @@ type HTTP struct {
 // NewHTTP takes a remote endpoint in the form tcp://<host>:<port>
 // and the websocket path (which always seems to be "/websocket")
 func NewHTTP(remote, wsEndpoint string) *HTTP {
-	rc := rpcclient.NewJSONRPCClient(remote)
+	rc, err := rpcclient.NewJSONRPCClient(remote)
+	if err != nil {
+		log.Fatal(err)
+	}
 	cdc := rc.Codec()
 	ctypes.RegisterAmino(cdc)
 	ntypes.RegisterWire(cdc)
@@ -95,11 +100,11 @@ func (c *HTTP) ABCIInfo() (*ctypes.ResultABCIInfo, error) {
 	return c.WSEvents.ABCIInfo()
 }
 
-func (c *HTTP) ABCIQuery(path string, data cmn.HexBytes) (*ctypes.ResultABCIQuery, error) {
+func (c *HTTP) ABCIQuery(path string, data libbytes.HexBytes) (*ctypes.ResultABCIQuery, error) {
 	return c.ABCIQueryWithOptions(path, data, client.DefaultABCIQueryOptions)
 }
 
-func (c *HTTP) ABCIQueryWithOptions(path string, data cmn.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
+func (c *HTTP) ABCIQueryWithOptions(path string, data libbytes.HexBytes, opts client.ABCIQueryOptions) (*ctypes.ResultABCIQuery, error) {
 	if err := ValidateABCIPath(path); err != nil {
 		return nil, err
 	}
@@ -210,7 +215,7 @@ func (c *HTTP) Validators(height *int64) (*ctypes.ResultValidators, error) {
 	return c.WSEvents.Validators(height)
 }
 
-func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
+func (c *HTTP) QueryStore(key libbytes.HexBytes, storeName string) ([]byte, error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
 	result, err := c.ABCIQuery(path, key)
 	if err != nil {
