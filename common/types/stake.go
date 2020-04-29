@@ -60,7 +60,7 @@ func (c Commission) Validate() error {
 
 	case c.MaxRate.GT(OneDec()):
 		// max rate cannot be greater than 100%
-		return fmt.Errorf("Commission maxrate %v can't be greater than 100%", c.MaxRate)
+		return fmt.Errorf("Commission maxrate %v can't be greater than 100%%", c.MaxRate)
 
 	case c.Rate.LT(ZeroDec()):
 		// rate cannot be negative

@@ -129,7 +129,7 @@ func (c Client) Commit(height *int64) (*ctypes.ResultCommit, error) {
 }
 
 func (c Client) Validators(height *int64) (*ctypes.ResultValidators, error) {
-	return core.Validators(&rpctypes.Context{}, height)
+	return core.Validators(&rpctypes.Context{}, height, 0, 0)
 }
 
 func (c Client) SetLogger(log.Logger) {

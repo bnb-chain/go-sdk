@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/pkg/errors"
@@ -73,7 +74,10 @@ type HTTP struct {
 // NewHTTP takes a remote endpoint in the form tcp://<host>:<port>
 // and the websocket path (which always seems to be "/websocket")
 func NewHTTP(remote, wsEndpoint string) *HTTP {
-	rc := rpcclient.NewJSONRPCClient(remote)
+	rc, err := rpcclient.NewJSONRPCClient(remote)
+	if err != nil {
+		log.Fatal(err)
+	}
 	cdc := rc.Codec()
 	ctypes.RegisterAmino(cdc)
 	ntypes.RegisterWire(cdc)
