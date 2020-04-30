@@ -10,31 +10,34 @@ import (
 )
 
 const (
-	IssueMsgType    = "miniIssueMsg"
-	AdvIssueMsgType = "advMiniIssueMsg" //For max total supply in range 2
+	IssueMsgType    = "tinyIssueMsg"
+	AdvIssueMsgType = "miniIssueMsg" //For max total supply in range 2
+
+	TinyTokenType = 1
+	MiniTokenType = 2
 )
 
 // MiniTokenIssueMsg def
 type MiniTokenIssueMsg struct {
-	From           types.AccAddress `json:"from"`
-	Name           string           `json:"name"`
-	Symbol         string           `json:"symbol"`
-	MaxTotalSupply int64            `json:"max_total_supply"`
-	TotalSupply    int64            `json:"total_supply"`
-	Mintable       bool             `json:"mintable"`
-	TokenURI       string           `json:"token_uri"`
+	From        types.AccAddress `json:"from"`
+	Name        string           `json:"name"`
+	Symbol      string           `json:"symbol"`
+	TokenType   int              `json:"token_type"`
+	TotalSupply int64            `json:"total_supply"`
+	Mintable    bool             `json:"mintable"`
+	TokenURI    string           `json:"token_uri"`
 }
 
 // NewMiniTokenIssueMsg for instance creation
-func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, maxTotalSupply, supply int64, mintable bool, tokenURI string) MiniTokenIssueMsg {
+func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, tokenType int, supply int64, mintable bool, tokenURI string) MiniTokenIssueMsg {
 	return MiniTokenIssueMsg{
-		From:           from,
-		Name:           name,
-		Symbol:         symbol,
-		MaxTotalSupply: maxTotalSupply,
-		TotalSupply:    supply,
-		Mintable:       mintable,
-		TokenURI:       tokenURI,
+		From:        from,
+		Name:        name,
+		Symbol:      symbol,
+		TokenType:   tokenType,
+		TotalSupply: supply,
+		Mintable:    mintable,
+		TokenURI:    tokenURI,
 	}
 }
 
@@ -58,13 +61,13 @@ func (msg MiniTokenIssueMsg) ValidateBasic() error {
 		return fmt.Errorf("token seturi should not exceed %v characters", MaxTokenURILength)
 	}
 
-	if msg.MaxTotalSupply < MiniTokenMinTotalSupply || msg.MaxTotalSupply > MiniTokenMaxTotalSupplyUpperBound {
-		return fmt.Errorf("max total supply should be between %d ~ %d", MiniTokenMinTotalSupply, MiniTokenMaxTotalSupplyUpperBound)
-	}
-
-	if msg.TotalSupply < MiniTokenMinTotalSupply || msg.TotalSupply > msg.MaxTotalSupply {
-		return fmt.Errorf("total supply should be between %d ~ %d", MiniTokenMinTotalSupply, msg.MaxTotalSupply)
-	}
+	//if msg.MaxTotalSupply < MiniTokenMinTotalSupply || msg.MaxTotalSupply > MiniTokenMaxTotalSupplyUpperBound {
+	//	return fmt.Errorf("max total supply should be between %d ~ %d", MiniTokenMinTotalSupply, MiniTokenMaxTotalSupplyUpperBound)
+	//}
+	//
+	//if msg.TotalSupply < MiniTokenMinTotalSupply || msg.TotalSupply > msg.MaxTotalSupply {
+	//	return fmt.Errorf("total supply should be between %d ~ %d", MiniTokenMinTotalSupply, msg.MaxTotalSupply)
+	//}
 
 	return nil
 }
@@ -74,11 +77,12 @@ func (msg MiniTokenIssueMsg) Route() string { return "miniTokensIssue" }
 
 // Type part of Msg interface
 func (msg MiniTokenIssueMsg) Type() string {
-	if msg.MaxTotalSupply > MiniTokenSupplyRange1UpperBound {
+	if msg.TokenType == MiniTokenType {
 		return AdvIssueMsgType
-	} else {
+	} else if msg.TokenType == TinyTokenType {
 		return IssueMsgType
 	}
+	return "unknown"
 }
 
 // String part of Msg interface

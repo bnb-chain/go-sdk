@@ -31,9 +31,9 @@ const (
 	MiniTokenSymbolTxHashSuffixLen = 3
 	MaxMiniTokenNameLength   = 32
 	MaxTokenURILength        = 2048
-	MiniTokenMinTotalSupply           int64 = 100000000      // 1 with 8 decimal digits
-	MiniTokenMaxTotalSupplyUpperBound int64 = 10000000000000 // 100k with 8 decimal digits
-	MiniTokenSupplyRange1UpperBound   int64 = 1000000000000
+	//MiniTokenMinTotalSupply           int64 = 100000000      // 1 with 8 decimal digits
+	//MiniTokenMaxTotalSupplyUpperBound int64 = 10000000000000 // 100k with 8 decimal digits
+	//MiniTokenSupplyRange1UpperBound   int64 = 1000000000000
 )
 
 // Msg - Transactions messages must fulfill the Msg
