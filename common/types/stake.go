@@ -23,19 +23,6 @@ const (
 	Bonded    BondStatus = 0x02
 )
 
-func BondStatusToString(b BondStatus) string {
-	switch b {
-	case 0x00:
-		return "Unbonded"
-	case 0x01:
-		return "Unbonding"
-	case 0x02:
-		return "Bonded"
-	default:
-		panic("improper use of BondStatusToString")
-	}
-}
-
 type (
 	// Commission defines a commission parameters for a given validator.
 	Commission struct {

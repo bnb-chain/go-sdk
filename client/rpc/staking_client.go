@@ -358,7 +358,7 @@ func (c *HTTP) QuerySideChainRedelegations(sideChainId string, delAddr types.Acc
 		k := kv.Key[len(storePrefix):]
 		red, err := types.UnmarshalRED(c.cdc, k, kv.Value)
 		if err != nil {
-			panic(err)
+			return redels, err
 		}
 		redels = append(redels, red)
 	}
