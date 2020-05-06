@@ -5,11 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/kv"
-
 	"github.com/pkg/errors"
-
 	libbytes "github.com/tendermint/tendermint/libs/bytes"
+	"github.com/tendermint/tendermint/libs/kv"
 	libservice "github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
