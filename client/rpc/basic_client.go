@@ -2,9 +2,10 @@ package rpc
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/libs/kv"
 	"log"
 	"time"
+
+	"github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/pkg/errors"
 
