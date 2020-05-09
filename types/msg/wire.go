@@ -47,6 +47,8 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(SideChainDelegateMsg{}, "cosmos-sdk/MsgSideChainDelegate", nil)
 	cdc.RegisterConcrete(SideChainRedelegateMsg{}, "cosmos-sdk/MsgSideChainRedelegate", nil)
 	cdc.RegisterConcrete(SideChainUndelegateMsg{}, "cosmos-sdk/MsgSideChainUndelegate", nil)
+	cdc.RegisterConcrete(MsgSideChainUnjail{}, "cosmos-sdk/MsgSideChainUnjail", nil)
+	cdc.RegisterConcrete(MsgBscSubmitEvidence{}, "cosmos-sdk/MsgBscSubmitEvidence", nil)
 }
 
 func init() {
