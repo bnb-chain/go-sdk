@@ -19,7 +19,12 @@ type TokenBalance struct {
 
 // MiniToken definition
 type MiniToken struct {
-	Token
-	TokenType int    `json:"token_type"`
-	TokenURI  string `json:"token_uri"`
+	Name        string     `json:"name"`
+	Symbol      string     `json:"symbol"`
+	OrigSymbol  string     `json:"original_symbol"`
+	TokenType   int8       `json:"token_type"`
+	TotalSupply Fixed8     `json:"total_supply"`
+	Owner       AccAddress `json:"owner"`
+	Mintable    bool       `json:"mintable"`
+	TokenURI    string     `json:"token_uri"`
 }
