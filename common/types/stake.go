@@ -340,6 +340,12 @@ type QueryTopValidatorsParams struct {
 	Top int
 }
 
+type QueryBondsParams struct {
+	BaseParams
+	DelegatorAddr AccAddress
+	ValidatorAddr ValAddress
+}
+
 type QueryValidatorParams struct {
 	BaseParams
 	ValidatorAddr ValAddress

@@ -14,7 +14,7 @@ type Delegation struct {
 	DelegatorAddr AccAddress `json:"delegator_addr"`
 	ValidatorAddr ValAddress `json:"validator_addr"`
 	Shares        Dec        `json:"shares"`
-	Height        int64      `json:"height"` // Last height bond updated
+	Height        int64      `json:"-"` // Last height bond updated
 }
 
 type DelegationValue struct {
@@ -96,4 +96,14 @@ func UnmarshalRED(cdc *amino.Codec, key, value []byte) (red Redelegation, err er
 		SharesSrc:        storeValue.SharesSrc,
 		SharesDst:        storeValue.SharesDst,
 	}, nil
+}
+
+type DelegationResponse struct {
+	Delegation
+	Balance Coin `json:"balance"`
+}
+
+type QueryDelegatorParams struct {
+	BaseParams
+	DelegatorAddr AccAddress
 }
