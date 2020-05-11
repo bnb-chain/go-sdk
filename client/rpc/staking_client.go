@@ -152,12 +152,7 @@ func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddr
 		return nil, err
 	}
 
-	keyPrefix, err := c.QueryStore(storePrefix, StakeStoreKey)
-	if err != nil {
-		return nil, err
-	}
-
-	key := append(keyPrefix, getValidatorKey(valAddr)...)
+	key := append(storePrefix, getValidatorKey(valAddr)...)
 
 	bz, err := c.QueryStore(key, StakeStoreKey)
 
@@ -251,61 +246,60 @@ func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types
 }
 
 //Query a delegation based on address and validator address
-func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.Delegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
+func (c *HTTP) QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.DelegationResponse, error) {
+	params := types.QueryBondsParams{
+		BaseParams:    types.NewBaseParams(sideChainId),
+		DelegatorAddr: delAddr,
+		ValidatorAddr: valAddr,
+	}
 
+	bz, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
 
-	delegateKey := getDelegationKey(delAddr, valAddr)
-
-	key := append(storePrefix, delegateKey...)
-	res, err := c.QueryStore(key, StakeStoreKey)
+	response, err := c.QueryWithData("custom/stake/delegation", bz)
 	if err != nil {
+		return nil, err
+	} else if len(response) == 0 {
+		return nil, fmt.Errorf("No delegation found ")
+	}
+
+	var delResponse types.DelegationResponse
+	if err := c.cdc.UnmarshalJSON(response, &delResponse); err != nil {
 		return nil, err
 	}
 
-	if len(res) == 0 {
-		return nil, EmptyResultError
-	}
-
-	delegation, err := types.UnmarshalDelegation(c.cdc, delegateKey, res)
-
-	return &delegation, nil
+	return &delResponse, nil
 }
 
 //Query all delegations made from one delegator
-func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.Delegation, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
+func (c *HTTP) QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.DelegationResponse, error) {
+	params := types.QueryDelegatorParams{
+		BaseParams:    types.NewBaseParams(sideChainId),
+		DelegatorAddr: delAddr,
+	}
 
+	var delegationResponses []types.DelegationResponse
+	delegationResponses = make([]types.DelegationResponse, 0)
+
+	bz, err := json.Marshal(params)
 	if err != nil {
-		return nil, err
+		return delegationResponses, err
 	}
 
-	key := append(storePrefix, getDelegationsKey(delAddr)...)
-
-	resKVS, err := c.QueryStoreSubspace(key, StakeStoreKey)
+	response, err := c.QueryWithData("custom/stake/delegatorDelegations", bz)
 	if err != nil {
-		return nil, err
+		return delegationResponses, err
+	} else if len(response) == 0 {
+		return delegationResponses, fmt.Errorf("No delegation found with delegator-addr %s ", delAddr)
 	}
 
-	var delegations = make([]types.Delegation, 0)
-
-	if len(resKVS) == 0 {
-		return delegations, nil
+	if err := c.cdc.UnmarshalJSON(response, &delegationResponses); err != nil {
+		return delegationResponses, err
 	}
 
-	for _, kv := range resKVS {
-		k := kv.Key[len(storePrefix):]
-		delegation, err := types.UnmarshalDelegation(c.cdc, k, kv.Value)
-		if err != nil {
-			return nil, err
-		}
-		delegations = append(delegations, delegation)
-	}
-
-	return delegations, nil
+	return delegationResponses, nil
 }
 
 //Query a redelegation record based on delegator and a source and destination validator address
