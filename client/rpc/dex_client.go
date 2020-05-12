@@ -53,7 +53,6 @@ type DexClient interface {
 
 	ListAllMiniTokens(offset int, limit int) ([]types.MiniToken, error)
 	GetMiniTokenInfo(symbol string) (*types.MiniToken, error)
-	GetMiniOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
 	GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error)
 
 	SetKeyManager(k keys.KeyManager)
@@ -574,29 +573,6 @@ func (c *HTTP) GetMiniTokenInfo(symbol string) (*types.MiniToken, error) {
 	token := new(types.MiniToken)
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, token)
 	return token, err
-}
-
-func (c *HTTP) GetMiniOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error) {
-	if err := ValidatePair(pair); err != nil {
-		return nil, err
-	}
-	rawOrders, err := c.ABCIQuery(fmt.Sprintf("mini-dex/openorders/%s/%s", pair, addr), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawOrders.Response.IsOK() {
-		return nil, fmt.Errorf(rawOrders.Response.Log)
-	}
-	bz := rawOrders.Response.GetValue()
-	openOrders := make([]types.OpenOrder, 0)
-	if bz == nil {
-		return openOrders, nil
-	}
-	if err := c.cdc.UnmarshalBinaryLengthPrefixed(bz, &openOrders); err != nil {
-		return nil, err
-	} else {
-		return openOrders, nil
-	}
 }
 
 func (c *HTTP) GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
