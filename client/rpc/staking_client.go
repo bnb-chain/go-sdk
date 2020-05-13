@@ -16,7 +16,7 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
-const BscSideChainId = "bsc"
+const SideChainId = "rialto"
 
 var (
 	StakeStoreKey               = "stake"
