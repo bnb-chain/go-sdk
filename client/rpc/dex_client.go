@@ -68,12 +68,12 @@ type DexClient interface {
 	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
-	UpdateBind(sequence int64, symbol string, contractAddress msg.EthereumAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	Bind(symbol string, amount int64, contractAddress msg.EthereumAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	TransferOut(to msg.EthereumAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	TransferIn(sequence int64, contractAddr msg.EthereumAddress,
-		refundAddresses []msg.EthereumAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
+	Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
+		refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
 		relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
 	Claim(claimType msg.ClaimType, claim string, sequence int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -661,8 +661,8 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 	return c.broadcast(cancelOrderMsg, syncType, options...)
 }
 
-func (c *HTTP) TransferIn(sequence int64, contractAddr msg.EthereumAddress,
-	refundAddresses []msg.EthereumAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
+func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
+	refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
 	relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -690,7 +690,7 @@ func (c *HTTP) TransferIn(sequence int64, contractAddr msg.EthereumAddress,
 	return c.broadcast(claimMsg, syncType, options...)
 }
 
-func (c *HTTP) TransferOut(to msg.EthereumAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
@@ -702,7 +702,7 @@ func (c *HTTP) TransferOut(to msg.EthereumAddress, amount types.Coin, expireTime
 	return c.broadcast(transferOutMsg, syncType, options...)
 }
 
-func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.EthereumAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
@@ -737,7 +737,7 @@ func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, am
 	return c.broadcast(claimMsg, syncType, options...)
 }
 
-func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.EthereumAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}

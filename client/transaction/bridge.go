@@ -13,8 +13,8 @@ type TransferInResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) TransferIn(sequence int64, contractAddr msg.EthereumAddress,
-	refundAddresses []msg.EthereumAddress, receiverAddresses []sdk.AccAddress, amounts []int64, symbol string,
+func (c *client) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
+	refundAddresses []msg.SmartChainAddress, receiverAddresses []sdk.AccAddress, amounts []int64, symbol string,
 	relayFee sdk.Coin, expireTime int64, sync bool, options ...Option) (*TransferInResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	claim := msg.TransferInClaim{
@@ -45,7 +45,7 @@ type BindResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) Bind(symbol string, amount int64, contractAddress msg.EthereumAddress, contractDecimals int8, expireTime int64, sync bool, options ...Option) (*BindResult, error) {
+func (c *client) Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, sync bool, options ...Option) (*BindResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	bindMsg := msg.NewBindMsg(fromAddr, symbol, amount, contractAddress, contractDecimals, expireTime)
 	commit, err := c.broadcastMsg(bindMsg, sync, options...)
@@ -59,7 +59,7 @@ type TransferOutResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) TransferOut(to msg.EthereumAddress, amount sdk.Coin, expireTime int64, sync bool, options ...Option) (*TransferOutResult, error) {
+func (c *client) TransferOut(to msg.SmartChainAddress, amount sdk.Coin, expireTime int64, sync bool, options ...Option) (*TransferOutResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	transferOutMsg := msg.NewTransferOutMsg(fromAddr, to, amount, expireTime)
 	commit, err := c.broadcastMsg(transferOutMsg, sync, options...)
@@ -99,7 +99,7 @@ type UpdateBindResult struct {
 	tx.TxCommitResult
 }
 
-func (c *client) UpdateBind(sequence int64, symbol string, contractAddress msg.EthereumAddress, status msg.BindStatus, sync bool, options ...Option) (*UpdateBindResult, error) {
+func (c *client) UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, sync bool, options ...Option) (*UpdateBindResult, error) {
 	fromAddr := c.keyManager.GetAddr()
 	claim := msg.UpdateBindClaim{
 		Status:          status,

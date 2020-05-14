@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"reflect"
-
-	gethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	sdk "github.com/binance-chain/go-sdk/common/types"
 )
@@ -19,44 +15,60 @@ const (
 	TransferOutMsgType = "crossTransferOut"
 )
 
-// EthereumAddress defines a standard ethereum address
-type EthereumAddress gethCommon.Address
+// SmartChainAddress defines a standard smart chain address
+type SmartChainAddress [20]byte
 
-// NewEthereumAddress is a constructor function for EthereumAddress
-func NewEthereumAddress(address string) EthereumAddress {
-	return EthereumAddress(gethCommon.HexToAddress(address))
+// NewSmartChainAddress is a constructor function for SmartChainAddress
+func NewSmartChainAddress(addr string) SmartChainAddress {
+	// we don't want to return error here, ethereum also do the same thing here
+	hexBytes, _ := HexDecode(addr)
+	var address SmartChainAddress
+	address.SetBytes(hexBytes)
+	return address
 }
 
-func (ethAddr EthereumAddress) IsEmpty() bool {
+func (addr *SmartChainAddress) SetBytes(b []byte) {
+	if len(b) > len(addr) {
+		b = b[len(b)-20:]
+	}
+	copy(addr[20-len(b):], b)
+}
+
+func (addr SmartChainAddress) IsEmpty() bool {
 	addrValue := big.NewInt(0)
-	addrValue.SetBytes(ethAddr[:])
+	addrValue.SetBytes(addr[:])
 
 	return addrValue.Cmp(big.NewInt(0)) == 0
 }
 
 // Route should return the name of the module
-func (ethAddr EthereumAddress) String() string {
-	return gethCommon.Address(ethAddr).String()
+func (addr SmartChainAddress) String() string {
+	return HexAddress(addr[:])
 }
 
 // MarshalJSON marshals the ethereum address to JSON
-func (ethAddr EthereumAddress) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%v\"", ethAddr.String())), nil
+func (addr SmartChainAddress) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%v\"", addr.String())), nil
 }
 
-// UnmarshalJSON unmarshals an ethereum address
-func (ethAddr *EthereumAddress) UnmarshalJSON(input []byte) error {
-	return hexutil.UnmarshalFixedJSON(reflect.TypeOf(gethCommon.Address{}), input, ethAddr[:])
+// UnmarshalJSON unmarshals an smart chain address
+func (addr *SmartChainAddress) UnmarshalJSON(input []byte) error {
+	hexBytes, err := HexDecode(string(input[1 : len(input)-1]))
+	if err != nil {
+		return err
+	}
+	addr.SetBytes(hexBytes)
+	return nil
 }
 
 type TransferInClaim struct {
-	ContractAddress   EthereumAddress   `json:"contract_address"`
-	RefundAddresses   []EthereumAddress `json:"refund_addresses"`
-	ReceiverAddresses []sdk.AccAddress  `json:"receiver_addresses"`
-	Amounts           []int64           `json:"amounts"`
-	Symbol            string            `json:"symbol"`
-	RelayFee          sdk.Coin          `json:"relay_fee"`
-	ExpireTime        int64             `json:"expire_time"`
+	ContractAddress   SmartChainAddress   `json:"contract_address"`
+	RefundAddresses   []SmartChainAddress `json:"refund_addresses"`
+	ReceiverAddresses []sdk.AccAddress    `json:"receiver_addresses"`
+	Amounts           []int64             `json:"amounts"`
+	Symbol            string              `json:"symbol"`
+	RelayFee          sdk.Coin            `json:"relay_fee"`
+	ExpireTime        int64               `json:"expire_time"`
 }
 
 type TransferOutRefundClaim struct {
@@ -66,9 +78,9 @@ type TransferOutRefundClaim struct {
 }
 
 type UpdateBindClaim struct {
-	Status          BindStatus      `json:"status"`
-	Symbol          string          `json:"symbol"`
-	ContractAddress EthereumAddress `json:"contract_address"`
+	Status          BindStatus        `json:"status"`
+	Symbol          string            `json:"symbol"`
+	ContractAddress SmartChainAddress `json:"contract_address"`
 }
 
 type SkipSequenceClaim struct {
@@ -86,15 +98,15 @@ const (
 )
 
 type BindMsg struct {
-	From             sdk.AccAddress  `json:"from"`
-	Symbol           string          `json:"symbol"`
-	Amount           int64           `json:"amount"`
-	ContractAddress  EthereumAddress `json:"contract_address"`
-	ContractDecimals int8            `json:"contract_decimals"`
-	ExpireTime       int64           `json:"expire_time"`
+	From             sdk.AccAddress    `json:"from"`
+	Symbol           string            `json:"symbol"`
+	Amount           int64             `json:"amount"`
+	ContractAddress  SmartChainAddress `json:"contract_address"`
+	ContractDecimals int8              `json:"contract_decimals"`
+	ExpireTime       int64             `json:"expire_time"`
 }
 
-func NewBindMsg(from sdk.AccAddress, symbol string, amount int64, contractAddress EthereumAddress, contractDecimals int8, expireTime int64) BindMsg {
+func NewBindMsg(from sdk.AccAddress, symbol string, amount int64, contractAddress SmartChainAddress, contractDecimals int8, expireTime int64) BindMsg {
 	return BindMsg{
 		From:             from,
 		Amount:           amount,
@@ -150,13 +162,13 @@ func (msg BindMsg) GetSignBytes() []byte {
 }
 
 type TransferOutMsg struct {
-	From       sdk.AccAddress  `json:"from"`
-	To         EthereumAddress `json:"to"`
-	Amount     sdk.Coin        `json:"amount"`
-	ExpireTime int64           `json:"expire_time"`
+	From       sdk.AccAddress    `json:"from"`
+	To         SmartChainAddress `json:"to"`
+	Amount     sdk.Coin          `json:"amount"`
+	ExpireTime int64             `json:"expire_time"`
 }
 
-func NewTransferOutMsg(from sdk.AccAddress, to EthereumAddress, amount sdk.Coin, expireTime int64) TransferOutMsg {
+func NewTransferOutMsg(from sdk.AccAddress, to SmartChainAddress, amount sdk.Coin, expireTime int64) TransferOutMsg {
 	return TransferOutMsg{
 		From:       from,
 		To:         to,
