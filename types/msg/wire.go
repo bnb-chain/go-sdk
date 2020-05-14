@@ -49,6 +49,14 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(SideChainUndelegateMsg{}, "cosmos-sdk/MsgSideChainUndelegate", nil)
 	cdc.RegisterConcrete(MsgSideChainUnjail{}, "cosmos-sdk/MsgSideChainUnjail", nil)
 	cdc.RegisterConcrete(MsgBscSubmitEvidence{}, "cosmos-sdk/MsgBscSubmitEvidence", nil)
+
+	cdc.RegisterConcrete(BindMsg{}, "bridge/BindMsg", nil)
+	cdc.RegisterConcrete(TransferOutMsg{}, "bridge/TransferOutMsg", nil)
+	cdc.RegisterConcrete(Claim{}, "oracle/Claim", nil)
+	cdc.RegisterConcrete(Prophecy{}, "oracle/Prophecy", nil)
+	cdc.RegisterConcrete(Status{}, "oracle/Status", nil)
+	cdc.RegisterConcrete(DBProphecy{}, "oracle/DBProphecy", nil)
+	cdc.RegisterConcrete(ClaimMsg{}, "oracle/ClaimMsg", nil)
 }
 
 func init() {

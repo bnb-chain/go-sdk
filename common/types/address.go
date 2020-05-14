@@ -6,8 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/common/bech32"
 	"github.com/tendermint/tendermint/crypto"
+
+	"github.com/binance-chain/go-sdk/common/bech32"
 )
 
 // AccAddress a wrapper around bytes meant to represent an account address.
