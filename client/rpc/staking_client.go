@@ -35,7 +35,7 @@ type StakingClient interface {
 	SideChainRedelegate(sideChainId string, valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainUnbond(sideChainId string, valAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainUnjail(sideChainId string, valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
-	SideChainSubmitEvidence(headers [2]*bsc.Header, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	BSCSubmitEvidence(headers []*bsc.Header, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 
 	QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)
 	QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error)
@@ -155,7 +155,7 @@ func (c *HTTP) SideChainUnjail(sideChainId string, valAddr types.ValAddress, syn
 	return c.broadcast(m, syncType, options...)
 }
 
-func (c *HTTP) SideChainSubmitEvidence(headers [2]*bsc.Header,
+func (c *HTTP) BSCSubmitEvidence(headers []*bsc.Header,
 	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError

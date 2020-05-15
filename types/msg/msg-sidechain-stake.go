@@ -16,7 +16,7 @@ const (
 
 	SideChainStakeMsgRoute = "stake"
 	MaxSideChainIdLength   = 20
-	MinSideChainAddrLen    = 16
+	MinSideChainAddrLen    = 20
 	MaxSideChainAddrLen    = 64
 
 	MinDelegationAmount = 1e8

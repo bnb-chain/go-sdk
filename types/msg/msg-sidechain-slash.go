@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	TypeSideChainSubmitEvidence = "submit_evidence"
+	TypeSideChainSubmitEvidence = "bsc-submit_evidence"
 	TypeMsgSideChainUnjail      = "side_chain_unjail"
 
 	SideChainSlashMsgRoute = "slashing"
@@ -54,10 +54,10 @@ func (msg MsgSideChainUnjail) GetInvolvedAddresses() []types.AccAddress {
 
 type MsgBscSubmitEvidence struct {
 	Submitter types.AccAddress `json:"submitter"`
-	Headers   [2]*bsc.Header   `json:"headers"`
+	Headers   []*bsc.Header   `json:"headers"`
 }
 
-func NewMsgBscSubmitEvidence(submitter types.AccAddress, headers [2]*bsc.Header) MsgBscSubmitEvidence {
+func NewMsgBscSubmitEvidence(submitter types.AccAddress, headers []*bsc.Header) MsgBscSubmitEvidence {
 
 	return MsgBscSubmitEvidence{
 		Submitter: submitter,
