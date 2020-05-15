@@ -10,5 +10,5 @@ const (
 	TestnetChainID = "Binance-Chain-Nile"
 	ProdChainID    = "Binance-Chain-Tigris"
 
-	SideChainIdRialto = "rialto"
+	RialtoNet = "rialto"
 )
