@@ -14,37 +14,11 @@ type Delegation struct {
 	DelegatorAddr AccAddress `json:"delegator_addr"`
 	ValidatorAddr ValAddress `json:"validator_addr"`
 	Shares        Dec        `json:"shares"`
-	Height        int64      `json:"-"` // Last height bond updated
 }
 
 type DelegationValue struct {
 	Shares Dec
 	Height int64
-}
-
-func UnmarshalDelegation(cdc *amino.Codec, key, value []byte) (delegation Delegation, err error) {
-	var storeValue DelegationValue
-	err = cdc.UnmarshalBinaryLengthPrefixed(value, &storeValue)
-	if err != nil {
-		err = fmt.Errorf("no delegation for this (address, validator) pair ")
-		return
-	}
-
-	addrs := key[1:] // remove prefix bytes
-	if len(addrs) != 2*AddrLen {
-		err = fmt.Errorf("unexpected address length for this (address, validator) pair ")
-		return
-	}
-
-	delAddr := AccAddress(addrs[:AddrLen])
-	valAddr := ValAddress(addrs[AddrLen:])
-
-	return Delegation{
-		DelegatorAddr: delAddr,
-		ValidatorAddr: valAddr,
-		Shares:        storeValue.Shares,
-		Height:        storeValue.Height,
-	}, nil
 }
 
 type Redelegation struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/binance-chain/go-sdk/client/rpc"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
+	"github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/stretchr/testify/assert"
@@ -82,7 +83,7 @@ func TestCreateSideChainValidator(t *testing.T) {
 
 	commissionMsg := ctypes.CommissionMsg{Rate: rate, MaxRate: maxRate, MaxChangeRate: maxChangeRate}
 
-	sideChainId := rpc.SideChainId
+	sideChainId := types.SideChainIdRialto
 	sideConsAddr := FromHex("0x9fB29AAc15b9A4B7F17c3385939b007540f4d791")
 	sideFeeAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
 
@@ -101,7 +102,7 @@ func TestEditSideChainValidator(t *testing.T) {
 
 	sideFeeAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
 
-	res, err := c.EditSideChainValidatorMsg(rpc.SideChainId, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.EditSideChainValidatorMsg(types.SideChainIdRialto, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -116,7 +117,7 @@ func TestDelegate(t *testing.T) {
 
 	amount := ctypes.Coin{Denom: "BNB", Amount: 100000000}
 
-	res, err := c.SideChainDelegate(rpc.SideChainId, valAddr, amount, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.SideChainDelegate(types.SideChainIdRialto, valAddr, amount, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -135,7 +136,7 @@ func TestRedelegate(t *testing.T) {
 
 	amount := ctypes.Coin{Denom: "BNB", Amount: 100000000}
 
-	res, err := c.SideChainRedelegate(rpc.SideChainId, srcValAddr, dstValAddr, amount, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.SideChainRedelegate(types.SideChainIdRialto, srcValAddr, dstValAddr, amount, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -150,7 +151,7 @@ func TestUnbond(t *testing.T) {
 
 	amount := ctypes.Coin{Denom: "BNB", Amount: 100000000}
 
-	res, err := c.SideChainUnbond(rpc.SideChainId, valAddr, amount, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.SideChainUnbond(types.SideChainIdRialto, valAddr, amount, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -163,7 +164,7 @@ func TestQuerySideChainValidator(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	res, err := c.QuerySideChainValidator(rpc.SideChainId, valAddr)
+	res, err := c.QuerySideChainValidator(types.SideChainIdRialto, valAddr)
 
 	if res == nil {
 		   assert.Equal(t, rpc.EmptyResultError, err)
@@ -174,7 +175,7 @@ func TestQuerySideChainValidator(t *testing.T) {
 
 func TestQuerySideChainTopValidators(t *testing.T) {
 	c := getRpcClientWithKeyManager()
-	_, err := c.QuerySideChainTopValidators(rpc.SideChainId, 5)
+	_, err := c.QuerySideChainTopValidators(types.SideChainIdRialto, 5)
 	assert.NoError(t, err)
 }
 
@@ -184,7 +185,7 @@ func TestQuerySideChainDelegation(t *testing.T) {
 	delAddr, _ := ctypes.AccAddressFromBech32(jackAddress)
 	valAddr, _ := ctypes.ValAddressFromBech32(valAddress)
 
-	res, err := c.QuerySideChainDelegation(rpc.SideChainId, delAddr, valAddr)
+	res, err := c.QuerySideChainDelegation(types.SideChainIdRialto, delAddr, valAddr)
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
@@ -198,7 +199,7 @@ func TestQuerySideChainDelegations(t *testing.T) {
 
 	delAddr, _ := ctypes.AccAddressFromBech32(jackAddress)
 
-	_, err := c.QuerySideChainDelegations(rpc.SideChainId, delAddr)
+	_, err := c.QuerySideChainDelegations(types.SideChainIdRialto, delAddr)
 	assert.Nil(t, err)
 }
 
@@ -209,7 +210,7 @@ func TestQuerySideChainRelegation(t *testing.T) {
 	valSrcAddr, _ := ctypes.ValAddressFromBech32(valAddress)
 	valDstAddr, _ := ctypes.ValAddressFromBech32(valAddress2)
 
-	res, err := c.QuerySideChainRedelegation(rpc.SideChainId, delAddr, valSrcAddr, valDstAddr)
+	res, err := c.QuerySideChainRedelegation(types.SideChainIdRialto, delAddr, valSrcAddr, valDstAddr)
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
@@ -222,7 +223,7 @@ func TestQuerySideChainRelegations(t *testing.T) {
 	c := rpcClient()
 	delAddr, err := ctypes.AccAddressFromBech32(jackAddress)
 	assert.Nil(t, err)
-	_, err = c.QuerySideChainRedelegations(rpc.SideChainId, delAddr)
+	_, err = c.QuerySideChainRedelegations(types.SideChainIdRialto, delAddr)
 	assert.Nil(t, err)
 }
 
@@ -232,7 +233,7 @@ func TestQuerySideChainUnbondingDelegation(t *testing.T) {
 	delAddr, _ := ctypes.AccAddressFromBech32(jackAddress)
 	valAddr, _ := ctypes.ValAddressFromBech32(valAddress)
 
-	res, err := c.QuerySideChainUnbondingDelegation(rpc.SideChainId, valAddr, delAddr)
+	res, err := c.QuerySideChainUnbondingDelegation(types.SideChainIdRialto, valAddr, delAddr)
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
@@ -244,32 +245,32 @@ func TestQuerySideChainUnbondingDelegation(t *testing.T) {
 func TestQuerySideChainUnbondingDelegations(t *testing.T) {
 	c := rpcClient()
 	delAddr, _ := ctypes.AccAddressFromBech32(jackAddress)
-	_, err := c.QuerySideChainUnbondingDelegations(rpc.SideChainId, delAddr)
+	_, err := c.QuerySideChainUnbondingDelegations(types.SideChainIdRialto, delAddr)
 	assert.Nil(t, err)
 }
 
 func TestGetSideChainUnBondingDelegationsByValidator(t *testing.T) {
 	c := getRpcClientWithKeyManager()
 	valAddr, _ := ctypes.ValAddressFromBech32(jackAddress)
-	_, err := c.GetSideChainUnBondingDelegationsByValidator(rpc.SideChainId, valAddr)
+	_, err := c.GetSideChainUnBondingDelegationsByValidator(types.SideChainIdRialto, valAddr)
 	assert.Nil(t, err)
 }
 
 func TestGetSideChainRedelegationsByValidator(t *testing.T) {
 	c := getRpcClientWithKeyManager()
 	valAddr, _ := ctypes.ValAddressFromBech32(jackAddress)
-	_, err := c.GetSideChainRedelegationsByValidator(rpc.SideChainId, valAddr)
+	_, err := c.GetSideChainRedelegationsByValidator(types.SideChainIdRialto, valAddr)
 	assert.Nil(t, err)
 }
 
 func TestGetSideChainId(t *testing.T) {
 	c := getRpcClientWithKeyManager()
-	_, err := c.GetSideChainPool(rpc.SideChainId)
+	_, err := c.GetSideChainPool(types.SideChainIdRialto)
 	assert.Nil(t, err)
 }
 
 func TestGetSideChainAllValidatorsCount(t *testing.T) {
 	c := getRpcClientWithKeyManager()
-	_, err := c.GetSideChainAllValidatorsCount(rpc.SideChainId, false)
+	_, err := c.GetSideChainAllValidatorsCount(types.SideChainIdRialto, false)
 	assert.Nil(t, err)
 }
