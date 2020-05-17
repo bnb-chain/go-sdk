@@ -157,7 +157,7 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 			return new(CommonAckPackage)
 		},
 		FailAckCrossChainPackageType: func() interface{} {
-			return new(CSCParamChange)
+			return new(CrossParamChange)
 		},
 	},
 	sdk.IbcChannelID(11): {
@@ -225,10 +225,10 @@ type IbcValidator struct {
 	Power    uint64
 }
 
-type CSCParamChange struct {
+type CrossParamChange struct {
 	Key    string
 	Value  []byte
-	Target []byte `json:"-"` // the address of the target contract
+	Target []byte
 }
 
 type SideDowntimeSlashPackage struct {

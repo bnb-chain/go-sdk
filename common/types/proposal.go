@@ -287,12 +287,18 @@ func (tp *TextProposal) SetVotingPeriod(votingPeriod time.Duration) {
 	tp.VotingPeriod = votingPeriod
 }
 
+type BaseParams struct {
+	SideChainId string
+}
+
 type QueryProposalsParams struct {
+	BaseParams
 	ProposalStatus     ProposalStatus
 	NumLatestProposals int64
 }
 
 // Params for query 'custom/gov/proposal'
 type QueryProposalParams struct {
+	BaseParams
 	ProposalID int64
 }

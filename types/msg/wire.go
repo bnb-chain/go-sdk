@@ -10,6 +10,17 @@ func RegisterCodec(cdc *amino.Codec) {
 
 	cdc.RegisterInterface((*Msg)(nil), nil)
 
+	cdc.RegisterConcrete(SideChainSubmitProposalMsg{}, "cosmos-sdk/MsgSideChainSubmitProposal", nil)
+	cdc.RegisterConcrete(SideChainDepositMsg{}, "cosmos-sdk/MsgSideChainDeposit", nil)
+	cdc.RegisterConcrete(SideChainVoteMsg{}, "cosmos-sdk/MsgSideChainVote", nil)
+
+	cdc.RegisterInterface((*SCParam)(nil), nil)
+	cdc.RegisterConcrete(&OracleParams{}, "params/OracleParamSet", nil)
+	cdc.RegisterConcrete(&StakeParams{}, "params/StakeParamSet", nil)
+	cdc.RegisterConcrete(&SlashParams{}, "params/SlashParamSet", nil)
+	cdc.RegisterConcrete(&IbcParams{}, "params/IbcParamSet", nil)
+
+
 	cdc.RegisterConcrete(CreateOrderMsg{}, "dex/NewOrder", nil)
 	cdc.RegisterConcrete(CancelOrderMsg{}, "dex/CancelOrder", nil)
 	cdc.RegisterConcrete(TokenIssueMsg{}, "tokens/IssueMsg", nil)

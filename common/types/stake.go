@@ -327,9 +327,6 @@ func (ca ConsAddress) Format(s fmt.State, verb rune) {
 	}
 }
 
-type BaseParams struct {
-	SideChainId string
-}
 
 func NewBaseParams(sideChainId string) BaseParams {
 	return BaseParams{SideChainId:sideChainId}

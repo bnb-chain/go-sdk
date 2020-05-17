@@ -17,11 +17,20 @@ const (
 )
 
 var (
-	precisionReuse = new(big.Int).Exp(big.NewInt(10), big.NewInt(Precision), nil).Int64()
-	zeroInt        = big.NewInt(0)
-	oneInt         = big.NewInt(1)
-	tenInt         = big.NewInt(10)
+	precisionReuse       = new(big.Int).Exp(big.NewInt(10), big.NewInt(Precision), nil).Int64()
+	precisionMultipliers []int64
+	zeroInt              = big.NewInt(0)
+	oneInt               = big.NewInt(1)
+	tenInt               = big.NewInt(10)
 )
+
+// Set precision multipliers
+func init() {
+	precisionMultipliers = make([]int64, Precision+1)
+	for i := 0; i <= Precision; i++ {
+		precisionMultipliers[i] = calcPrecisionMultiplier(int64(i))
+	}
+}
 
 func precisionInt() int64 {
 	return precisionReuse
@@ -111,3 +120,31 @@ func (d Dec) Sub(d2 Dec) Dec {
 // nolint - common values
 func ZeroDec() Dec { return Dec{0} }
 func OneDec() Dec  { return Dec{precisionInt()} }
+func NewDecWithPrec(i, prec int64) Dec {
+	if i == 0 {
+		return Dec{0}
+	}
+	c := i * precisionMultiplier(prec)
+	if c/i != precisionMultiplier(prec) {
+		panic("Int overflow")
+	}
+	return Dec{c}
+}
+
+// get the precision multiplier, do not mutate result
+func precisionMultiplier(prec int64) int64 {
+	if prec > Precision {
+		panic(fmt.Sprintf("too much precision, maximum %v, provided %v", Precision, prec))
+	}
+	return precisionMultipliers[prec]
+}
+
+// calculate the precision multiplier
+func calcPrecisionMultiplier(prec int64) int64 {
+	if prec > Precision {
+		panic(fmt.Sprintf("too much precision, maximum %v, provided %v", Precision, prec))
+	}
+	zerosToAdd := Precision - prec
+	multiplier := new(big.Int).Exp(tenInt, big.NewInt(zerosToAdd), nil).Int64()
+	return multiplier
+}
