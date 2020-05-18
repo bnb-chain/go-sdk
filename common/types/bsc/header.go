@@ -3,10 +3,10 @@ package bsc
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/binance-chain/go-sdk/common/types/bsc/rlp"
@@ -28,6 +28,67 @@ type Header struct {
 	Extra       []byte     `json:"extraData"        gencodec:"required"`
 	MixDigest   Hash       `json:"mixHash"`
 	Nonce       BlockNonce `json:"nonce"`
+}
+
+func NewBSCHeader(parentHash, uncleHash, coinbase, root, txHash, recipientHash, bloom []byte,
+	difficulty, number int64,
+	gasLimit, gasUsed, time uint64,
+	extraData, mixDigest, nonce []byte) (Header, error) {
+
+	if len(parentHash) != HashLength {
+		return Header{}, fmt.Errorf("invalid parentHash, expected length is %d", HashLength)
+	}
+	if len(uncleHash) != HashLength {
+		return Header{}, fmt.Errorf("invalid uncleHash, expected length is %d", HashLength)
+	}
+	if len(root) != HashLength {
+		return Header{}, fmt.Errorf("invalid stateRoot, expected length is %d", HashLength)
+	}
+	if len(txHash) != HashLength {
+		return Header{}, fmt.Errorf("invalid transactionsRoot, expected length is %d", HashLength)
+	}
+	if len(recipientHash) != HashLength {
+		return Header{}, fmt.Errorf("invalid recipientHash, expected length is %d", HashLength)
+	}
+	if len(mixDigest) != HashLength {
+		return Header{}, fmt.Errorf("invalid mixHash, expected length is %d", HashLength)
+	}
+	if len(coinbase) != AddressLength {
+		return Header{}, fmt.Errorf("invalid miner, expected length is %d", AddressLength)
+	}
+	if len(bloom) != BloomByteLength {
+		return Header{}, fmt.Errorf("invalid bloom, expected length is %d", BloomByteLength)
+	}
+	if len(nonce) != 8 {
+		return Header{}, fmt.Errorf("invalid nonce, expected length is 8")
+	}
+
+	var addr Address
+	copy(addr[:], coinbase)
+
+	var bscBloom Bloom
+	copy(bscBloom[:], bloom)
+
+	var blockNonce BlockNonce
+	copy(blockNonce[:], nonce)
+
+	return Header{
+		ParentHash:  BytesToHash(parentHash),
+		UncleHash:   BytesToHash(uncleHash),
+		Coinbase:    addr,
+		Root:        BytesToHash(root),
+		TxHash:      BytesToHash(txHash),
+		ReceiptHash: BytesToHash(recipientHash),
+		Bloom:       bscBloom,
+		Difficulty:  difficulty,
+		Number:      number,
+		GasLimit:    gasLimit,
+		GasUsed:     gasUsed,
+		Time:        time,
+		Extra:       extraData,
+		MixDigest:   BytesToHash(mixDigest),
+		Nonce:       blockNonce,
+	}, nil
 }
 
 // MarshalJSON marshals as JSON.
@@ -160,19 +221,6 @@ func (h *Header) GetSignature() ([]byte, error) {
 	}
 	signature := h.Extra[len(h.Extra)-extraSeal:]
 	return signature, nil
-}
-
-func (h *Header) ExtractSignerFromHeader() (signer Address, err error) {
-	signature, err := h.GetSignature()
-	if err != nil {
-		return
-	}
-	pubKey, err := secp256k1.RecoverPubkey(SealHash(h).Bytes(), signature)
-	if err != nil {
-		return
-	}
-	copy(signer[:], Keccak256(pubKey[1:])[12:])
-	return
 }
 
 // Keccak256 calculates and returns the Keccak256 hash of the input data.
