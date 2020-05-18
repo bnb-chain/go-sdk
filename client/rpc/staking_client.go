@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/binance-chain/go-sdk/common/types/bsc"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/tendermint/go-amino"
@@ -33,6 +34,8 @@ type StakingClient interface {
 	SideChainDelegate(sideChainId string, valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainRedelegate(sideChainId string, valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainUnbond(sideChainId string, valAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	SideChainUnjail(sideChainId string, valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	BSCSubmitEvidence(headers []*bsc.Header, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 
 	QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)
 	QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error)
@@ -138,6 +141,29 @@ func (c *HTTP) SideChainUnbond(sideChainId string, valAddr types.ValAddress, amo
 	delAddr := c.key.GetAddr()
 
 	m := msg.NewSideChainUndelegateMsg(sideChainId, delAddr, valAddr, amount)
+
+	return c.broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) SideChainUnjail(sideChainId string, valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	m := msg.NewMsgSideChainUnjail(valAddr, sideChainId)
+
+	return c.broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) BSCSubmitEvidence(headers []*bsc.Header,
+	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	submitter := c.key.GetAddr()
+
+	m := msg.NewMsgBscSubmitEvidence(submitter, headers)
 
 	return c.broadcast(m, syncType, options...)
 }
@@ -433,7 +459,7 @@ func (c *HTTP) GetSideChainUnBondingDelegationsByValidator(sideChainId string, v
 		return nil, err
 	}
 
-	var ubds = make([]types.UnbondingDelegation , 0)
+	var ubds = make([]types.UnbondingDelegation, 0)
 
 	if len(response) == 0 {
 		return ubds, nil
@@ -616,7 +642,7 @@ func unmarshalUBD(cdc *amino.Codec, key, value []byte) (ubd types.UnbondingDeleg
 func decodeSideChainAddress(addr string) ([]byte, error) {
 	if strings.HasPrefix(addr, "0x") {
 		return hex.DecodeString(addr[2:])
-	}else{
+	} else {
 		return hex.DecodeString(addr)
 	}
 }

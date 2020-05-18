@@ -3,6 +3,7 @@ package msg
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/binance-chain/go-sdk/common/types"
 )
 
@@ -13,10 +14,9 @@ const (
 	TypeSideChainRedelegate      = "side_redelegate"
 	TypeSideChainUndelegate      = "side_undelegate"
 
-	SideChainMsgRoute    = "stake"
-	MaxSideChainIdLength = 20
-	MinSideChainAddrLen  = 16
-	MaxSideChainAddrLen  = 64
+	SideChainStakeMsgRoute = "stake"
+	MaxSideChainIdLength   = 20
+	SideChainAddrLen       = 20
 
 	MinDelegationAmount = 1e8
 )
@@ -51,7 +51,7 @@ func NewMsgCreateSideChainValidatorOnBehalfOf(delegatorAddr types.AccAddress, va
 	}
 }
 
-func (msg CreateSideChainValidatorMsg) Route() string { return SideChainMsgRoute }
+func (msg CreateSideChainValidatorMsg) Route() string { return SideChainStakeMsgRoute }
 
 func (msg CreateSideChainValidatorMsg) Type() string { return TypeCreateSideChainValidator }
 
@@ -117,8 +117,8 @@ func (msg CreateSideChainValidatorMsg) ValidateBasic() error {
 }
 
 func checkSideChainAddr(addrName string, addr []byte) error {
-	if len(addr) < MinSideChainAddrLen || len(addr) > MaxSideChainAddrLen {
-		return fmt.Errorf("Expected %s length is between %d and %d, got %d ", addrName, MinSideChainAddrLen, MaxSideChainAddrLen, len(addr))
+	if len(addr) != SideChainAddrLen {
+		return fmt.Errorf("Expected %s length is %d, got %d ", addrName, SideChainAddrLen, len(addr))
 	}
 
 	return nil
@@ -132,8 +132,8 @@ type EditSideChainValidatorMsg struct {
 
 	CommissionRate *types.Dec `json:"commission_rate"`
 
-	SideChainId  string `json:"side_chain_id"`
-	SideFeeAddr  []byte `json:"side_fee_addr"`
+	SideChainId string `json:"side_chain_id"`
+	SideFeeAddr []byte `json:"side_fee_addr"`
 }
 
 func NewEditSideChainValidatorMsg(sideChainId string, validatorAddr types.ValAddress, description Description, commissionRate *types.Dec, sideFeeAddr []byte) EditSideChainValidatorMsg {
@@ -146,7 +146,7 @@ func NewEditSideChainValidatorMsg(sideChainId string, validatorAddr types.ValAdd
 	}
 }
 
-func (msg EditSideChainValidatorMsg) Route() string { return SideChainMsgRoute }
+func (msg EditSideChainValidatorMsg) Route() string { return SideChainStakeMsgRoute }
 
 func (msg EditSideChainValidatorMsg) Type() string { return TypeEditSideChainValidator }
 
@@ -216,7 +216,7 @@ func NewSideChainDelegateMsg(sideChainId string, delAddr types.AccAddress, valAd
 	}
 }
 
-func (msg SideChainDelegateMsg) Route() string { return SideChainMsgRoute }
+func (msg SideChainDelegateMsg) Route() string { return SideChainStakeMsgRoute }
 
 func (msg SideChainDelegateMsg) Type() string { return TypeSideChainDelegate }
 
@@ -276,7 +276,7 @@ func NewSideChainRedelegateMsg(sideChainId string, delegatorAddr types.AccAddres
 	}
 }
 
-func (msg SideChainRedelegateMsg) Route() string { return SideChainMsgRoute }
+func (msg SideChainRedelegateMsg) Route() string { return SideChainStakeMsgRoute }
 
 func (msg SideChainRedelegateMsg) Type() string { return TypeSideChainRedelegate }
 
@@ -344,7 +344,7 @@ func NewSideChainUndelegateMsg(sideChainId string, delegatorAddr types.AccAddres
 	}
 }
 
-func (msg SideChainUndelegateMsg) Route() string { return SideChainMsgRoute }
+func (msg SideChainUndelegateMsg) Route() string { return SideChainStakeMsgRoute }
 
 func (msg SideChainUndelegateMsg) Type() string { return TypeSideChainUndelegate }
 
