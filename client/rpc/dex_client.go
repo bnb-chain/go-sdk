@@ -1,8 +1,13 @@
 package rpc
 
 import (
+	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/types"
@@ -10,7 +15,6 @@ import (
 	gtypes "github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 type SyncType int
@@ -23,6 +27,8 @@ const (
 
 const (
 	AccountStoreName    = "acc"
+	OracleStoreName     = "oracle"
+	BridgeStoreName     = "bridge"
 	ParamABCIPrefix     = "param"
 	TimeLockMsgRoute    = "timelock"
 	AtomicSwapStoreName = "atomic_swap"
@@ -61,6 +67,18 @@ type DexClient interface {
 		syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+
+	UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
+		refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
+		relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+
+	Claim(claimType msg.ClaimType, claim string, sequence int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophecy, error)
+	GetCurrentSequence(claimType msg.ClaimType) (int64, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
@@ -643,6 +661,79 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 	return c.broadcast(cancelOrderMsg, syncType, options...)
 }
 
+func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
+	refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
+	relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	claim := msg.TransferInClaim{
+		ContractAddress:   contractAddr,
+		RefundAddresses:   refundAddresses,
+		ReceiverAddresses: receiverAddresses,
+		Amounts:           amounts,
+		Symbol:            symbol,
+		RelayFee:          relayFee,
+		ExpireTime:        expireTime,
+	}
+
+	claimBz, err := json.Marshal(claim)
+	if err != nil {
+		return nil, err
+	}
+	return c.Claim(msg.ClaimTypeTransferIn, string(claimBz), sequence, syncType, options...)
+}
+
+func (c *HTTP) TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	transferOutMsg := msg.NewTransferOutMsg(fromAddr, to, amount, expireTime)
+
+	return c.broadcast(transferOutMsg, syncType, options...)
+}
+
+func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	bindMsg := msg.NewBindMsg(fromAddr, symbol, amount, contractAddress, contractDecimals, expireTime)
+
+	return c.broadcast(bindMsg, syncType, options...)
+}
+
+func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	claim := msg.TransferOutRefundClaim{
+		RefundAddress: refundAddr,
+		Amount:        amount,
+		RefundReason:  refundReason,
+	}
+
+	claimBz, err := json.Marshal(claim)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Claim(msg.ClaimTypeTransferOutRefund, string(claimBz), sequence, syncType, options...)
+}
+
+func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	claim := msg.UpdateBindClaim{
+		Status:          status,
+		Symbol:          strings.ToUpper(symbol),
+		ContractAddress: contractAddress,
+	}
+
+	claimBz, err := json.Marshal(claim)
+	if err != nil {
+		return nil, err
+	}
+	return c.Claim(msg.ClaimTypeUpdateBind, string(claimBz), sequence, syncType, options...)
+}
+
 func (c *HTTP) broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	signBz, err := c.sign(m, options...)
 	if err != nil {
@@ -675,6 +766,57 @@ func (c *HTTP) broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*c
 	default:
 		return nil, fmt.Errorf("unknown synctype")
 	}
+}
+
+func (c *HTTP) Claim(claimType msg.ClaimType, claim string, sequence int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	claimMsg := msg.NewClaimMsg(claimType, sequence, claim, fromAddr)
+
+	return c.broadcast(claimMsg, syncType, options...)
+}
+
+func (c *HTTP) GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophecy, error) {
+	key := []byte(msg.GetClaimId(claimType, sequence))
+	bz, err := c.QueryStore(key, OracleStoreName)
+	if err != nil {
+		return nil, err
+	}
+	if bz == nil {
+		return nil, nil
+	}
+
+	dbProphecy := new(msg.DBProphecy)
+	err = c.cdc.UnmarshalBinaryBare(bz, &dbProphecy)
+	if err != nil {
+		return nil, err
+	}
+
+	prophecy, err := dbProphecy.DeserializeFromDB()
+	if err != nil {
+		return nil, err
+	}
+
+	return &prophecy, err
+}
+
+func (c *HTTP) GetCurrentSequence(claimType msg.ClaimType) (int64, error) {
+	key := msg.GetClaimTypeSequence(claimType)
+	bz, err := c.QueryStore(key, OracleStoreName)
+	if err != nil {
+		return 0, err
+	}
+	if bz == nil {
+		return 0, nil
+	}
+
+	sequence := binary.BigEndian.Uint64(bz)
+
+	return int64(sequence), err
 }
 
 func (c *HTTP) sign(m msg.Msg, options ...tx.Option) ([]byte, error) {
