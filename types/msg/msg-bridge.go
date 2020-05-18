@@ -71,11 +71,29 @@ type TransferInClaim struct {
 	ExpireTime        int64               `json:"expire_time"`
 }
 
+type RefundReason uint16
+
+const (
+	UnboundToken        RefundReason = 1
+	Timeout             RefundReason = 2
+	InsufficientBalance RefundReason = 3
+	Unknown             RefundReason = 4
+)
+
 type TransferOutRefundClaim struct {
 	RefundAddress sdk.AccAddress `json:"refund_address"`
 	Amount        sdk.Coin       `json:"amount"`
 	RefundReason  RefundReason   `json:"refund_reason"`
 }
+
+type BindStatus int8
+
+const (
+	BindStatusSuccess          BindStatus = 0
+	BindStatusRejected         BindStatus = 1
+	BindStatusTimeout          BindStatus = 2
+	BindStatusInvalidParameter BindStatus = 3
+)
 
 type UpdateBindClaim struct {
 	Status          BindStatus        `json:"status"`
@@ -87,15 +105,6 @@ type SkipSequenceClaim struct {
 	ClaimType ClaimType `json:"claim_type"`
 	Sequence  int64     `json:"sequence"`
 }
-
-type RefundReason uint16
-
-const (
-	UnboundToken        RefundReason = 1
-	Timeout             RefundReason = 2
-	InsufficientBalance RefundReason = 3
-	Unknown             RefundReason = 4
-)
 
 type BindMsg struct {
 	From             sdk.AccAddress    `json:"from"`
@@ -210,12 +219,3 @@ func (msg TransferOutMsg) GetSignBytes() []byte {
 	}
 	return b
 }
-
-type BindStatus int8
-
-const (
-	BindStatusSuccess          BindStatus = 0
-	BindStatusRejected         BindStatus = 1
-	BindStatusTimeout          BindStatus = 2
-	BindStatusInvalidParameter BindStatus = 3
-)

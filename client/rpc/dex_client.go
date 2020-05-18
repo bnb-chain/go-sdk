@@ -664,12 +664,6 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
 	refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
 	relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	if c.key == nil {
-		return nil, KeyMissingError
-	}
-
-	fromAddr := c.key.GetAddr()
-
 	claim := msg.TransferInClaim{
 		ContractAddress:   contractAddr,
 		RefundAddresses:   refundAddresses,
@@ -684,10 +678,7 @@ func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
 	if err != nil {
 		return nil, err
 	}
-
-	claimMsg := msg.NewClaimMsg(msg.ClaimTypeTransferIn, sequence, string(claimBz), fromAddr)
-
-	return c.broadcast(claimMsg, syncType, options...)
+	return c.Claim(msg.ClaimTypeTransferIn, string(claimBz), sequence, syncType, options...)
 }
 
 func (c *HTTP) TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -715,12 +706,6 @@ func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainA
 }
 
 func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	if c.key == nil {
-		return nil, KeyMissingError
-	}
-
-	fromAddr := c.key.GetAddr()
-
 	claim := msg.TransferOutRefundClaim{
 		RefundAddress: refundAddr,
 		Amount:        amount,
@@ -732,18 +717,10 @@ func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, am
 		return nil, err
 	}
 
-	claimMsg := msg.NewClaimMsg(msg.ClaimTypeTransferOutRefund, sequence, string(claimBz), fromAddr)
-
-	return c.broadcast(claimMsg, syncType, options...)
+	return c.Claim(msg.ClaimTypeTransferOutRefund, string(claimBz), sequence, syncType, options...)
 }
 
 func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	if c.key == nil {
-		return nil, KeyMissingError
-	}
-
-	fromAddr := c.key.GetAddr()
-
 	claim := msg.UpdateBindClaim{
 		Status:          status,
 		Symbol:          strings.ToUpper(symbol),
@@ -754,10 +731,7 @@ func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.Sma
 	if err != nil {
 		return nil, err
 	}
-
-	claimMsg := msg.NewClaimMsg(msg.ClaimTypeUpdateBind, sequence, string(claimBz), fromAddr)
-
-	return c.broadcast(claimMsg, syncType, options...)
+	return c.Claim(msg.ClaimTypeUpdateBind, string(claimBz), sequence, syncType, options...)
 }
 
 func (c *HTTP) broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
