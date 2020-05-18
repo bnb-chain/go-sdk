@@ -16,8 +16,7 @@ const (
 
 	SideChainStakeMsgRoute = "stake"
 	MaxSideChainIdLength   = 20
-	MinSideChainAddrLen    = 20
-	MaxSideChainAddrLen    = 64
+	SideChainAddrLen       = 20
 
 	MinDelegationAmount = 1e8
 )
@@ -118,8 +117,8 @@ func (msg CreateSideChainValidatorMsg) ValidateBasic() error {
 }
 
 func checkSideChainAddr(addrName string, addr []byte) error {
-	if len(addr) < MinSideChainAddrLen || len(addr) > MaxSideChainAddrLen {
-		return fmt.Errorf("Expected %s length is between %d and %d, got %d ", addrName, MinSideChainAddrLen, MaxSideChainAddrLen, len(addr))
+	if len(addr) != SideChainAddrLen {
+		return fmt.Errorf("Expected %s length is %d, got %d ", addrName, SideChainAddrLen, len(addr))
 	}
 
 	return nil
