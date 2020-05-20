@@ -37,6 +37,7 @@ const (
 )
 
 type DexClient interface {
+	Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error)
 	ListAllTokens(offset int, limit int) ([]types.Token, error)
 	GetTokenInfo(symbol string) (*types.Token, error)
@@ -561,7 +562,7 @@ func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ..
 		fromCoins = fromCoins.Plus(t.Coins)
 	}
 	sendMsg := msg.CreateSendMsg(fromAddr, fromCoins, transfers)
-	return c.broadcast(sendMsg, syncType, options...)
+	return c.Broadcast(sendMsg, syncType, options...)
 
 }
 
@@ -581,7 +582,7 @@ func (c *HTTP) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, pr
 		price,
 		quantity,
 	)
-	return c.broadcast(newOrderMsg, syncType, options...)
+	return c.Broadcast(newOrderMsg, syncType, options...)
 }
 
 func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
@@ -602,7 +603,7 @@ func (c *HTTP) HTLT(recipient types.AccAddress, recipientOtherChain, senderOther
 		heightSpan,
 		crossChain,
 	)
-	return c.broadcast(htltMsg, syncType, options...)
+	return c.Broadcast(htltMsg, syncType, options...)
 }
 
 func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, amount types.Coins,
@@ -616,7 +617,7 @@ func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, amount typ
 		swapID,
 		amount,
 	)
-	return c.broadcast(depositHTLTMsg, syncType, options...)
+	return c.Broadcast(depositHTLTMsg, syncType, options...)
 }
 
 func (c *HTTP) ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -629,7 +630,7 @@ func (c *HTTP) ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, 
 		swapID,
 		randomNumber,
 	)
-	return c.broadcast(claimHTLTMsg, syncType, options...)
+	return c.Broadcast(claimHTLTMsg, syncType, options...)
 }
 
 func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -641,7 +642,7 @@ func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option
 		fromAddr,
 		swapID,
 	)
-	return c.broadcast(refundHTLTMsg, syncType, options...)
+	return c.Broadcast(refundHTLTMsg, syncType, options...)
 }
 
 func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -658,7 +659,7 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 	fromAddr := c.key.GetAddr()
 
 	cancelOrderMsg := msg.NewCancelOrderMsg(fromAddr, common.CombineSymbol(baseAssetSymbol, quoteAssetSymbol), refId)
-	return c.broadcast(cancelOrderMsg, syncType, options...)
+	return c.Broadcast(cancelOrderMsg, syncType, options...)
 }
 
 func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
@@ -690,7 +691,7 @@ func (c *HTTP) TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTi
 
 	transferOutMsg := msg.NewTransferOutMsg(fromAddr, to, amount, expireTime)
 
-	return c.broadcast(transferOutMsg, syncType, options...)
+	return c.Broadcast(transferOutMsg, syncType, options...)
 }
 
 func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -702,7 +703,7 @@ func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainA
 
 	bindMsg := msg.NewBindMsg(fromAddr, symbol, amount, contractAddress, contractDecimals, expireTime)
 
-	return c.broadcast(bindMsg, syncType, options...)
+	return c.Broadcast(bindMsg, syncType, options...)
 }
 
 func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -734,7 +735,7 @@ func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.Sma
 	return c.Claim(msg.ClaimTypeUpdateBind, string(claimBz), sequence, syncType, options...)
 }
 
-func (c *HTTP) broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	signBz, err := c.sign(m, options...)
 	if err != nil {
 		return nil, err
@@ -777,7 +778,7 @@ func (c *HTTP) Claim(claimType msg.ClaimType, claim string, sequence int64, sync
 
 	claimMsg := msg.NewClaimMsg(claimType, sequence, claim, fromAddr)
 
-	return c.broadcast(claimMsg, syncType, options...)
+	return c.Broadcast(claimMsg, syncType, options...)
 }
 
 func (c *HTTP) GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophecy, error) {
