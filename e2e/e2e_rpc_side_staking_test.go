@@ -102,7 +102,7 @@ func TestEditSideChainValidator(t *testing.T) {
 
 	sideFeeAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
 
-	res, err := c.EditSideChainValidatorMsg(types.RialtoNet, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
+	res, err := c.EditSideChainValidator(types.RialtoNet, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
