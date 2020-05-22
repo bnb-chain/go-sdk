@@ -1,6 +1,5 @@
 # BNC Chain Go SDK
 
-
 The Binance Chain GO SDK provides a thin wrapper around the BNC Chain API for readonly endpoints, in addition to creating and submitting different transactions.
 It includes the following core components:
 
@@ -9,6 +8,9 @@ It includes the following core components:
 * **e2e** - end-to-end test package for go-sdk developer. For common users, it is also a good reference to use go-sdk. 
 * **keys** - implement `KeyManage` to manage private key and accounts.
 * **types** - core type of Binance Chain, such as `coin`, `account`, `tx` and `msg`.
+
+## Disclaimer
+**This branch is under active development, all subject to potential future change without notification and not ready for production use. The code and security audit have not been fully completed and not ready for any bug bounty.**
 
 ## Install
 
