@@ -8,12 +8,12 @@ import (
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
-type IssueMiniTokenResult struct {
+type IssueTinyTokenResult struct {
 	tx.TxCommitResult
 	Symbol string `json:"symbol"`
 }
 
-type IssueMiniTokenValue struct {
+type IssueTinyTokenValue struct {
 	Name        string `json:"name"`
 	Symbol      string `json:"symbol"`
 	OrigSymbol  string `json:"original_symbol"`
@@ -22,7 +22,7 @@ type IssueMiniTokenValue struct {
 	Owner       string `json:"owner"`
 }
 
-func (c *client) IssueMiniToken(name, symbol string, supply int64, sync bool, mintable bool, tokenURI string, options ...Option) (*IssueMiniTokenResult, error) {
+func (c *client) IssueTinyToken(name, symbol string, supply int64, sync bool, mintable bool, tokenURI string, options ...Option) (*IssueTinyTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Issue mini token symbol can't be empty ")
 	}
@@ -50,5 +50,5 @@ func (c *client) IssueMiniToken(name, symbol string, supply int64, sync bool, mi
 		issueSymbol = issueTokenValue.Symbol
 	}
 
-	return &IssueMiniTokenResult{*commit, issueSymbol}, nil
+	return &IssueTinyTokenResult{*commit, issueSymbol}, nil
 }
