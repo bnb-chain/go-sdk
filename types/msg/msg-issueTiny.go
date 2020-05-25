@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/binance-chain/go-sdk/common/types"
-
-	"github.com/binance-chain/go-sdk/common"
 )
 
 const (
-	MiniRoute        = "miniTokensIssue"
-	IssueMiniMsgType = "miniIssueMsg"
+	IssueTinyMsgType = "tinyIssueMsg"
 )
 
-// MiniTokenIssueMsg def
-type MiniTokenIssueMsg struct {
+// TinyTokenIssueMsg def
+type TinyTokenIssueMsg struct {
 	From        types.AccAddress `json:"from"`
 	Name        string           `json:"name"`
 	Symbol      string           `json:"symbol"`
@@ -24,9 +21,9 @@ type MiniTokenIssueMsg struct {
 	TokenURI    string           `json:"token_uri"`
 }
 
-// NewMiniTokenIssueMsg for instance creation
-func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, supply int64, mintable bool, tokenURI string) MiniTokenIssueMsg {
-	return MiniTokenIssueMsg{
+// NewTinyTokenIssueMsg for instance creation
+func NewTinyTokenIssueMsg(from types.AccAddress, name, symbol string, supply int64, mintable bool, tokenURI string) TinyTokenIssueMsg {
+	return TinyTokenIssueMsg{
 		From:        from,
 		Name:        name,
 		Symbol:      symbol,
@@ -38,7 +35,7 @@ func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, supply int
 
 // ValidateBasic does a simple validation check that
 // doesn't require access to any other information.
-func (msg MiniTokenIssueMsg) ValidateBasic() error {
+func (msg TinyTokenIssueMsg) ValidateBasic() error {
 
 	if msg.From == nil {
 		return errors.New("sender address cannot be empty")
@@ -68,21 +65,21 @@ func (msg MiniTokenIssueMsg) ValidateBasic() error {
 }
 
 // Route part of Msg interface
-func (msg MiniTokenIssueMsg) Route() string { return MiniRoute }
+func (msg TinyTokenIssueMsg) Route() string { return MiniRoute }
 
 // Type part of Msg interface
-func (msg MiniTokenIssueMsg) Type() string {
-	return IssueMiniMsgType
+func (msg TinyTokenIssueMsg) Type() string {
+	return IssueTinyMsgType
 }
 
 // String part of Msg interface
-func (msg MiniTokenIssueMsg) String() string { return fmt.Sprintf("MsgMiniIssue{%#v}", msg) }
+func (msg TinyTokenIssueMsg) String() string { return fmt.Sprintf("MsgMiniIssue{%#v}", msg) }
 
 // GetSigners part of Msg interface
-func (msg MiniTokenIssueMsg) GetSigners() []types.AccAddress { return []types.AccAddress{msg.From} }
+func (msg TinyTokenIssueMsg) GetSigners() []types.AccAddress { return []types.AccAddress{msg.From} }
 
 // GetSignBytes part of Msg interface
-func (msg MiniTokenIssueMsg) GetSignBytes() []byte {
+func (msg TinyTokenIssueMsg) GetSignBytes() []byte {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		panic(err)
@@ -91,23 +88,6 @@ func (msg MiniTokenIssueMsg) GetSignBytes() []byte {
 }
 
 // GetInvolvedAddresses part of Msg interface
-func (msg MiniTokenIssueMsg) GetInvolvedAddresses() []types.AccAddress {
+func (msg TinyTokenIssueMsg) GetInvolvedAddresses() []types.AccAddress {
 	return msg.GetSigners()
-}
-
-func validateIssueMsgMiniTokenSymbol(symbol string) error {
-	if len(symbol) == 0 {
-		return errors.New("token symbol cannot be empty")
-	}
-
-	// check len without suffix
-	if symbolLen := len(symbol); symbolLen > MiniTokenSymbolMaxLen || symbolLen < MiniTokenSymbolMinLen {
-		return errors.New("length of token symbol is limited to 3~8")
-	}
-
-	if !common.IsAlphaNum(symbol) {
-		return errors.New("token symbol should be alphanumeric")
-	}
-
-	return nil
 }
