@@ -76,7 +76,7 @@ func (msg MiniTokenIssueMsg) Type() string {
 }
 
 // String part of Msg interface
-func (msg MiniTokenIssueMsg) String() string { return fmt.Sprintf("MsgMiniIssue{%#v}", msg) }
+func (msg MiniTokenIssueMsg) String() string { return fmt.Sprintf("IssueMiniMsg{%#v}", msg) }
 
 // GetSigners part of Msg interface
 func (msg MiniTokenIssueMsg) GetSigners() []types.AccAddress { return []types.AccAddress{msg.From} }
