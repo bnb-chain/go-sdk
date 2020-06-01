@@ -23,17 +23,6 @@ const (
 	TokenSymbolMaxLen          = 8
 	TokenSymbolMinLen          = 3
 	TokenSymbolTxHashSuffixLen = 3
-
-	MiniTokenSymbolMaxLen    = 8
-	MiniTokenSymbolMinLen    = 3
-	MiniTokenSymbolSuffixLen = 4
-	MiniTokenSymbolMSuffix   = "M"
-	MiniTokenSymbolTxHashSuffixLen = 3
-	MaxMiniTokenNameLength   = 32
-	MaxTokenURILength        = 2048
-	MiniTokenMinTotalSupply           int64 = 100000000      // 1 with 8 decimal digits
-	MiniTokenMaxTotalSupplyUpperBound int64 = 10000000000000 // 100k with 8 decimal digits
-	MiniTokenSupplyRange1UpperBound   int64 = 1000000000000
 )
 
 // Msg - Transactions messages must fulfill the Msg
@@ -140,51 +129,4 @@ func splitSuffixedTokenSymbol(suffixed string) ([]string, error) {
 	}
 
 	return split, nil
-}
-
-
-func ValidateMiniTokenSymbol(symbol string) error {
-	if len(symbol) == 0 {
-		return errors.New("suffixed token symbol cannot be empty")
-	}
-
-	parts, err := splitSuffixedTokenSymbol(symbol)
-	if err != nil {
-		return err
-	}
-
-	symbolPart := parts[0]
-
-	// check len without suffix
-	if len(symbolPart) < MiniTokenSymbolMinLen {
-		return fmt.Errorf("mini-token symbol part is too short, got %d chars", len(symbolPart))
-	}
-	if len(symbolPart) > MiniTokenSymbolMaxLen {
-		return fmt.Errorf("mini-token symbol part is too long, got %d chars", len(symbolPart))
-	}
-
-	if !common.IsAlphaNum(symbolPart) {
-		return errors.New("mini-token symbol part should be alphanumeric")
-	}
-
-	suffixPart := parts[1]
-
-	if len(suffixPart) != MiniTokenSymbolSuffixLen {
-		return fmt.Errorf("mini-token symbol suffix must be %d chars in length, got %d", MiniTokenSymbolSuffixLen, len(suffixPart))
-	}
-
-	if suffixPart[len(suffixPart)-1:] != MiniTokenSymbolMSuffix {
-		return fmt.Errorf("mini-token symbol suffix must end with M")
-	}
-
-	// prohibit non-hexadecimal chars in the suffix part
-	isHex, err := regexp.MatchString(fmt.Sprintf("[0-9A-F]{%d}M", MiniTokenSymbolTxHashSuffixLen), suffixPart)
-	if err != nil {
-		return err
-	}
-	if !isHex {
-		return fmt.Errorf("mini-token symbol tx hash suffix must be hex with a length of %d", MiniTokenSymbolTxHashSuffixLen)
-	}
-
-	return nil
 }

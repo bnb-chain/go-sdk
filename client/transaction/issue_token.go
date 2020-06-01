@@ -23,7 +23,7 @@ type IssueTokenValue struct {
 
 func (c *client) IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error) {
 	if symbol == "" {
-		return nil, fmt.Errorf("Issue token symbol can't be empty ")
+		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
 	fromAddr := c.keyManager.GetAddr()
 

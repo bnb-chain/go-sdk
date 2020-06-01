@@ -13,7 +13,7 @@ type FreezeTokenResult struct {
 
 func (c *client) FreezeToken(symbol string, amount int64, sync bool, options ...Option) (*FreezeTokenResult, error) {
 	if symbol == "" {
-		return nil, fmt.Errorf("Freeze token symbol can't be empty ")
+		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
 	fromAddr := c.keyManager.GetAddr()
 

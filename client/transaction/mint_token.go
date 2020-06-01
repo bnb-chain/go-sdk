@@ -13,7 +13,7 @@ type MintTokenResult struct {
 
 func (c *client) MintToken(symbol string, amount int64, sync bool, options ...Option) (*MintTokenResult, error) {
 	if symbol == "" {
-		return nil, fmt.Errorf("Mint token symbol can't be empty ")
+		return nil, fmt.Errorf("Freeze token symbol can'c be empty ")
 	}
 	fromAddr := c.keyManager.GetAddr()
 

@@ -16,10 +16,3 @@ type TokenBalance struct {
 	Locked Fixed8 `json:"locked"`
 	Frozen Fixed8 `json:"frozen"`
 }
-
-// MiniToken definition
-type MiniToken struct {
-	Token
-	MaxTotalSupply int64          `json:"max_total_supply"`
-	TokenURI       string         `json:"token_uri"`
-}
