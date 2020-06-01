@@ -592,3 +592,32 @@ func TestNoRequestLeakInGoodNetwork(t *testing.T) {
 	w.Wait()
 	assert.Equal(t, c.PendingRequest(), 0)
 }
+
+
+func TestListAllMiniTokens(t *testing.T) {
+	c := defaultClient()
+	tokens, err := c.ListAllMiniTokens(1, 10)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(tokens)
+	fmt.Println(string(bz))
+}
+
+func TestGetMiniTokenInfo(t *testing.T) {
+	c := defaultClient()
+	tokens, err := c.ListAllMiniTokens(1, 10)
+	assert.NoError(t, err)
+	if len(tokens) > 0 {
+		token, err := c.GetMiniTokenInfo(tokens[0].Symbol)
+		assert.NoError(t, err)
+		bz, err := json.Marshal(token)
+		fmt.Println(string(bz))
+	}
+}
+
+func TestGetMiniTradePair(t *testing.T) {
+	c := defaultClient()
+	trades, err := c.GetMiniTradingPairs(0, 10)
+	assert.NoError(t, err)
+	bz, err := json.Marshal(trades)
+	fmt.Println(string(bz))
+}

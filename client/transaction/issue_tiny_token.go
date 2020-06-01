@@ -8,37 +8,39 @@ import (
 	"github.com/binance-chain/go-sdk/types/tx"
 )
 
-type IssueTokenResult struct {
+type IssueTinyTokenResult struct {
 	tx.TxCommitResult
 	Symbol string `json:"symbol"`
 }
 
-type IssueTokenValue struct {
+type IssueTinyTokenValue struct {
 	Name        string `json:"name"`
 	Symbol      string `json:"symbol"`
 	OrigSymbol  string `json:"original_symbol"`
 	TotalSupply string `json:"total_supply"`
+	TokenURI    string `json:"token_uri"`
 	Owner       string `json:"owner"`
 }
 
-func (c *client) IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error) {
+func (c *client) IssueTinyToken(name, symbol string, supply int64, sync bool, mintable bool, tokenURI string, options ...Option) (*IssueTinyTokenResult, error) {
 	if symbol == "" {
-		return nil, fmt.Errorf("Issue token symbol can't be empty ")
+		return nil, fmt.Errorf("Issue mini token symbol can't be empty ")
 	}
 	fromAddr := c.keyManager.GetAddr()
 
-	issueMsg := msg.NewTokenIssueMsg(
+	issueMsg := msg.NewMiniTokenIssueMsg(
 		fromAddr,
 		name,
 		symbol,
 		supply,
 		mintable,
+		tokenURI,
 	)
 	commit, err := c.broadcastMsg(issueMsg, sync, options...)
 	if err != nil {
 		return nil, err
 	}
-	var issueTokenValue IssueTokenValue
+	var issueTokenValue IssueMiniTokenValue
 	issueSymbol := symbol
 	if commit.Ok && sync {
 		err = json.Unmarshal([]byte(commit.Data), &issueTokenValue)
@@ -48,6 +50,5 @@ func (c *client) IssueToken(name, symbol string, supply int64, sync bool, mintab
 		issueSymbol = issueTokenValue.Symbol
 	}
 
-	return &IssueTokenResult{*commit, issueSymbol}, nil
-
+	return &IssueTinyTokenResult{*commit, issueSymbol}, nil
 }
