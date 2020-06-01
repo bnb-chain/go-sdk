@@ -51,11 +51,6 @@ type DexClient interface {
 	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
 	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
 
-	ListAllMiniTokens(offset int, limit int) ([]types.MiniToken, error)
-	GetMiniTokenInfo(symbol string) (*types.MiniToken, error)
-	GetMiniOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
-	GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error)
-
 	SetKeyManager(k keys.KeyManager)
 	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -535,90 +530,6 @@ func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int6
 		return nil, err
 	}
 	return swapIDList, nil
-}
-
-func (c *HTTP) ListAllMiniTokens(offset int, limit int) ([]types.MiniToken, error) {
-	if err := ValidateOffset(offset); err != nil {
-		return nil, err
-	}
-	if err := ValidateLimit(limit); err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("mini-tokens/list/%d/%d", offset, limit)
-	result, err := c.ABCIQuery(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	if !result.Response.IsOK() {
-		return nil, fmt.Errorf(result.Response.Log)
-	}
-	bz := result.Response.GetValue()
-	tokens := make([]types.MiniToken, 0)
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &tokens)
-	return tokens, err
-}
-
-func (c *HTTP) GetMiniTokenInfo(symbol string) (*types.MiniToken, error) {
-	if err := ValidateSymbol(symbol); err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("mini-tokens/info/%s", symbol)
-	result, err := c.ABCIQuery(path, nil)
-	if err != nil {
-		return nil, err
-	}
-	if !result.Response.IsOK() {
-		return nil, fmt.Errorf(result.Response.Log)
-	}
-	bz := result.Response.GetValue()
-	token := new(types.MiniToken)
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, token)
-	return token, err
-}
-
-func (c *HTTP) GetMiniOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error) {
-	if err := ValidatePair(pair); err != nil {
-		return nil, err
-	}
-	rawOrders, err := c.ABCIQuery(fmt.Sprintf("mini-dex/openorders/%s/%s", pair, addr), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawOrders.Response.IsOK() {
-		return nil, fmt.Errorf(rawOrders.Response.Log)
-	}
-	bz := rawOrders.Response.GetValue()
-	openOrders := make([]types.OpenOrder, 0)
-	if bz == nil {
-		return openOrders, nil
-	}
-	if err := c.cdc.UnmarshalBinaryLengthPrefixed(bz, &openOrders); err != nil {
-		return nil, err
-	} else {
-		return openOrders, nil
-	}
-}
-
-func (c *HTTP) GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
-	if err := ValidateLimit(limit); err != nil {
-		return nil, err
-	}
-	if err := ValidateOffset(offset); err != nil {
-		return nil, err
-	}
-	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex-mini/pairs/%d/%d", offset, limit), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawTradePairs.Response.IsOK() {
-		return nil, fmt.Errorf(rawTradePairs.Response.Log)
-	}
-	pairs := make([]types.TradingPair, 0)
-	if rawTradePairs.Response.GetValue() == nil {
-		return pairs, nil
-	}
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
-	return pairs, err
 }
 
 func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
