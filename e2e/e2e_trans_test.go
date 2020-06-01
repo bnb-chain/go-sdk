@@ -271,12 +271,12 @@ func TestTransProcess(t *testing.T) {
 	//----- Get Mini Kline
 	miniKline, err := client.GetMiniKlines(ctypes.NewKlineQuery(miniTradeSymbol, nativeSymbol, "1h").WithLimit(1))
 	assert.NoError(t, err)
-	fmt.Printf("GetMiniKlines: %v \n", miniKline)
+	assert.Equal(t, 1, len(miniKline))
 
 	//-----  Get Mini Ticker 24h  -----------
 	miniTicker24h, err := client.GetMiniTicker24h(ctypes.NewTicker24hQuery().WithSymbol(miniTradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
-	fmt.Printf("GetMiniTicker24h: %v \n", miniTicker24h)
+	assert.True(t, len(miniTicker24h) > 0)
 
 	//-----  Get Mini Trades  -----------
 	fmt.Println(testAccount1.String())
