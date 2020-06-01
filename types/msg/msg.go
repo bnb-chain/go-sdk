@@ -24,21 +24,17 @@ const (
 	TokenSymbolMinLen          = 3
 	TokenSymbolTxHashSuffixLen = 3
 
-	MiniTokenSymbolMaxLen    = 8
-	MiniTokenSymbolMinLen    = 3
-	MiniTokenSymbolSuffixLen = 4
-	MiniTokenSymbolMSuffix   = "M"
+	MiniTokenSymbolMaxLen          = 8
+	MiniTokenSymbolMinLen          = 3
+	MiniTokenSymbolSuffixLen       = 4
+	MiniTokenSymbolMSuffix         = "M"
 	MiniTokenSymbolTxHashSuffixLen = 3
-	MaxMiniTokenNameLength   = 32
-	MaxTokenURILength        = 2048
-	//MiniTokenMinTotalSupply           int64 = 100000000      // 1 with 8 decimal digits
-	//MiniTokenMaxTotalSupplyUpperBound int64 = 10000000000000 // 100k with 8 decimal digits
-	//MiniTokenSupplyRange1UpperBound   int64 = 1000000000000
+	MaxMiniTokenNameLength         = 32
+	MaxTokenURILength              = 2048
 )
 
 // Msg - Transactions messages must fulfill the Msg
 type Msg interface {
-
 	// Return the message type.
 	// Must be alphanumeric or empty.
 	Route() string
@@ -141,7 +137,6 @@ func splitSuffixedTokenSymbol(suffixed string) ([]string, error) {
 
 	return split, nil
 }
-
 
 func ValidateMiniTokenSymbol(symbol string) error {
 	if len(symbol) == 0 {
