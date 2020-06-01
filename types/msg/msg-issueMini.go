@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	MiniRoute        = "miniTokensIssue"
-	IssueMiniMsgType = "miniIssueMsg"
+	IssueMsgType    = "tinyIssueMsg"
+	AdvIssueMsgType = "miniIssueMsg" //For max total supply in range 2
+
+	TinyTokenType = 1
+	MiniTokenType = 2
 )
 
 // MiniTokenIssueMsg def
@@ -19,17 +22,19 @@ type MiniTokenIssueMsg struct {
 	From        types.AccAddress `json:"from"`
 	Name        string           `json:"name"`
 	Symbol      string           `json:"symbol"`
+	TokenType   int              `json:"token_type"`
 	TotalSupply int64            `json:"total_supply"`
 	Mintable    bool             `json:"mintable"`
 	TokenURI    string           `json:"token_uri"`
 }
 
 // NewMiniTokenIssueMsg for instance creation
-func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, supply int64, mintable bool, tokenURI string) MiniTokenIssueMsg {
+func NewMiniTokenIssueMsg(from types.AccAddress, name, symbol string, tokenType int, supply int64, mintable bool, tokenURI string) MiniTokenIssueMsg {
 	return MiniTokenIssueMsg{
 		From:        from,
 		Name:        name,
 		Symbol:      symbol,
+		TokenType:   tokenType,
 		TotalSupply: supply,
 		Mintable:    mintable,
 		TokenURI:    tokenURI,
@@ -68,11 +73,16 @@ func (msg MiniTokenIssueMsg) ValidateBasic() error {
 }
 
 // Route part of Msg interface
-func (msg MiniTokenIssueMsg) Route() string { return MiniRoute }
+func (msg MiniTokenIssueMsg) Route() string { return "miniTokensIssue" }
 
 // Type part of Msg interface
 func (msg MiniTokenIssueMsg) Type() string {
-	return IssueMiniMsgType
+	if msg.TokenType == MiniTokenType {
+		return AdvIssueMsgType
+	} else if msg.TokenType == TinyTokenType {
+		return IssueMsgType
+	}
+	return "unknown"
 }
 
 // String part of Msg interface

@@ -18,11 +18,12 @@ type IssueMiniTokenValue struct {
 	Symbol      string `json:"symbol"`
 	OrigSymbol  string `json:"original_symbol"`
 	TotalSupply string `json:"total_supply"`
+	TokenType   int    `json:"token_type"`
 	TokenURI    string `json:"token_uri"`
 	Owner       string `json:"owner"`
 }
 
-func (c *client) IssueMiniToken(name, symbol string, supply int64, sync bool, mintable bool, tokenURI string, options ...Option) (*IssueMiniTokenResult, error) {
+func (c *client) IssueMiniToken(name, symbol string, tokenType int, supply int64, sync bool, mintable bool, tokenURI string, options ...Option) (*IssueMiniTokenResult, error) {
 	if symbol == "" {
 		return nil, fmt.Errorf("Issue mini token symbol can't be empty ")
 	}
@@ -32,6 +33,7 @@ func (c *client) IssueMiniToken(name, symbol string, supply int64, sync bool, mi
 		fromAddr,
 		name,
 		symbol,
+		tokenType,
 		supply,
 		mintable,
 		tokenURI,
@@ -51,4 +53,5 @@ func (c *client) IssueMiniToken(name, symbol string, supply int64, sync bool, mi
 	}
 
 	return &IssueMiniTokenResult{*commit, issueSymbol}, nil
+
 }
