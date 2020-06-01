@@ -233,37 +233,6 @@ func TestTransProcess(t *testing.T) {
 	l, err := client.ListPair(listTradingProposal.ProposalId, issue.Symbol, nativeSymbol, 1000000000, true)
 	assert.NoError(t, err)
 	fmt.Printf("List trading pair: %v\n", l)
-
-	//----   issue mini token ---------
-	miniIssue, err := client.IssueMiniToken("Mini-Client-Token", "msdk", 10000000000, true, true, "http://test.sdk")
-	assert.NoError(t, err)
-	fmt.Printf("Issue mini token: %v\n", miniIssue)
-
-	//----   issue tiny token ---------
-	tinyIssue, err := client.IssueMiniToken("Tiny-Client-Token", "tsdk", 10000000000, true, true, "http://test.sdk")
-	assert.NoError(t, err)
-	fmt.Printf("Issue tiny token: %v\n", tinyIssue)
-
-	//----   set mini token uri ---------
-	setUri, err := client.SetURI(miniIssue.Symbol, "http://test-uri.sdk", true)
-	assert.NoError(t, err)
-	fmt.Printf("Set mini token uri: %v\n", setUri)
-
-	//----   list mini trading pair ---------
-	listMini, err := client.ListMiniPair(miniIssue.Symbol, nativeSymbol, 1000000000, true)
-	assert.NoError(t, err)
-	fmt.Printf("List mini pair: %v\n", listMini)
-
-	//-----  Get Mini Tokens  -----------
-	miniTokens, err := client.GetMiniTokens(ctypes.NewTokensQuery().WithLimit(101))
-	fmt.Println(err)
-	assert.NoError(t, err)
-	fmt.Printf("Get Mini Tokens: %v \n", miniTokens)
-
-	//----- Get mini Markets  ------------
-	miniMarkets, err := client.GetMiniMarkets(ctypes.NewMarketsQuery().WithLimit(101))
-	assert.NoError(t, err)
-	fmt.Printf("Get Mini Markets: %v \n", miniMarkets)
 }
 
 func TestAtomicSwap(t *testing.T) {
