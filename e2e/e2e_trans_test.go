@@ -256,43 +256,14 @@ func TestTransProcess(t *testing.T) {
 
 	//-----  Get Mini Tokens  -----------
 	miniTokens, err := client.GetMiniTokens(ctypes.NewTokensQuery().WithLimit(101))
+	fmt.Println(err)
 	assert.NoError(t, err)
 	fmt.Printf("Get Mini Tokens: %v \n", miniTokens)
 
-	//----- Get Mini Markets  ------------
+	//----- Get mini Markets  ------------
 	miniMarkets, err := client.GetMiniMarkets(ctypes.NewMarketsQuery().WithLimit(101))
 	assert.NoError(t, err)
 	fmt.Printf("Get Mini Markets: %v \n", miniMarkets)
-	miniTradeSymbol := miniMarkets[0].QuoteAssetSymbol
-	if miniTradeSymbol == "BNB" {
-		miniTradeSymbol = miniMarkets[0].BaseAssetSymbol
-	}
-
-	//----- Get Mini Kline
-	miniKline, err := client.GetMiniKlines(ctypes.NewKlineQuery(miniTradeSymbol, nativeSymbol, "1h").WithLimit(1))
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(miniKline))
-
-	//-----  Get Mini Ticker 24h  -----------
-	miniTicker24h, err := client.GetMiniTicker24h(ctypes.NewTicker24hQuery().WithSymbol(miniTradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	assert.True(t, len(miniTicker24h) > 0)
-
-	//-----  Get Mini Trades  -----------
-	fmt.Println(testAccount1.String())
-	miniTrades, err := client.GetMiniTrades(ctypes.NewTradesQuery(true).WithSymbol(miniTradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	fmt.Printf("GetMiniTrades: %v \n", miniTrades)
-
-	//---- Get Mini Open Order ---------
-	miniOpenOrders, err := client.GetMiniOpenOrders(ctypes.NewOpenOrdersQuery(testAccount1.String(), true))
-	assert.NoError(t, err)
-	fmt.Printf("GetMiniOpenOrders:  %v \n", miniOpenOrders)
-
-	//---- Get Mini Close Order---------
-	miniClosedOrders, err := client.GetMiniClosedOrders(ctypes.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(miniTradeSymbol, nativeSymbol))
-	assert.NoError(t, err)
-	fmt.Printf("GetMiniClosedOrders: %v \n", miniClosedOrders)
 }
 
 func TestAtomicSwap(t *testing.T) {
