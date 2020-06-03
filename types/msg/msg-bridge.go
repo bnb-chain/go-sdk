@@ -81,9 +81,10 @@ const (
 )
 
 type TransferOutRefundClaim struct {
-	RefundAddress sdk.AccAddress `json:"refund_address"`
-	Amount        sdk.Coin       `json:"amount"`
-	RefundReason  RefundReason   `json:"refund_reason"`
+	TransferOutSequence int64          `json:"transfer_out_sequence"`
+	RefundAddress       sdk.AccAddress `json:"refund_address"`
+	Amount              sdk.Coin       `json:"amount"`
+	RefundReason        RefundReason   `json:"refund_reason"`
 }
 
 type BindStatus int8
