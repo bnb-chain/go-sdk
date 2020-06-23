@@ -2,15 +2,14 @@ package rpc
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/types"
+	sdk "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	gtypes "github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
@@ -28,6 +27,7 @@ const (
 const (
 	AccountStoreName    = "acc"
 	OracleStoreName     = "oracle"
+	SideChainStoreName  = "sc"
 	BridgeStoreName     = "bridge"
 	ParamABCIPrefix     = "param"
 	TimeLockMsgRoute    = "timelock"
@@ -69,17 +69,12 @@ type DexClient interface {
 	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
-	UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
-		refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
-		relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
-	Claim(claimType msg.ClaimType, claim string, sequence int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
-	GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophecy, error)
-	GetCurrentSequence(claimType msg.ClaimType) (int64, error)
+	Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error)
+	GetCurrentOracleSequence(chainId sdk.IbcChainID) (int64, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
@@ -662,26 +657,6 @@ func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync
 	return c.Broadcast(cancelOrderMsg, syncType, options...)
 }
 
-func (c *HTTP) TransferIn(sequence int64, contractAddr msg.SmartChainAddress,
-	refundAddresses []msg.SmartChainAddress, receiverAddresses []types.AccAddress, amounts []int64, symbol string,
-	relayFee types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	claim := msg.TransferInClaim{
-		ContractAddress:   contractAddr,
-		RefundAddresses:   refundAddresses,
-		ReceiverAddresses: receiverAddresses,
-		Amounts:           amounts,
-		Symbol:            symbol,
-		RelayFee:          relayFee,
-		ExpireTime:        expireTime,
-	}
-
-	claimBz, err := json.Marshal(claim)
-	if err != nil {
-		return nil, err
-	}
-	return c.Claim(msg.ClaimTypeTransferIn, string(claimBz), sequence, syncType, options...)
-}
-
 func (c *HTTP) TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -704,35 +679,6 @@ func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainA
 	bindMsg := msg.NewBindMsg(fromAddr, symbol, amount, contractAddress, contractDecimals, expireTime)
 
 	return c.Broadcast(bindMsg, syncType, options...)
-}
-
-func (c *HTTP) TransferOutRefund(sequence int64, refundAddr types.AccAddress, amount types.Coin, refundReason msg.RefundReason, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	claim := msg.TransferOutRefundClaim{
-		RefundAddress: refundAddr,
-		Amount:        amount,
-		RefundReason:  refundReason,
-	}
-
-	claimBz, err := json.Marshal(claim)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.Claim(msg.ClaimTypeTransferOutRefund, string(claimBz), sequence, syncType, options...)
-}
-
-func (c *HTTP) UpdateBind(sequence int64, symbol string, contractAddress msg.SmartChainAddress, status msg.BindStatus, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
-	claim := msg.UpdateBindClaim{
-		Status:          status,
-		Symbol:          strings.ToUpper(symbol),
-		ContractAddress: contractAddress,
-	}
-
-	claimBz, err := json.Marshal(claim)
-	if err != nil {
-		return nil, err
-	}
-	return c.Claim(msg.ClaimTypeUpdateBind, string(claimBz), sequence, syncType, options...)
 }
 
 func (c *HTTP) Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
@@ -769,20 +715,20 @@ func (c *HTTP) Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*c
 	}
 }
 
-func (c *HTTP) Claim(claimType msg.ClaimType, claim string, sequence int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+func (c *HTTP) Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
 
 	fromAddr := c.key.GetAddr()
 
-	claimMsg := msg.NewClaimMsg(claimType, sequence, claim, fromAddr)
+	claimMsg := msg.NewClaimMsg(chainId, sequence, payload, fromAddr)
 
 	return c.Broadcast(claimMsg, syncType, options...)
 }
 
-func (c *HTTP) GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophecy, error) {
-	key := []byte(msg.GetClaimId(claimType, sequence))
+func (c *HTTP) GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error) {
+	key := []byte(msg.GetClaimId(chainId, msg.OracleChannelId, sequence))
 	bz, err := c.QueryStore(key, OracleStoreName)
 	if err != nil {
 		return nil, err
@@ -805,9 +751,9 @@ func (c *HTTP) GetProphecy(claimType msg.ClaimType, sequence int64) (*msg.Prophe
 	return &prophecy, err
 }
 
-func (c *HTTP) GetCurrentSequence(claimType msg.ClaimType) (int64, error) {
-	key := msg.GetClaimTypeSequence(claimType)
-	bz, err := c.QueryStore(key, OracleStoreName)
+func (c *HTTP) GetCurrentOracleSequence(chainId sdk.IbcChainID) (int64, error) {
+	key := types.GetReceiveSequenceKey(chainId, msg.OracleChannelId)
+	bz, err := c.QueryStore(key, SideChainStoreName)
 	if err != nil {
 		return 0, err
 	}
@@ -816,7 +762,6 @@ func (c *HTTP) GetCurrentSequence(claimType msg.ClaimType) (int64, error) {
 	}
 
 	sequence := binary.BigEndian.Uint64(bz)
-
 	return int64(sequence), err
 }
 
