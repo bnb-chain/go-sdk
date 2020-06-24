@@ -70,6 +70,7 @@ type DexClient interface {
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
 	Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	Unbind(symbol string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	TransferOut(to msg.SmartChainAddress, amount types.Coin, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
 	Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -679,6 +680,17 @@ func (c *HTTP) Bind(symbol string, amount int64, contractAddress msg.SmartChainA
 	bindMsg := msg.NewBindMsg(fromAddr, symbol, amount, contractAddress, contractDecimals, expireTime)
 
 	return c.Broadcast(bindMsg, syncType, options...)
+}
+
+func (c *HTTP) Unbind(symbol string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	unbindMsg := msg.NewUnbindMsg(fromAddr, symbol)
+	return c.Broadcast(unbindMsg, syncType, options...)
 }
 
 func (c *HTTP) Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {

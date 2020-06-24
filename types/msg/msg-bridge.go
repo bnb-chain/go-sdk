@@ -12,7 +12,12 @@ const (
 	RouteBridge = "bridge"
 
 	BindMsgType        = "crossBind"
+	UnbindMsgType      = "crossUnbind"
 	TransferOutMsgType = "crossTransferOut"
+)
+
+const (
+	MaxSymbolLength = 32
 )
 
 // SmartChainAddress defines a standard smart chain address
@@ -170,6 +175,50 @@ func (msg TransferOutMsg) ValidateBasic() error {
 	return nil
 }
 func (msg TransferOutMsg) GetSignBytes() []byte {
+	b, err := json.Marshal(msg) // XXX: ensure some canonical form
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+type UnbindMsg struct {
+	From   sdk.AccAddress `json:"from"`
+	Symbol string         `json:"symbol"`
+}
+
+func NewUnbindMsg(from sdk.AccAddress, symbol string) UnbindMsg {
+	return UnbindMsg{
+		From:   from,
+		Symbol: symbol,
+	}
+}
+
+func (msg UnbindMsg) Route() string { return RouteBridge }
+func (msg UnbindMsg) Type() string  { return UnbindMsgType }
+func (msg UnbindMsg) String() string {
+	return fmt.Sprintf("Unbind{%v#%s}", msg.From, msg.Symbol)
+}
+func (msg UnbindMsg) GetInvolvedAddresses() []sdk.AccAddress { return msg.GetSigners() }
+func (msg UnbindMsg) GetSigners() []sdk.AccAddress           { return []sdk.AccAddress{msg.From} }
+
+func (msg UnbindMsg) ValidateBasic() error {
+	if len(msg.From) != sdk.AddrLen {
+		return fmt.Errorf("address length should be %d", sdk.AddrLen)
+	}
+
+	if len(msg.Symbol) == 0 {
+		return fmt.Errorf("symbol should not be empty")
+	}
+
+	if len(msg.Symbol) > MaxSymbolLength {
+		return fmt.Errorf("symbol length should not be larger than %d", MaxSymbolLength)
+	}
+
+	return nil
+}
+
+func (msg UnbindMsg) GetSignBytes() []byte {
 	b, err := json.Marshal(msg) // XXX: ensure some canonical form
 	if err != nil {
 		panic(err)
