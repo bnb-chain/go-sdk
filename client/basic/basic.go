@@ -125,13 +125,9 @@ func (c *client) WsGet(path string, constructMsg func([]byte) (interface{}, erro
 		})
 	messages := make(chan interface{}, 0)
 	finish := make(chan struct{}, 0)
-	keepAliveCh := time.NewTicker(30 * time.Minute)
-	pingTicker := time.NewTicker(10 * time.Second)
 	go func() {
 		defer conn.Close()
 		defer close(messages)
-		defer keepAliveCh.Stop()
-		defer pingTicker.Stop()
 		select {
 		case <-closeCh:
 			return
@@ -155,12 +151,6 @@ func (c *client) WsGet(path string, constructMsg func([]byte) (interface{}, erro
 			case <-closeCh:
 				conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second))
 				return
-			case <-keepAliveCh.C:
-				conn.WriteJSON(&struct {
-					Method string
-				}{"keepAlive"})
-			case <-pingTicker.C:
-				conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(time.Second))
 			default:
 				response := WSResponse{}
 				err := conn.ReadJSON(&response)
