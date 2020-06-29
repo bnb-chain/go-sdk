@@ -3,6 +3,7 @@ package basic
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	MaxReadWaitTime = 30 * time.Second
+	MaxReadWaitTime  = 30 * time.Second
+	MaxWriteWaitTime = 10 * time.Second
 )
 
 type BasicClient interface {
@@ -34,7 +36,7 @@ type client struct {
 }
 
 func NewClient(baseUrl string, apiKey string) BasicClient {
-	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix),apiKey:apiKey}
+	return &client{baseUrl: baseUrl, apiUrl: fmt.Sprintf("%s://%s", types.DefaultApiSchema, baseUrl+types.DefaultAPIVersionPrefix), apiKey: apiKey}
 }
 
 func (c *client) Get(path string, qp map[string]string) ([]byte, int, error) {
@@ -117,7 +119,16 @@ func (c *client) WsGet(path string, constructMsg func([]byte) (interface{}, erro
 	if err != nil {
 		return nil, err
 	}
-	conn.SetPingHandler(nil)
+	conn.SetPingHandler(func(message string) error {
+		conn.SetReadDeadline(time.Now().Add(MaxReadWaitTime))
+		err := conn.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(MaxWriteWaitTime))
+		if err == websocket.ErrCloseSent {
+			return nil
+		} else if e, ok := err.(net.Error); ok && e.Temporary() {
+			return nil
+		}
+		return err
+	})
 	conn.SetPongHandler(
 		func(string) error {
 			conn.SetReadDeadline(time.Now().Add(MaxReadWaitTime))
