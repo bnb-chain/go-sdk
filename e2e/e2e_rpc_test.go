@@ -15,6 +15,7 @@ import (
 	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/types"
 
+	"github.com/binance-chain/go-sdk/types/tx"
 	"github.com/binance-chain/go-sdk/client/rpc"
 	"github.com/binance-chain/go-sdk/client/transaction"
 	ctypes "github.com/binance-chain/go-sdk/common/types"
@@ -219,6 +220,22 @@ func TestTx(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
+func TestClaimTx(t *testing.T) {
+	c := defaultClient()
+	bz, err := hex.DecodeString(testTxHash)
+	assert.NoError(t, err)
+
+	rawTx, err := c.Tx(bz, false)
+	assert.NoError(t, err)
+	claimTx, err := rpc.ParseTx(tx.Cdc, rawTx.Tx)
+	claimMsg := claimTx.GetMsgs()[0].(msg.ClaimMsg)
+	packages, err := msg.ParseClaimPayload(claimMsg.Payload)
+	assert.NoError(t, err)
+	newBz, err := json.Marshal(packages)
+	assert.NoError(t, err)
+	fmt.Println(string(newBz))
+}
+
 func TestReconnection(t *testing.T) {
 	repeatNum := 10
 	c := defaultClient()
@@ -407,7 +424,7 @@ func TestNoneExistGetAccount(t *testing.T) {
 	acc, err := keys.NewKeyManager()
 	account, err := c.GetAccount(acc.GetAddr())
 	assert.NoError(t, err)
-	assert.Nil(t,account)
+	assert.Nil(t, account)
 }
 
 func TestGetBalances(t *testing.T) {
@@ -416,7 +433,7 @@ func TestGetBalances(t *testing.T) {
 	acc, err := ctypes.AccAddressFromBech32(testAddress)
 	assert.NoError(t, err)
 	balances, err := c.GetBalances(acc)
-	assert.Equal(t,0,len(balances))
+	assert.Equal(t, 0, len(balances))
 	assert.NoError(t, err)
 	bz, err := json.Marshal(balances)
 	fmt.Println(string(bz))
@@ -449,9 +466,9 @@ func TestNoneExistGetBalance(t *testing.T) {
 	acc, _ := keys.NewKeyManager()
 	balance, err := c.GetBalance(acc.GetAddr(), "BNB")
 	assert.NoError(t, err)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Free)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Locked)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Frozen)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Free)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Locked)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Frozen)
 	bz, err := json.Marshal(balance)
 	fmt.Println(string(bz))
 }
