@@ -15,7 +15,6 @@ const (
 	TypeSideChainUndelegate      = "side_undelegate"
 
 	SideChainStakeMsgRoute = "stake"
-	MaxSideChainIdLength   = 20
 	SideChainAddrLen       = 20
 
 	MinDelegationAmount = 1e8

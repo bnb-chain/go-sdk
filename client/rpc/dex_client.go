@@ -2,10 +2,10 @@ package rpc
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
-
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	"time"
 
 	"github.com/binance-chain/go-sdk/common"
 	"github.com/binance-chain/go-sdk/common/types"
@@ -14,6 +14,7 @@ import (
 	gtypes "github.com/binance-chain/go-sdk/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 type SyncType int
@@ -51,12 +52,15 @@ type DexClient interface {
 	GetTradingPairs(offset int, limit int) ([]types.TradingPair, error)
 	GetDepth(tradePair string, level int) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
+	GetSideChainProposals(status types.ProposalStatus, numLatest int64, sideChainId string) ([]types.Proposal, error)
+	GetSideChainProposal(proposalId int64, sideChainId string) (types.Proposal, error)
 	GetProposal(proposalId int64) (types.Proposal, error)
 	GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error)
 	GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLockRecord, error)
 	GetSwapByID(swapID types.SwapBytes) (types.AtomicSwap, error)
 	GetSwapByCreator(creatorAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
 	GetSwapByRecipient(recipientAddr string, offset int64, limit int64) ([]types.SwapBytes, error)
+	GetSideChainParams(sideChainId string) ([]msg.SCParam, error)
 
 	SetKeyManager(k keys.KeyManager)
 	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -76,6 +80,17 @@ type DexClient interface {
 	Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error)
 	GetCurrentOracleSequence(chainId sdk.IbcChainID) (int64, error)
+	
+	SideChainVote(proposalID int64, option msg.VoteOption, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	SideChainDeposit(proposalID int64, amount types.Coins, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	SideChainSubmitSCParamsProposal(title string, scParam msg.SCChangeParams, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	SideChainSubmitCSCParamsProposal(title string, cscParam msg.CSCParamChange, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	SideChainSubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	SubmitListProposal(title string, param msg.ListTradingPairParams, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+
+	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	Deposit(proposalID int64, amount types.Coins, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	Vote(proposalID int64, option msg.VoteOption, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
@@ -386,6 +401,14 @@ func (c *HTTP) GetTimelock(addr types.AccAddress, recordID int64) (*types.TimeLo
 }
 
 func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error) {
+	return c.getProposals(status, "", numLatest)
+}
+
+func (c *HTTP) GetSideChainProposals(status types.ProposalStatus, numLatest int64, sideChainId string) ([]types.Proposal, error) {
+	return c.getProposals(status, sideChainId, numLatest)
+}
+
+func (c *HTTP) getProposals(status types.ProposalStatus, sideChainId string, numLatest int64) ([]types.Proposal, error) {
 	params := types.QueryProposalsParams{}
 	if status != types.StatusNil {
 		params.ProposalStatus = status
@@ -393,6 +416,7 @@ func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]typ
 	if numLatest > 0 {
 		params.NumLatestProposals = numLatest
 	}
+	params.SideChainId = sideChainId
 
 	bz, err := c.cdc.MarshalJSON(&params)
 	if err != nil {
@@ -412,9 +436,18 @@ func (c *HTTP) GetProposals(status types.ProposalStatus, numLatest int64) ([]typ
 }
 
 func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
+	return c.getProposal(proposalId, "")
+}
+
+func (c *HTTP) GetSideChainProposal(proposalId int64, sideChainId string) (types.Proposal, error) {
+	return c.getProposal(proposalId, sideChainId)
+}
+
+func (c *HTTP) getProposal(proposalId int64, sideChainId string) (types.Proposal, error) {
 	params := types.QueryProposalParams{
 		ProposalID: proposalId,
 	}
+	params.SideChainId = sideChainId
 	bz, err := c.cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
@@ -430,6 +463,23 @@ func (c *HTTP) GetProposal(proposalId int64) (types.Proposal, error) {
 
 	err = c.cdc.UnmarshalJSON(rawProposal.Response.GetValue(), &proposal)
 	return proposal, err
+}
+
+func (c *HTTP) GetSideChainParams(sideChainId string) ([]msg.SCParam, error) {
+	data, err := c.cdc.MarshalJSON(sideChainId)
+	if err != nil {
+		return nil, err
+	}
+	rawParams, err := c.ABCIQuery("param/sideParams", data)
+	if err != nil {
+		return nil, err
+	}
+	if !rawParams.Response.IsOK() {
+		return nil, fmt.Errorf(rawParams.Response.Log)
+	}
+	var params []msg.SCParam
+	err = c.cdc.UnmarshalJSON(rawParams.Response.GetValue(), &params)
+	return params, err
 }
 
 func (c *HTTP) existsCC(symbol string) bool {
@@ -639,6 +689,108 @@ func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option
 		swapID,
 	)
 	return c.Broadcast(refundHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) SideChainVote(proposalID int64, option msg.VoteOption, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewSideChainVoteMsg(fromAddr, proposalID, option, sideChainId)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SideChainDeposit(proposalID int64, amount types.Coins, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewSideChainDepositMsg(fromAddr, proposalID, amount, sideChainId)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SideChainSubmitSCParamsProposal(title string, scParam msg.SCChangeParams, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	err := scParam.Check()
+	if err != nil {
+		return nil, err
+	}
+	scParamsBz, err := c.cdc.MarshalJSON(scParam)
+	if err != nil {
+		return nil, err
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewSideChainSubmitProposalMsg(title, string(scParamsBz), msg.ProposalTypeSCParamsChange, fromAddr, initialDeposit, votingPeriod, sideChainId)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SideChainSubmitCSCParamsProposal(title string, cscParam msg.CSCParamChange, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	err := cscParam.Check()
+	if err != nil {
+		return nil, err
+	}
+	// cscParam get interface field, use amino
+	cscParamsBz, err := c.cdc.MarshalJSON(cscParam)
+	if err != nil {
+		return nil, err
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewSideChainSubmitProposalMsg(title, string(cscParamsBz), msg.ProposalTypeCSCParamsChange, fromAddr, initialDeposit, votingPeriod, sideChainId)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SideChainSubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewSideChainSubmitProposalMsg(title, description, proposalType, fromAddr, initialDeposit, votingPeriod, sideChainId)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SubmitListProposal(title string, param msg.ListTradingPairParams, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	bz, err := json.Marshal(&param)
+	if err != nil {
+		return nil, err
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewMsgSubmitProposal(title, string(bz), proposalType, fromAddr, initialDeposit, votingPeriod)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewMsgSubmitProposal(title, description, proposalType, fromAddr, initialDeposit, votingPeriod)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) Deposit(proposalID int64, amount types.Coins, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewDepositMsg(fromAddr, proposalID, amount)
+	return c.Broadcast(msg, syncType, options...)
+}
+
+func (c *HTTP) Vote(proposalID int64, option msg.VoteOption, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	msg := msg.NewMsgVote(fromAddr, proposalID, option)
+	return c.Broadcast(msg, syncType, options...)
 }
 
 func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
