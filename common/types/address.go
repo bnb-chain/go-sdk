@@ -21,6 +21,7 @@ const (
 	TestNetwork ChainNetwork = iota
 	ProdNetwork
 	TmpTestNetwork
+	GangesNetwork
 )
 
 const (
@@ -37,6 +38,8 @@ func (this ChainNetwork) Bech32Prefixes() string {
 	case TestNetwork:
 		return "tbnb"
 	case TmpTestNetwork:
+		return "tbnb"
+	case GangesNetwork:
 		return "tbnb"
 	case ProdNetwork:
 		return "bnb"

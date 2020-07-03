@@ -1003,7 +1003,9 @@ func (c *HTTP) sign(m msg.Msg, options ...tx.Option) ([]byte, error) {
 	if types.Network == types.TestNetwork {
 		chainID = gtypes.TestnetChainID
 	} else if types.Network == types.TmpTestNetwork {
-		chainID = gtypes.TmpTestnetChainId
+		chainID = gtypes.KongoChainId
+	} else if types.Network == types.GangesNetwork {
+		chainID = gtypes.GangesChainId
 	}
 	signMsg := &tx.StdSignMsg{
 		ChainID:       chainID,
