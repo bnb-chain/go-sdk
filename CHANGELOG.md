@@ -1,4 +1,14 @@
 # Changelog
+## 1.2.3-bscAlpha.0
+CHAIN UPGRADE
+* [\#132](https://github.com/binance-chain/go-sdk/pull/132) [RPC] [API] enable side chain governance transaction 
+* [\#133](https://github.com/binance-chain/go-sdk/pull/133) [RPC] [API] enable side chain unbind transaction, and modify the structure of claimMsg 
+* [\#136](https://github.com/binance-chain/go-sdk/pull/136) [TX] [TOOL] add utils to parse Claim payload to human readable interface
+
+## 1.2.3
+CHAIN UPGRADE
+* [\#110](https://github.com/binance-chain/go-sdk/pull/110) [RPC] [API] Add pending_match flag
+* [\#130](https://github.com/binance-chain/go-sdk/pull/130) [RPC] [API] Support Mini Token
 ## 1.2.2
 * [\#106](https://github.com/binance-chain/go-sdk/pull/106) [RPC] fix nil point error in getBalance rpc call
 * [\#103](https://github.com/binance-chain/go-sdk/pull/103) [RPC] change the default timeout of RPC client as 5 seconds

@@ -67,6 +67,11 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(Status{}, "oracle/Status", nil)
 	cdc.RegisterConcrete(DBProphecy{}, "oracle/DBProphecy", nil)
 	cdc.RegisterConcrete(ClaimMsg{}, "oracle/ClaimMsg", nil)
+
+	cdc.RegisterConcrete(MiniTokenIssueMsg{}, "tokens/IssueMiniMsg", nil)
+	cdc.RegisterConcrete(TinyTokenIssueMsg{}, "tokens/IssueTinyMsg", nil)
+	cdc.RegisterConcrete(SetURIMsg{}, "tokens/SetURIMsg", nil)
+	cdc.RegisterConcrete(ListMiniMsg{}, "dex/ListMiniMsg", nil)
 }
 
 func init() {
