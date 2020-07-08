@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/binance-chain/go-sdk/types/msg"
 	"io/ioutil"
 	"strings"
 
@@ -29,6 +30,7 @@ const (
 
 type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
+	SignStdTx(m msg.Msg, chainId string) (*tx.StdTx, error)
 	GetPrivKey() crypto.PrivKey
 	GetAddr() ctypes.AccAddress
 
@@ -211,6 +213,23 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 		return nil, err
 	}
 	return bz, nil
+}
+
+func (m *keyManager) SignStdTx(iMsg msg.Msg, chainId string) (*tx.StdTx, error) {
+	msg := tx.StdSignMsg{
+		ChainID:       chainId,
+		AccountNumber: 0,
+		Sequence:      0,
+		Memo:          "",
+		Msgs:          []msg.Msg{iMsg},
+		Source:        tx.Source,
+	}
+	sig, err := m.makeSignature(msg)
+	if err != nil {
+		return nil, err
+	}
+	newTx := tx.NewStdTx(msg.Msgs, []tx.StdSignature{sig}, msg.Memo, msg.Source, msg.Data)
+	return &newTx, nil
 }
 
 func (m *keyManager) GetPrivKey() crypto.PrivKey {

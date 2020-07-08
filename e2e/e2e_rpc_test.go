@@ -701,3 +701,201 @@ func TestGetMiniTradePair(t *testing.T) {
 	bz, err := json.Marshal(trades)
 	fmt.Println(string(bz))
 }
+
+func TestReGenerateGenesis(t *testing.T) {
+	inputs := `[
+         {
+           "type": "auth/StdTx",
+           "value": {
+             "msg": [
+               {
+                 "type": "cosmos-sdk/MsgCreateValidatorProposal",
+                 "value": {
+                   "MsgCreateValidator": {
+                     "Description": {
+                       "moniker": "Fuji",
+                       "identity": "",
+                       "website": "",
+                       "details": ""
+                     },
+                     "Commission": {
+                       "rate": "0",
+                       "max_rate": "0",
+                       "max_change_rate": "0"
+                     },
+                     "delegator_address": "tbnb1l9ffdr8e2pk7h4agvhwcslh2urwpuhqm2u82hy",
+                     "validator_address": "bva1l9ffdr8e2pk7h4agvhwcslh2urwpuhqmy407f3",
+                     "pubkey": {
+                       "type": "tendermint/PubKeyEd25519",
+                       "value": "TRvmTw6aRmwuZqU0M5KBkng+Kfj6Ib6yEzSZte93D2A="
+                     },
+                     "delegation": {
+                       "denom": "BNB",
+                       "amount": "1000000000000"
+                     }
+                   },
+                   "proposal_id": "0"
+                 }
+               }
+             ],
+             "signatures": [
+               {
+                 "pub_key": {
+                   "type": "tendermint/PubKeySecp256k1",
+                   "value": "A//eGMq4IXOWB/WC35sexMnrspP+2aC8QHWGOF3isHYs"
+                 },
+                 "signature": "xW4c6N7QSEkT+n7N0coWdG1bbBOmF64CcjX6KX2reqZUpAtfRl5J84LWYmW0qOInylucZDdapj5Nl5Jx9+fmwg==",
+                 "account_number": "0",
+                 "sequence": "0"
+               }
+             ],
+             "memo": "5ceec0c5fe0aafb5c4cdec271061b2b3efdbe7b7@172.18.10.204:26656",
+             "source": "0",
+             "data": null
+           }
+         },
+         {
+           "type": "auth/StdTx",
+           "value": {
+             "msg": [
+               {
+                 "type": "cosmos-sdk/MsgCreateValidatorProposal",
+                 "value": {
+                   "MsgCreateValidator": {
+                     "Description": {
+                       "moniker": "Kita",
+                       "identity": "",
+                       "website": "",
+                       "details": ""
+                     },
+                     "Commission": {
+                       "rate": "0",
+                       "max_rate": "0",
+                       "max_change_rate": "0"
+                     },
+                     "delegator_address": "tbnb104s2prgzua8e3te6jumqsp0qn2dvqhlyemrf0g",
+                     "validator_address": "bva104s2prgzua8e3te6jumqsp0qn2dvqhlyhjta3a",
+                     "pubkey": {
+                       "type": "tendermint/PubKeyEd25519",
+                       "value": "AXdpIP8LDzjXjPlcAzwhrfcEV4URTjkqdUQXllLgphI="
+                     },
+                     "delegation": {
+                       "denom": "BNB",
+                       "amount": "1000000000000"
+                     }
+                   },
+                   "proposal_id": "0"
+                 }
+               }
+             ],
+             "signatures": [
+               {
+                 "pub_key": {
+                   "type": "tendermint/PubKeySecp256k1",
+                   "value": "AxsnY0fJovfRkhmroAglhnKdPy57GOSM3lw2yeOt90on"
+                 },
+                 "signature": "8toAXa9+++Fi4HSlxCs+e92UKXajphdUFa4iigliPQkCp6fJsWXAk5Q3q6BzeNcra3fzZ0r2ycNvtCV84AIsqg==",
+                 "account_number": "0",
+                 "sequence": "0"
+               }
+             ],
+             "memo": "affa93adc1bbdd7c20932efc26faece5aebdb0e4@172.18.10.205:26656",
+             "source": "0",
+             "data": null
+           }
+         },
+         {
+           "type": "auth/StdTx",
+           "value": {
+             "msg": [
+               {
+                 "type": "cosmos-sdk/MsgCreateValidatorProposal",
+                 "value": {
+                   "MsgCreateValidator": {
+                     "Description": {
+                       "moniker": "Everest",
+                       "identity": "",
+                       "website": "",
+                       "details": ""
+                     },
+                     "Commission": {
+                       "rate": "0",
+                       "max_rate": "0",
+                       "max_change_rate": "0"
+                     },
+                     "delegator_address": "tbnb19kecg6c93u7wh2cts4vsql52l33fa6a37y2tte",
+                     "validator_address": "bva19kecg6c93u7wh2cts4vsql52l33fa6a3sdzl4v",
+                     "pubkey": {
+                       "type": "tendermint/PubKeyEd25519",
+                       "value": "mTCKo2XEBVS8iZgq9QXYXalSUURdXdSpuzfdJYT9ktM="
+                     },
+                     "delegation": {
+                       "denom": "BNB",
+                       "amount": "1000000000000"
+                     }
+                   },
+                   "proposal_id": "0"
+                 }
+               }
+             ],
+             "signatures": [
+               {
+                 "pub_key": {
+                   "type": "tendermint/PubKeySecp256k1",
+                   "value": "AgVUOiG88AZKnRiHGjZnx2wKp0FrU9sseuDxFsui+Fmj"
+                 },
+                 "signature": "4GRH0zjQR8mF5Hq1PrcZKKZf8Uk9/N8JBgFkPT5UxolEwXlV0WQwCNMnNyjukMhguN5PLjwAOOldHkRuNBkfsw==",
+                 "account_number": "0",
+                 "sequence": "0"
+               }
+             ],
+             "memo": "d538e1b9dc9bcd39eedc30b6cc1d2b2e8324eb87@172.18.10.206:26656",
+             "source": "0",
+             "data": null
+           }
+         }
+       ]
+	`
+
+	ctypes.Network = ctypes.GangesNetwork
+
+	txs := make([]tx.Tx, 0)
+	err := tx.Cdc.UnmarshalJSON([]byte(inputs), &txs)
+	assert.NoError(t, err)
+
+	mms := []string{
+		"trade mountain inch unique lecture female labor decide chief chat pencil arm maple physical desert attract any swallow toward claim system jungle link thrive",
+		"loop vast marble achieve audit pride globe blade shine insane idle purchase elegant cart monitor edge learn orange lazy burst dust empower electric figure",
+		"pink oppose boss social ask electric hidden glide culture canvas stem mimic renew because interest hammer tortoise blood elevator result oval know primary deposit",
+	}
+
+
+	keyManagers := make([]keys.KeyManager, 0)
+	for _, mm := range mms {
+		km, err := keys.NewMnemonicKeyManager(mm)
+		if err != nil {
+			panic(err)
+		}
+		keyManagers = append(keyManagers, km)
+	}
+	newTxs:=make([]tx.Tx,0)
+	for idx, vtx := range txs {
+		vMsg, ok := vtx.GetMsgs()[0].(msg.MsgCreateValidatorProposal)
+		if !ok {
+			panic(vMsg)
+		}
+		if !bytes.Equal(vMsg.MsgCreateValidator.DelegatorAddr.Bytes(), keyManagers[idx].GetAddr().Bytes()){
+			panic("address not match")
+		}
+		newTx,err:= keyManagers[idx].SignStdTx(vMsg,"Binance-Chain-Ganges")
+		if err!=nil{
+			panic(err)
+		}
+		newTxs = append(newTxs,newTx)
+	}
+	bz,err:=tx.Cdc.MarshalJSON(&newTxs)
+	if err!=nil{
+		panic(err)
+	}
+	fmt.Println(string(bz))
+}
