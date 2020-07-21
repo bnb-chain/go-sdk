@@ -8,7 +8,7 @@ import (
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/lib/client"
+	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
 	"github.com/tendermint/tendermint/types"
 
 	ntypes "github.com/binance-chain/go-sdk/common/types"
@@ -228,6 +228,21 @@ func (c *HTTP) QueryWithData(path string, data cmn.HexBytes) ([]byte, error) {
 func (c *HTTP) QueryStore(key cmn.HexBytes, storeName string) ([]byte, error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
 	result, err := c.ABCIQuery(path, key)
+	if err != nil {
+		return nil, err
+	}
+	resp := result.Response
+	if !resp.IsOK() {
+		return nil, errors.Errorf(resp.Log)
+	}
+	return resp.Value, nil
+}
+
+func (c *HTTP) QueryStoreByHeight(key cmn.HexBytes, storeName string, height int64) ([]byte, error) {
+	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
+	result, err := c.ABCIQueryWithOptions(path, key, client.ABCIQueryOptions{
+		Height: height,
+	})
 	if err != nil {
 		return nil, err
 	}

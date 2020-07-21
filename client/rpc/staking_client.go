@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tendermint/go-amino"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/types/msg"
 	"github.com/binance-chain/go-sdk/types/tx"
-	"github.com/tendermint/go-amino"
-	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 var (
@@ -36,6 +37,7 @@ type StakingClient interface {
 	SideChainUnjail(sideChainId string, valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 
 	QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)
+	QuerySideChainValidatorByHeight(sideChainId string, valAddr types.ValAddress, height int64) (*types.Validator, error)
 	QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error)
 	QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.DelegationResponse, error)
 	QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.DelegationResponse, error)
@@ -175,6 +177,34 @@ func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddr
 
 	var validator types.Validator
 
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &validator)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &validator, nil
+}
+
+func (c *HTTP) QuerySideChainValidatorByHeight(sideChainId string, valAddr types.ValAddress, height int64) (*types.Validator, error) {
+	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	key := append(storePrefix, getValidatorKey(valAddr)...)
+
+	bz, err := c.QueryStoreByHeight(key, StakeStoreKey, height)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(bz) == 0 {
+		return nil, EmptyResultError
+	}
+
+	var validator types.Validator
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &validator)
 
 	if err != nil {
