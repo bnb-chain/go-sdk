@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/binance-chain/go-sdk/common/bech32"
 	"github.com/tendermint/tendermint/crypto"
+
+	"github.com/binance-chain/go-sdk/common/bech32"
 )
 
 type ValAddress []byte
@@ -147,9 +148,9 @@ type Validator struct {
 	Commission Commission `json:"commission"` // commission parameters
 
 	DistributionAddr AccAddress `json:"distribution_addr"` // the address receives rewards from the side address, and distribute rewards to delegators. It's auto generated
-	SideChainId      string         `json:"side_chain_id"`     // side chain id to distinguish different side chains
-	SideConsAddr     []byte         `json:"side_cons_addr"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
-	SideFeeAddr      []byte         `json:"side_fee_addr"`     // fee address on the side chain
+	SideChainId      string     `json:"side_chain_id"`     // side chain id to distinguish different side chains
+	SideConsAddr     []byte     `json:"side_cons_addr"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
+	SideFeeAddr      []byte     `json:"side_fee_addr"`     // fee address on the side chain
 }
 
 type UnbondingDelegation struct {
@@ -327,9 +328,13 @@ func (ca ConsAddress) Format(s fmt.State, verb rune) {
 	}
 }
 
-
 func NewBaseParams(sideChainId string) BaseParams {
-	return BaseParams{SideChainId:sideChainId}
+	return BaseParams{SideChainId: sideChainId}
+}
+
+type QueryValidatorsByHeightParams struct {
+	BaseParams
+	Height int64
 }
 
 type QueryTopValidatorsParams struct {

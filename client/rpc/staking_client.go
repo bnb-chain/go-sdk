@@ -39,6 +39,7 @@ type StakingClient interface {
 	QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error)
 	QuerySideChainValidatorByHeight(sideChainId string, valAddr types.ValAddress, height int64) (*types.Validator, error)
 	QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error)
+	QuerySideChainValidatorsByHeight(sideChainId string, height int64) ([]types.Validator, error)
 	QuerySideChainDelegation(sideChainId string, delAddr types.AccAddress, valAddr types.ValAddress) (*types.DelegationResponse, error)
 	QuerySideChainDelegations(sideChainId string, delAddr types.AccAddress) ([]types.DelegationResponse, error)
 	QuerySideChainRedelegation(sideChainId string, delAddr types.AccAddress, valSrcAddr types.ValAddress, valDstAddr types.ValAddress) (*types.Redelegation, error)
@@ -237,6 +238,74 @@ func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types
 
 	var validators = make([]types.Validator, 0)
 
+	if len(res) == 0 {
+		return validators, nil
+	}
+
+	var bvs []bechValidator
+	if err = c.cdc.UnmarshalJSON(res, &bvs); err != nil {
+		return nil, err
+	}
+
+	for _, v := range bvs {
+		validator := types.Validator{
+			FeeAddr:            v.FeeAddr,
+			OperatorAddr:       v.OperatorAddr,
+			ConsPubKey:         v.ConsPubKey,
+			Jailed:             v.Jailed,
+			Status:             v.Status,
+			Tokens:             v.Tokens,
+			DelegatorShares:    v.DelegatorShares,
+			Description:        v.Description,
+			BondHeight:         v.BondHeight,
+			BondIntraTxCounter: v.BondIntraTxCounter,
+			UnbondingHeight:    v.UnbondingHeight,
+			UnbondingMinTime:   v.UnbondingMinTime,
+			Commission:         v.Commission,
+		}
+
+		if len(v.SideChainId) != 0 {
+			validator.DistributionAddr = v.DistributionAddr
+			validator.SideChainId = v.SideChainId
+			if sideConsAddr, err := decodeSideChainAddress(v.SideConsAddr); err != nil {
+				return nil, err
+			} else {
+				validator.SideConsAddr = sideConsAddr
+			}
+			if sideFeeAddr, err := decodeSideChainAddress(v.SideFeeAddr); err != nil {
+				return nil, err
+			} else {
+				validator.SideFeeAddr = sideFeeAddr
+			}
+		}
+
+		validators = append(validators, validator)
+	}
+
+	return validators, nil
+}
+
+func (c *HTTP) QuerySideChainValidatorsByHeight(sideChainId string, height int64) ([]types.Validator, error) {
+	if height <= 0 {
+		return nil, fmt.Errorf("height should be larger than 0")
+	}
+
+	params := types.QueryValidatorsByHeightParams{
+		BaseParams: types.NewBaseParams(sideChainId),
+		Height:     height,
+	}
+
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.QueryWithData("custom/stake/validatorsByHeight", bz)
+	if err != nil {
+		return nil, err
+	}
+
+	var validators = make([]types.Validator, 0)
 	if len(res) == 0 {
 		return validators, nil
 	}
