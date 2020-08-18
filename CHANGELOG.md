@@ -1,5 +1,5 @@
 # Changelog
-## 1.2.3-bscAlpha.0
+## 1.2.4
 CHAIN UPGRADE
 * [\#132](https://github.com/binance-chain/go-sdk/pull/132) [RPC] [API] enable side chain governance transaction 
 * [\#133](https://github.com/binance-chain/go-sdk/pull/133) [RPC] [API] enable side chain unbind transaction, and modify the structure of claimMsg 
