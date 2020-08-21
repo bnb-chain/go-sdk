@@ -145,6 +145,11 @@ type Validator struct {
 	UnbondingMinTime time.Time `json:"unbonding_time"`   // if unbonding, min time for the validator to complete unbonding
 
 	Commission Commission `json:"commission"` // commission parameters
+
+	DistributionAddr AccAddress `json:"distribution_addr"` // the address receives rewards from the side address, and distribute rewards to delegators. It's auto generated
+	SideChainId      string         `json:"side_chain_id"`     // side chain id to distinguish different side chains
+	SideConsAddr     []byte         `json:"side_cons_addr"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
+	SideFeeAddr      []byte         `json:"side_fee_addr"`     // fee address on the side chain
 }
 
 type UnbondingDelegation struct {
@@ -320,4 +325,30 @@ func (ca ConsAddress) Format(s fmt.State, verb rune) {
 	default:
 		s.Write([]byte(fmt.Sprintf("%X", []byte(ca))))
 	}
+}
+
+
+func NewBaseParams(sideChainId string) BaseParams {
+	return BaseParams{SideChainId:sideChainId}
+}
+
+type QueryTopValidatorsParams struct {
+	BaseParams
+	Top int
+}
+
+type QueryBondsParams struct {
+	BaseParams
+	DelegatorAddr AccAddress
+	ValidatorAddr ValAddress
+}
+
+type QueryValidatorParams struct {
+	BaseParams
+	ValidatorAddr ValAddress
+}
+
+type Pool struct {
+	LooseTokens  Dec `json:"loose_tokens"`  // tokens which are not bonded in a validator
+	BondedTokens Dec `json:"bonded_tokens"` // reserve of bonded tokens
 }

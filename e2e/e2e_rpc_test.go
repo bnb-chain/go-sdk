@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"math/rand"
 	"os/exec"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/libs/common"
 	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/types"
 
@@ -20,6 +22,7 @@ import (
 	ctypes "github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/binance-chain/go-sdk/types/tx"
 )
 
 var (
@@ -35,6 +38,8 @@ var (
 	mnemonic           = "test mnemonic"
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
+
+	scParams = `[{"type": "params/StakeParamSet","value": {"unbonding_time": "604800000000000","max_validators": 11,"bond_denom": "BNB","min_self_delegation": "5000000000000","min_delegation_change": "100000000"}},{"type": "params/SlashParamSet","value": {"max_evidence_age": "259200000000000","signed_blocks_window": "0","min_signed_per_window": "0","double_sign_unbond_duration": "9223372036854775807","downtime_unbond_duration": "172800000000000","too_low_del_unbond_duration": "86400000000000","slash_fraction_double_sign": "0","slash_fraction_downtime": "0","double_sign_slash_amount": "1000000000000","downtime_slash_amount": "5000000000","submitter_reward": "100000000000","downtime_slash_fee": "1000000000"}},{"type": "params/OracleParamSet","value": {"ConsensusNeeded": "70000000"}},{"type": "params/IbcParamSet","value": {"relayer_fee": "1000000"}}]`
 )
 
 func startBnbchaind(t *testing.T) *exec.Cmd {
@@ -217,6 +222,22 @@ func TestTx(t *testing.T) {
 	assert.NoError(t, err)
 	bz, err = json.Marshal(tx)
 	fmt.Println(string(bz))
+}
+
+func TestClaimTx(t *testing.T) {
+	c := defaultClient()
+	bz, err := hex.DecodeString(testTxHash)
+	assert.NoError(t, err)
+
+	rawTx, err := c.Tx(bz, false)
+	assert.NoError(t, err)
+	claimTx, err := rpc.ParseTx(tx.Cdc, rawTx.Tx)
+	claimMsg := claimTx.GetMsgs()[0].(msg.ClaimMsg)
+	packages, err := msg.ParseClaimPayload(claimMsg.Payload)
+	assert.NoError(t, err)
+	newBz, err := json.Marshal(packages)
+	assert.NoError(t, err)
+	fmt.Println(string(newBz))
 }
 
 func TestReconnection(t *testing.T) {
@@ -407,7 +428,7 @@ func TestNoneExistGetAccount(t *testing.T) {
 	acc, err := keys.NewKeyManager()
 	account, err := c.GetAccount(acc.GetAddr())
 	assert.NoError(t, err)
-	assert.Nil(t,account)
+	assert.Nil(t, account)
 }
 
 func TestGetBalances(t *testing.T) {
@@ -416,7 +437,7 @@ func TestGetBalances(t *testing.T) {
 	acc, err := ctypes.AccAddressFromBech32(testAddress)
 	assert.NoError(t, err)
 	balances, err := c.GetBalances(acc)
-	assert.Equal(t,0,len(balances))
+	assert.Equal(t, 0, len(balances))
 	assert.NoError(t, err)
 	bz, err := json.Marshal(balances)
 	fmt.Println(string(bz))
@@ -449,9 +470,9 @@ func TestNoneExistGetBalance(t *testing.T) {
 	acc, _ := keys.NewKeyManager()
 	balance, err := c.GetBalance(acc.GetAddr(), "BNB")
 	assert.NoError(t, err)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Free)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Locked)
-	assert.Equal(t,ctypes.Fixed8Zero,balance.Frozen)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Free)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Locked)
+	assert.Equal(t, ctypes.Fixed8Zero, balance.Frozen)
 	bz, err := json.Marshal(balance)
 	fmt.Println(string(bz))
 }
@@ -504,6 +525,66 @@ func TestSendToken(t *testing.T) {
 	assert.NoError(t, err)
 	bz, err := json.Marshal(res)
 	fmt.Println(string(bz))
+}
+
+func TestQuerySideChainParam(t *testing.T) {
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+	params, err := c.GetSideChainParams("bsc")
+	assert.NoError(t, err)
+	bz, _ := json.Marshal(params)
+	fmt.Println(string(bz))
+}
+
+func TestSubmitSideProposal(t *testing.T) {
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+
+	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
+	assert.NoError(t, err)
+	c.SetKeyManager(keyManager)
+
+	iScPrams := make([]msg.SCParam, 0)
+
+	err = tx.Cdc.UnmarshalJSON([]byte(scParams), &iScPrams)
+	assert.NoError(t, err)
+
+	res, err := c.SideChainSubmitSCParamsProposal("title", msg.SCChangeParams{SCParams: iScPrams, Description: "des"}, ctypes.Coins{{msg.NativeToken, 5e11}}, 5*time.Second, "rialto", rpc.Sync)
+	assert.NoError(t, err)
+	assert.True(t, res.Code == 0)
+	proposalIdStr := string(res.Data)
+	id, err := strconv.ParseInt(proposalIdStr, 10, 64)
+	assert.NoError(t, err)
+	res, err = c.SideChainVote(int64(id), msg.OptionYes, "rialto", rpc.Sync)
+	assert.NoError(t, err)
+	assert.True(t, res.Code == 0)
+}
+
+func TestSubmitCSCProposal(t *testing.T) {
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+
+	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
+	assert.NoError(t, err)
+	c.SetKeyManager(keyManager)
+
+	cscPrams := msg.CSCParamChange{
+		Key:    common.RandStr(common.RandIntn(255) + 1),
+		Value:  hex.EncodeToString(common.RandBytes(common.RandIntn(255) + 1)),
+		Target: hex.EncodeToString(common.RandBytes(20)),
+	}
+
+	res, err := c.SideChainSubmitCSCParamsProposal("title", cscPrams, ctypes.Coins{{msg.NativeToken, 5e8}}, 5*time.Second, "rialto", rpc.Sync)
+	assert.NoError(t, err)
+	assert.True(t, res.Code == 0)
+
+	proposalIdStr := string(res.Data)
+	id, err := strconv.ParseInt(proposalIdStr, 10, 64)
+	assert.NoError(t, err)
+	res, err = c.SideChainDeposit(int64(id), ctypes.Coins{{"BNB", 1e8}}, "rialto", rpc.Sync)
+	assert.NoError(t, err)
+	assert.True(t, res.Code == 0)
+
 }
 
 func TestCreateOrder(t *testing.T) {
@@ -592,7 +673,6 @@ func TestNoRequestLeakInGoodNetwork(t *testing.T) {
 	w.Wait()
 	assert.Equal(t, c.PendingRequest(), 0)
 }
-
 
 func TestListAllMiniTokens(t *testing.T) {
 	c := defaultClient()

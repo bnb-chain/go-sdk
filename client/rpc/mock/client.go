@@ -27,6 +27,7 @@ type Client struct {
 	rpc.EventsClient
 	rpc.DexClient
 	rpc.OpsClient
+	rpc.StakingClient
 }
 
 var _ rpc.Client = Client{}

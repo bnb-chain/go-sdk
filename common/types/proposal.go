@@ -19,9 +19,15 @@ const (
 	ProposalTypeSoftwareUpgrade ProposalKind = 0x03
 	ProposalTypeListTradingPair ProposalKind = 0x04
 	// ProposalTypeFeeChange belongs to ProposalTypeParameterChange. We use this to make it easily to distinguish。
-	ProposalTypeFeeChange       ProposalKind = 0x05
-	ProposalTypeCreateValidator ProposalKind = 0x06
-	ProposalTypeRemoveValidator ProposalKind = 0x07
+	ProposalTypeFeeChange            ProposalKind = 0x05
+	ProposalTypeCreateValidator      ProposalKind = 0x06
+	ProposalTypeRemoveValidator      ProposalKind = 0x07
+	ProposalTypeDelistTradingPair    ProposalKind = 0x08
+	ProposalTypeManageChanPermission ProposalKind = 0x09
+
+	ProposalTypeSCParamsChange ProposalKind = 0x81
+	// cross side chain param change
+	ProposalTypeCSCParamsChange ProposalKind = 0x82
 )
 
 // Marshal needed for protobuf compatibility
@@ -73,6 +79,14 @@ func ProposalTypeFromString(str string) (ProposalKind, error) {
 		return ProposalTypeCreateValidator, nil
 	case "RemoveValidator":
 		return ProposalTypeRemoveValidator, nil
+	case "DelistTradingPair":
+		return ProposalTypeDelistTradingPair, nil
+	case "SCParamsChange":
+		return ProposalTypeSCParamsChange, nil
+	case "CSCParamsChange":
+		return ProposalTypeCSCParamsChange, nil
+	case "ManageChanPermission":
+		return ProposalTypeManageChanPermission, nil
 	default:
 		return ProposalKind(0xff), errors.Errorf("'%s' is not a valid proposal type", str)
 	}
@@ -95,6 +109,14 @@ func (pt ProposalKind) String() string {
 		return "CreateValidator"
 	case ProposalTypeRemoveValidator:
 		return "RemoveValidator"
+	case ProposalTypeDelistTradingPair:
+		return "DelistTradingPair"
+	case ProposalTypeSCParamsChange:
+		return "SCParamsChange"
+	case ProposalTypeCSCParamsChange:
+		return "CSCParamsChange"
+	case ProposalTypeManageChanPermission:
+		return "ManageChanPermission"
 	default:
 		return ""
 	}
@@ -109,6 +131,7 @@ const (
 	StatusVotingPeriod  ProposalStatus = 0x02
 	StatusPassed        ProposalStatus = 0x03
 	StatusRejected      ProposalStatus = 0x04
+	StatusExecuted      ProposalStatus = 0x05
 )
 
 // ProposalStatusToString turns a string into a ProposalStatus
@@ -122,22 +145,13 @@ func ProposalStatusFromString(str string) (ProposalStatus, error) {
 		return StatusPassed, nil
 	case "Rejected":
 		return StatusRejected, nil
+	case "Executed":
+		return StatusExecuted, nil
 	case "":
 		return StatusNil, nil
 	default:
 		return ProposalStatus(0xff), errors.Errorf("'%s' is not a valid proposal status", str)
 	}
-}
-
-// is defined ProposalType?
-func validProposalStatus(status ProposalStatus) bool {
-	if status == StatusDepositPeriod ||
-		status == StatusVotingPeriod ||
-		status == StatusPassed ||
-		status == StatusRejected {
-		return true
-	}
-	return false
 }
 
 // Marshal needed for protobuf compatibility
@@ -183,6 +197,8 @@ func (status ProposalStatus) String() string {
 		return "Passed"
 	case StatusRejected:
 		return "Rejected"
+	case StatusExecuted:
+		return "Executed"
 	default:
 		return ""
 	}
@@ -287,12 +303,18 @@ func (tp *TextProposal) SetVotingPeriod(votingPeriod time.Duration) {
 	tp.VotingPeriod = votingPeriod
 }
 
+type BaseParams struct {
+	SideChainId string
+}
+
 type QueryProposalsParams struct {
+	BaseParams
 	ProposalStatus     ProposalStatus
 	NumLatestProposals int64
 }
 
 // Params for query 'custom/gov/proposal'
 type QueryProposalParams struct {
+	BaseParams
 	ProposalID int64
 }

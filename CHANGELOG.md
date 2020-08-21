@@ -1,4 +1,10 @@
 # Changelog
+## 1.2.4
+CHAIN UPGRADE
+* [\#132](https://github.com/binance-chain/go-sdk/pull/132) [RPC] [API] enable side chain governance transaction 
+* [\#133](https://github.com/binance-chain/go-sdk/pull/133) [RPC] [API] enable side chain unbind transaction, and modify the structure of claimMsg 
+* [\#136](https://github.com/binance-chain/go-sdk/pull/136) [TX] [TOOL] add utils to parse Claim payload to human readable interface
+
 ## 1.2.3
 CHAIN UPGRADE
 * [\#110](https://github.com/binance-chain/go-sdk/pull/110) [RPC] [API] Add pending_match flag

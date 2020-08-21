@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 )
@@ -34,8 +35,24 @@ func (coin Coin) Plus(coinB Coin) Coin {
 	return Coin{coin.Denom, coin.Amount + coinB.Amount}
 }
 
+func (coin Coin) String() string {
+	return fmt.Sprintf("%v%v", coin.Amount, coin.Denom)
+}
+
 // Coins def
 type Coins []Coin
+
+func (coins Coins) String() string {
+	if len(coins) == 0 {
+		return ""
+	}
+
+	out := ""
+	for _, coin := range coins {
+		out += fmt.Sprintf("%v,", coin.String())
+	}
+	return out[:len(out)-1]
+}
 
 func (coins Coins) IsValid() bool {
 	switch len(coins) {

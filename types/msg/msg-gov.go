@@ -135,6 +135,10 @@ func ProposalTypeFromString(str string) (ProposalKind, error) {
 		return ProposalTypeListTradingPair, nil
 	case "FeeChange":
 		return ProposalTypeFeeChange, nil
+	case "SCParamsChange":
+		return ProposalTypeSCParamsChange, nil
+	case "CSCParamsChange":
+		return ProposalTypeCSCParamsChange, nil
 	default:
 		return ProposalKind(0xff), errors.Errorf("'%s' is not a valid proposal type", str)
 	}
@@ -197,6 +201,10 @@ func (pt ProposalKind) String() string {
 		return "ListTradingPair"
 	case ProposalTypeFeeChange:
 		return "FeeChange"
+	case ProposalTypeSCParamsChange:
+		return "SCParamsChange"
+	case ProposalTypeCSCParamsChange:
+		return "CSCParamsChange"
 	default:
 		return ""
 	}
