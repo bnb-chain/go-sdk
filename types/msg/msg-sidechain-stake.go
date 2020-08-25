@@ -36,6 +36,11 @@ func NewCreateSideChainValidatorMsg(valAddr types.ValAddress, delegation types.C
 	return NewMsgCreateSideChainValidatorOnBehalfOf(types.AccAddress(valAddr), valAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
 }
 
+func NewV2CreateSideChainValidatorMsg(delAddr types.AccAddress, operator types.ValAddress, delegation types.Coin,
+	description Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte) CreateSideChainValidatorMsg {
+	return NewMsgCreateSideChainValidatorOnBehalfOf(delAddr, operator, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
+}
+
 func NewMsgCreateSideChainValidatorOnBehalfOf(delegatorAddr types.AccAddress, valAddr types.ValAddress, delegation types.Coin,
 	description Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte) CreateSideChainValidatorMsg {
 	return CreateSideChainValidatorMsg{

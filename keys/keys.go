@@ -31,7 +31,7 @@ type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
 	GetAddr() ctypes.AccAddress
-
+	Close() error
 	ExportAsMnemonic() (string, error)
 	ExportAsPrivateKey() (string, error)
 	ExportAsKeyStore(password string) (*EncryptedKeyJSON, error)
@@ -57,6 +57,26 @@ func NewKeyStoreKeyManager(file string, auth string) (KeyManager, error) {
 	return &k, err
 }
 
+func NewDoubleKey(mnemonic string, path ledger.DerivationPath) (KeyManager, error) {
+	k1, err := NewLedgerKeyManager(path)
+	if err != nil {
+		return nil, fmt.Errorf("generate ledger key manage failed")
+	}
+	tk1, ok := k1.(*keyManager)
+	if !ok {
+		return nil, fmt.Errorf("tk1 assert keyManager failed")
+	}
+	k2, err := NewMnemonicKeyManager(mnemonic)
+	if err != nil {
+		return nil, fmt.Errorf("generate mnemonic key manage failed")
+	}
+	tk2, ok := k2.(*keyManager)
+	if !ok {
+		return nil, fmt.Errorf("tk2 assert keyManager failed")
+	}
+	return &DoubleKeyManager{tk1, tk2}, nil
+}
+
 func NewPrivateKeyManager(priKey string) (KeyManager, error) {
 	k := keyManager{}
 	err := k.recoveryFromPrivateKey(priKey)
@@ -75,11 +95,31 @@ type keyManager struct {
 	mnemonic string
 }
 
+type DoubleKeyManager struct {
+	Key1 *keyManager
+	Key2 *keyManager
+}
+
 func (m *keyManager) ExportAsMnemonic() (string, error) {
 	if m.mnemonic == "" {
 		return "", fmt.Errorf("This key manager is not recover from mnemonic or anto generated ")
 	}
 	return m.mnemonic, nil
+}
+
+func (m *DoubleKeyManager) ExportAsMnemonic() (string, error) {
+	return m.Key1.ExportAsMnemonic()
+}
+
+func (m *keyManager) Close() error {
+	if l, ok := m.privKey.(*ledger.PrivKeyLedgerSecp256k1); ok {
+		return l.Close()
+	}
+	return nil
+}
+
+func (m *DoubleKeyManager) Close() error {
+	return m.Key1.Close()
 }
 
 func (m *keyManager) ExportAsPrivateKey() (string, error) {
@@ -90,8 +130,16 @@ func (m *keyManager) ExportAsPrivateKey() (string, error) {
 	return hex.EncodeToString(secpPrivateKey[:]), nil
 }
 
+func (m *DoubleKeyManager) ExportAsPrivateKey() (string, error) {
+	return m.Key1.ExportAsPrivateKey()
+}
+
 func (m *keyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
 	return generateKeyStore(m.GetPrivKey(), password)
+}
+
+func (m *DoubleKeyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
+	return m.Key1.ExportAsKeyStore(password)
 }
 
 func NewKeyManager() (KeyManager, error) {
@@ -213,12 +261,54 @@ func (m *keyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
 	return bz, nil
 }
 
+func (m *DoubleKeyManager) DoubleSign(msg []tx.StdSignMsg) ([]byte, error) {
+	sig1, err := m.Key1.makeSignature(msg[0])
+	if err != nil {
+		return nil, err
+	}
+	sig2, err := m.Key2.makeSignature(msg[1])
+	if err != nil {
+		return nil, err
+	}
+	newTx := tx.NewStdTx(msg[0].Msgs, []tx.StdSignature{sig1, sig2}, msg[0].Memo, msg[0].Source, msg[0].Data)
+	bz, err := tx.Cdc.MarshalBinaryLengthPrefixed(&newTx)
+	if err != nil {
+		return nil, err
+	}
+	return bz, nil
+}
+
+func (m *DoubleKeyManager) Sign(msg tx.StdSignMsg) ([]byte, error) {
+	sig1, err := m.Key1.makeSignature(msg)
+	if err != nil {
+		return nil, err
+	}
+	sig2, err := m.Key2.makeSignature(msg)
+	if err != nil {
+		return nil, err
+	}
+	newTx := tx.NewStdTx(msg.Msgs, []tx.StdSignature{sig1, sig2}, msg.Memo, msg.Source, msg.Data)
+	bz, err := tx.Cdc.MarshalBinaryLengthPrefixed(&newTx)
+	if err != nil {
+		return nil, err
+	}
+	return bz, nil
+}
+
 func (m *keyManager) GetPrivKey() crypto.PrivKey {
 	return m.privKey
 }
 
+func (m *DoubleKeyManager) GetPrivKey() crypto.PrivKey {
+	return m.Key1.privKey
+}
+
 func (m *keyManager) GetAddr() ctypes.AccAddress {
 	return m.addr
+}
+
+func (m *DoubleKeyManager) GetAddr() ctypes.AccAddress {
+	return m.Key1.addr
 }
 
 func (m *keyManager) makeSignature(msg tx.StdSignMsg) (sig tx.StdSignature, err error) {

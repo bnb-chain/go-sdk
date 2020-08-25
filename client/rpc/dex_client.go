@@ -84,7 +84,7 @@ type DexClient interface {
 	Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error)
 	GetCurrentOracleSequence(chainId sdk.IbcChainID) (int64, error)
-	
+
 	SideChainVote(proposalID int64, option msg.VoteOption, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	SideChainDeposit(proposalID int64, amount types.Coins, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	SideChainSubmitSCParamsProposal(title string, scParam msg.SCChangeParams, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -1043,6 +1043,32 @@ func (c *HTTP) sign(m msg.Msg, options ...tx.Option) ([]byte, error) {
 		if err := m.ValidateBasic(); err != nil {
 			return nil, err
 		}
+	}
+	if dk, ok := c.key.(*keys.DoubleKeyManager); ok {
+		twoMsg := &tx.StdSignMsg{
+			ChainID:       chainID,
+			AccountNumber: -1,
+			Sequence:      -1,
+			Memo:          "",
+			Msgs:          []msg.Msg{m},
+			Source:        tx.Source,
+		}
+
+		for _, op := range options {
+			twoMsg = op(twoMsg)
+		}
+		fromAddr2 := dk.Key2.GetAddr()
+		acc2, err := c.GetAccount(fromAddr2)
+		if err != nil {
+			return nil, err
+		}
+		if acc2 == nil {
+			return nil, fmt.Errorf("the signer account do not exist in the chain")
+		}
+		twoMsg.Sequence = acc2.GetSequence()
+		twoMsg.AccountNumber = acc2.GetAccountNumber()
+
+		return dk.DoubleSign([]tx.StdSignMsg{*signMsg, *twoMsg})
 	}
 	return c.key.Sign(*signMsg)
 }

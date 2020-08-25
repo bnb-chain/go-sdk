@@ -66,6 +66,10 @@ func (pkl PrivKeyLedgerSecp256k1) Bytes() []byte {
 	return nil
 }
 
+func (pkl PrivKeyLedgerSecp256k1) Close() error{
+	return pkl.ledger.Close()
+}
+
 func (pkl PrivKeyLedgerSecp256k1) ShowSignAddr() error {
 	return pkl.ledger.ShowAddressSECP256K1(pkl.path, types.Network.Bech32Prefixes())
 }

@@ -27,8 +27,15 @@ func main() {
 		return
 	}
 
-	bip44Params := keys.NewBinanceBIP44Params(0, 0)
+	bip44Params := keys.NewBinanceBIP44Params(0, 1)
 	keyManager, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	bip44Params2 := keys.NewBinanceBIP44Params(0, 2)
+	_, err = keys.NewLedgerKeyManager(bip44Params2.DerivationPath())
 	if err != nil {
 		fmt.Println(err.Error())
 		return

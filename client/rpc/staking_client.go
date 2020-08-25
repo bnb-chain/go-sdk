@@ -29,6 +29,8 @@ var (
 
 type StakingClient interface {
 	CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	CreateSideChainValidatorV2(operator types.ValAddress, delegation types.Coin, description msg.Description, commission types.CommissionMsg,
+		sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	EditSideChainValidator(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainDelegate(sideChainId string, valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainRedelegate(sideChainId string, valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
@@ -84,6 +86,16 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 
 	m := msg.NewCreateSideChainValidatorMsg(valOpAddr, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
 
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) CreateSideChainValidatorV2(operator types.ValAddress, delegation types.Coin, description msg.Description, commission types.CommissionMsg,
+	sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	delegateAddr := c.key.GetAddr()
+	m := msg.NewV2CreateSideChainValidatorMsg(delegateAddr, operator, delegation, description, commission, sideChainId, sideConsAddr, sideFeeAddr)
 	return c.Broadcast(m, syncType, options...)
 }
 
