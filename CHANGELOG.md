@@ -1,4 +1,9 @@
 # Changelog
+
+## 1.2.5
+IMPROVEMENT
+* [\#142](https://github.com/binance-chain/go-sdk/pull/142) [RPC] [API] add contract info for a token if there is any 
+
 ## 1.2.4
 CHAIN UPGRADE
 * [\#132](https://github.com/binance-chain/go-sdk/pull/132) [RPC] [API] enable side chain governance transaction 
