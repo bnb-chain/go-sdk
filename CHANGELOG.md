@@ -1,6 +1,6 @@
 # Changelog
 
-##1.2.5
+## 1.2.5
 IMPROVEMENT
 * [\#142](https://github.com/binance-chain/go-sdk/pull/142) [RPC] [API] add contract info for a token if there is any 
 
