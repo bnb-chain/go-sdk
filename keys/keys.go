@@ -31,6 +31,7 @@ type KeyManager interface {
 	Sign(tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
 	GetAddr() ctypes.AccAddress
+	GetDevice() ledger.LedgerSecp256k1
 
 	ExportAsMnemonic() (string, error)
 	ExportAsPrivateKey() (string, error)
@@ -73,6 +74,7 @@ type keyManager struct {
 	privKey  crypto.PrivKey
 	addr     ctypes.AccAddress
 	mnemonic string
+	Device   ledger.LedgerSecp256k1
 }
 
 func (m *keyManager) ExportAsMnemonic() (string, error) {
@@ -197,6 +199,7 @@ func (m *keyManager) recoveryFromLedgerKey(path ledger.DerivationPath) error {
 	addr := types.AccAddress(pkl.PubKey().Address())
 	m.addr = addr
 	m.privKey = pkl
+	m.Device = device
 	return nil
 }
 
@@ -219,6 +222,10 @@ func (m *keyManager) GetPrivKey() crypto.PrivKey {
 
 func (m *keyManager) GetAddr() ctypes.AccAddress {
 	return m.addr
+}
+
+func (m *keyManager) GetDevice() ledger.LedgerSecp256k1 {
+	return m.Device
 }
 
 func (m *keyManager) makeSignature(msg tx.StdSignMsg) (sig tx.StdSignature, err error) {
