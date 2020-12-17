@@ -20,11 +20,11 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(&SlashParams{}, "params/SlashParamSet", nil)
 	cdc.RegisterConcrete(&IbcParams{}, "params/IbcParamSet", nil)
 
-
 	cdc.RegisterConcrete(CreateOrderMsg{}, "dex/NewOrder", nil)
 	cdc.RegisterConcrete(CancelOrderMsg{}, "dex/CancelOrder", nil)
 	cdc.RegisterConcrete(TokenIssueMsg{}, "tokens/IssueMsg", nil)
 	cdc.RegisterConcrete(TokenBurnMsg{}, "tokens/BurnMsg", nil)
+	cdc.RegisterConcrete(TransferOwnershipMsg{}, "tokens/TransferOwnershipMsg", nil)
 
 	cdc.RegisterConcrete(TimeLockMsg{}, "tokens/TimeLockMsg", nil)
 	cdc.RegisterConcrete(TokenFreezeMsg{}, "tokens/FreezeMsg", nil)
