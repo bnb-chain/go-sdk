@@ -23,7 +23,7 @@ func NewTransferOwnershipMsg(from types.AccAddress, symbol string, newOwner type
 }
 
 func (msg TransferOwnershipMsg) Route() string  { return "tokensOwnershipTransfer" }
-func (msg TransferOwnershipMsg) Type() string   { return "transfer_ownership" }
+func (msg TransferOwnershipMsg) Type() string   { return "transferOwnership" }
 func (msg TransferOwnershipMsg) String() string { return fmt.Sprintf("TransferOwnershipMsg{%#v}", msg) }
 
 func (msg TransferOwnershipMsg) ValidateBasic() error {
