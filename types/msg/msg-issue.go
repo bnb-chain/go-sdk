@@ -91,7 +91,7 @@ func validateIssueMsgTokenSymbol(symbol string) error {
 
 	// check len without .B suffix
 	if symbolLen := len(symbol); symbolLen > TokenSymbolMaxLen || symbolLen < TokenSymbolMinLen {
-		return errors.New("length of token symbol is limited to 3~8")
+		return errors.New("length of token symbol is limited to 2~8")
 	}
 
 	if !common.IsAlphaNum(symbol) {

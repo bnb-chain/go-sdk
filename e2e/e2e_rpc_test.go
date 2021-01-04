@@ -35,6 +35,7 @@ var (
 	testTradePair      = "PPC-00A_BNB"
 	testTradeSymbol    = "000-0E1"
 	testTxStr          = "xxx"
+	testNewOwner       = "tbnb1rtzy6szuyzcj4amfn6uarvne8a5epxrdc28nhr"
 	mnemonic           = "test mnemonic"
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
@@ -396,7 +397,7 @@ func TestReceiveWithRequestId(t *testing.T) {
 
 func TestListAllTokens(t *testing.T) {
 	c := defaultClient()
-	tokens, err := c.ListAllTokens(1, 10)
+	tokens, err := c.ListAllTokens(0, 10)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(tokens)
 	fmt.Println(string(bz))
@@ -612,6 +613,21 @@ func TestCreateOrder(t *testing.T) {
 	fmt.Println(string(bz))
 }
 
+func TestTransferTokenOwnership(t *testing.T) {
+	c := defaultClient()
+	ctypes.Network = ctypes.TestNetwork
+	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
+	assert.NoError(t, err)
+	c.SetKeyManager(keyManager)
+	fmt.Println(keyManager.GetAddr().String())
+	newOwner, err := ctypes.AccAddressFromBech32(testNewOwner)
+	assert.NoError(t, err)
+	result, err := c.TransferTokenOwnership(testTradeSymbol, newOwner, rpc.Commit)
+	assert.NoError(t, err)
+	bz, _ := json.Marshal(result)
+	fmt.Println(string(bz))
+}
+
 func TestBroadcastTxCommit(t *testing.T) {
 	c := defaultClient()
 	txbyte, err := hex.DecodeString(testTxStr)
@@ -676,7 +692,7 @@ func TestNoRequestLeakInGoodNetwork(t *testing.T) {
 
 func TestListAllMiniTokens(t *testing.T) {
 	c := defaultClient()
-	tokens, err := c.ListAllMiniTokens(1, 10)
+	tokens, err := c.ListAllMiniTokens(0, 10)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(tokens)
 	fmt.Println(string(bz))
@@ -684,7 +700,7 @@ func TestListAllMiniTokens(t *testing.T) {
 
 func TestGetMiniTokenInfo(t *testing.T) {
 	c := defaultClient()
-	tokens, err := c.ListAllMiniTokens(1, 10)
+	tokens, err := c.ListAllMiniTokens(0, 10)
 	assert.NoError(t, err)
 	if len(tokens) > 0 {
 		token, err := c.GetMiniTokenInfo(tokens[0].Symbol)

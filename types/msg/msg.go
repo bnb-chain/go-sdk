@@ -23,11 +23,11 @@ const (
 	MaxTotalSupply          int64 = 9000000000000000000 // 90 billions with 8 decimal digits
 
 	TokenSymbolMaxLen          = 8
-	TokenSymbolMinLen          = 3
+	TokenSymbolMinLen          = 2
 	TokenSymbolTxHashSuffixLen = 3
 
 	MiniTokenSymbolMaxLen          = 8
-	MiniTokenSymbolMinLen          = 3
+	MiniTokenSymbolMinLen          = 2
 	MiniTokenSymbolSuffixLen       = 4
 	MiniTokenSymbolMSuffix         = "M"
 	MiniTokenSymbolTxHashSuffixLen = 3
@@ -225,7 +225,7 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 		return Prophecy{}, err
 	}
 
-	var claimValidators= map[string][]types.ValAddress{}
+	var claimValidators = map[string][]types.ValAddress{}
 	for addr, claim := range validatorClaims {
 		valAddr, err := types.ValAddressFromBech32(addr)
 		if err != nil {
@@ -240,6 +240,11 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 		ClaimValidators: claimValidators,
 		ValidatorClaims: validatorClaims,
 	}, nil
+}
+
+//Validate and check if it's mini token
+func IsValidMiniTokenSymbol(symbol string) bool {
+	return ValidateMiniTokenSymbol(symbol) == nil
 }
 
 func ValidateMiniTokenSymbol(symbol string) error {

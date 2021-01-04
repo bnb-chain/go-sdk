@@ -33,9 +33,11 @@ func (msg TransferOwnershipMsg) ValidateBasic() error {
 	if len(msg.NewOwner) != types.AddrLen {
 		return fmt.Errorf("Invalid newOwner, expected address length is %d, actual length is %d ", types.AddrLen, len(msg.NewOwner))
 	}
-	err := ValidateSymbol(msg.Symbol)
-	if err != nil {
-		return err
+	if !IsValidMiniTokenSymbol(msg.Symbol) {
+		err := ValidateSymbol(msg.Symbol)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -45,8 +47,6 @@ func (msg TransferOwnershipMsg) GetSignBytes() []byte {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("signBytes Hex: " + HexEncode(b))
-	fmt.Println("signBytes string: " + string(b))
 	return b
 }
 
@@ -55,5 +55,5 @@ func (msg TransferOwnershipMsg) GetSigners() []types.AccAddress {
 }
 
 func (msg TransferOwnershipMsg) GetInvolvedAddresses() []types.AccAddress {
-	return msg.GetSigners()
+	return append(msg.GetSigners(), msg.NewOwner)
 }
