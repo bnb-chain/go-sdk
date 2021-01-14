@@ -761,9 +761,6 @@ func (c *HTTP) TransferTokenOwnership(symbol string, newOwner types.AccAddress, 
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
-	if symbol == "" {
-		return nil, fmt.Errorf("symbol is missing. ")
-	}
 	fromAddr := c.key.GetAddr()
 	transferOwnershipMsg := msg.NewTransferOwnershipMsg(fromAddr, symbol, newOwner)
 	return c.Broadcast(transferOwnershipMsg, syncType, options...)
