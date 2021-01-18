@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.6
+CHAIN UPGRADE
+* [\#144](https://github.com/binance-chain/go-sdk/pull/144) [RPC] [API] Support for the transfer of token ownership, and change the minimum token symbol length
+
 ## 1.2.5
 IMPROVEMENT
 * [\#142](https://github.com/binance-chain/go-sdk/pull/142) [RPC] [API] add contract info for a token if there is any 
