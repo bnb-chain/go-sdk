@@ -76,6 +76,7 @@ type DexClient interface {
 		syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	ClaimHTLT(swapID []byte, randomNumber []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	TransferTokenOwnership(symbol string, newOwner types.AccAddress, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 
 	Bind(symbol string, amount int64, contractAddress msg.SmartChainAddress, contractDecimals int8, expireTime int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	Unbind(symbol string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -84,7 +85,7 @@ type DexClient interface {
 	Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error)
 	GetCurrentOracleSequence(chainId sdk.IbcChainID) (int64, error)
-	
+
 	SideChainVote(proposalID int64, option msg.VoteOption, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	SideChainDeposit(proposalID int64, amount types.Coins, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	SideChainSubmitSCParamsProposal(title string, scParam msg.SCChangeParams, initialDeposit types.Coins, votingPeriod time.Duration, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -754,6 +755,15 @@ func (c *HTTP) RefundHTLT(swapID []byte, syncType SyncType, options ...tx.Option
 		swapID,
 	)
 	return c.Broadcast(refundHTLTMsg, syncType, options...)
+}
+
+func (c *HTTP) TransferTokenOwnership(symbol string, newOwner types.AccAddress, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	fromAddr := c.key.GetAddr()
+	transferOwnershipMsg := msg.NewTransferOwnershipMsg(fromAddr, symbol, newOwner)
+	return c.Broadcast(transferOwnershipMsg, syncType, options...)
 }
 
 func (c *HTTP) SideChainVote(proposalID int64, option msg.VoteOption, sideChainId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {

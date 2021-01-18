@@ -31,6 +31,7 @@ type TransactionClient interface {
 	IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error)
 	SendToken(transfers []msg.Transfer, sync bool, options ...Option) (*SendTokenResult, error)
 	MintToken(symbol string, amount int64, sync bool, options ...Option) (*MintTokenResult, error)
+	TransferTokenOwnership(symbol string, newOwner types.AccAddress, sync bool, options ...Option) (*TransferTokenOwnershipResult, error)
 	TimeLock(description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeLockResult, error)
 	TimeUnLock(id int64, sync bool, options ...Option) (*TimeUnLockResult, error)
 	TimeReLock(id int64, description string, amount types.Coins, lockTime int64, sync bool, options ...Option) (*TimeReLockResult, error)
