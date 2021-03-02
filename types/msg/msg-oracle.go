@@ -116,7 +116,7 @@ func noneExistPackageProto() interface{} {
 }
 
 // package type
-var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interface{}{
+var ProtoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interface{}{
 	sdk.IbcChannelID(1): {
 		SynCrossChainPackageType: func() interface{} {
 			return new(ApproveBindSynPackage)
@@ -138,6 +138,13 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 	sdk.IbcChannelID(3): {
 		SynCrossChainPackageType: func() interface{} {
 			return new(TransferInSynPackage)
+		},
+		AckCrossChainPackageType:     noneExistPackageProto,
+		FailAckCrossChainPackageType: noneExistPackageProto,
+	},
+	sdk.IbcChannelID(4): {
+		SynCrossChainPackageType: func() interface{} {
+			return new(MirrorSynPackage)
 		},
 		AckCrossChainPackageType:     noneExistPackageProto,
 		FailAckCrossChainPackageType: noneExistPackageProto,
@@ -209,6 +216,16 @@ type TransferInSynPackage struct {
 	ExpireTime        uint64
 }
 
+type MirrorSynPackage struct {
+	SyncSender       [20]byte
+	ContractAddr     [20]byte
+	BEP20Name        [32]byte
+	BEP2Symbol       [32]byte
+	BEP20TotalSupply *big.Int
+	SyncFee          *big.Int
+	ExpireTime       uint64
+}
+
 type CommonAckPackage struct {
 	Code uint32
 }
@@ -256,10 +273,10 @@ func ParseClaimPayload(payload []byte) ([]CrossChainPackage, error) {
 		if err != nil {
 			return nil, err
 		}
-		if _, exist := protoMetrics[pack.ChannelId]; !exist {
+		if _, exist := ProtoMetrics[pack.ChannelId]; !exist {
 			return nil, fmt.Errorf("channnel id do not exist")
 		}
-		proto, exist := protoMetrics[pack.ChannelId][ptype]
+		proto, exist := ProtoMetrics[pack.ChannelId][ptype]
 		if !exist || proto == nil {
 			return nil, fmt.Errorf("package type do not exist")
 		}

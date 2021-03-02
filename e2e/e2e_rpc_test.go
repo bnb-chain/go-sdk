@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/binance-chain/go-sdk/common/bech32"
+	"github.com/binance-chain/go-sdk/common/rlp"
 	"math/rand"
 	"os/exec"
 	"strconv"
@@ -26,7 +28,7 @@ import (
 )
 
 var (
-	nodeAddr           = "tcp://data-seed-pre-0-s3.binance.org:80"
+	nodeAddr           = "tcp://dataseed3.binance.org:80"
 	badAddr            = "tcp://127.0.0.1:80"
 	testTxHash         = "F45BAB1BA5B79609F7307A64AD1F84ECFAF73D1F2C2D010D17F41303BC1B00CA"
 	testTxHeight       = int64(47905085)
@@ -35,7 +37,7 @@ var (
 	testTradePair      = "PPC-00A_BNB"
 	testTradeSymbol    = "000-0E1"
 	testTxStr          = "xxx"
-	mnemonic           = "test mnemonic"
+	mnemonic           = "hollow alone clown require hint amused eight skate better cotton globe little harbor inhale syrup wasp income fetch annual script write seek okay lunch"
 	onceClient         = sync.Once{}
 	testClientInstance *rpc.HTTP
 
@@ -56,7 +58,7 @@ func startBnbchaind(t *testing.T) *exec.Cmd {
 
 func defaultClient() *rpc.HTTP {
 	onceClient.Do(func() {
-		testClientInstance = rpc.NewRPCClient(nodeAddr, ctypes.TestNetwork)
+		testClientInstance = rpc.NewRPCClient(nodeAddr, ctypes.ProdNetwork)
 	})
 	return testClientInstance
 }
@@ -91,6 +93,25 @@ func TestRPCGetTimelocks(t *testing.T) {
 	}
 }
 
+func TestOracle(t *testing.T){
+	bz,_:=hex.DecodeString("000000000000000000000000000000000000000000000000000000000000989680f88394cef39aba099b9a1d4cd357ba7b0966d476d41c9694a866e588f4e12c2b86243585c155c7ed424028a1a050616e63616b655377617020546f6b656e000000000000000000000000000000a043616b65000000000000000000000000000000000000000000000000000000008ba81cb55372cd0cc103080012843b9aca0084603e0ef7")
+	ptype, relayerFee, err := msg.DecodePackageHeader(bz)
+	fmt.Println(ptype)
+	fmt.Println(relayerFee.String())
+	fmt.Println(err)
+	if _, exist := msg.ProtoMetrics[ctypes.IbcChannelID(4)]; !exist {
+		panic("channnel id do not exist")
+	}
+	proto, exist := msg.ProtoMetrics[ctypes.IbcChannelID(4)][ptype]
+	if !exist || proto == nil {
+		panic("package type do not exist")
+	}
+	content := proto()
+	err = rlp.DecodeBytes(bz[msg.PackageHeaderLength:], content)
+	bz,_=json.MarshalIndent(content,"","\t")
+	fmt.Println(string(bz))
+}
+
 func TestRPCGetTimelock(t *testing.T) {
 	c := defaultClient()
 	acc, err := ctypes.AccAddressFromBech32(testAddress)
@@ -123,6 +144,16 @@ func TestRPCABCIInfo(t *testing.T) {
 	assert.NoError(t, err)
 	bz, err := json.Marshal(info)
 	fmt.Println(string(bz))
+}
+
+func TestRPCABCIInfo1(t *testing.T) {
+	bz, _ := hex.DecodeString("f8f6f8f40322b8f00000000000000000000000000000000000000000000000000000000000000927c0f8cda0424e420000000000000000000000000000000000000000000000000000000000940000000000000000000000000000000000000000cf840103625884014744708401023b08f83f942ae1ace6a7e31c76ee3c7d2f0b5977c21d5a2a3a9451f1512d6bfac004c862e761c43ad87dd8235dc494a86cfcf4753a5df58d89bd6524f69b0e1ae072a9f83f942ae1ace6a7e31c76ee3c7d2f0b5977c21d5a2a3a9451f1512d6bfac004c862e761c43ad87dd8235dc494a86cfcf4753a5df58d89bd6524f69b0e1ae072a9845ffe8ba2")
+	p, err := msg.ParseClaimPayload(bz)
+	if err != nil {
+		panic(err)
+	}
+	b, _ := json.Marshal(p)
+	fmt.Println(string(b))
 }
 
 func TestUnconfirmedTxs(t *testing.T) {
@@ -479,10 +510,30 @@ func TestNoneExistGetBalance(t *testing.T) {
 
 func TestGetFees(t *testing.T) {
 	c := defaultClient()
-	fees, err := c.GetFee()
-	assert.NoError(t, err)
-	bz, err := json.Marshal(fees)
-	fmt.Println(string(bz))
+	for height := int64(123136700); height < 123136900; height++ {
+		b, err := c.Block(&height)
+		if err != nil {
+			panic(err)
+		}
+		for _, tx1 := range b.Block.Txs {
+			myt, _ := rpc.ParseTx(tx.Cdc, tx1)
+			msgs := myt.GetMsgs()
+			for _, m := range msgs {
+				if m.Type() == msg.ClaimMsgType {
+					fmt.Println("found")
+					fmt.Println(hex.EncodeToString(tx1.Hash()))
+				}
+			}
+
+		}
+	}
+}
+
+func TestGetTradePair1(t *testing.T) {
+	x, _ := hex.DecodeString("8ea70d7d2ea8a14ba2b33d18d5dfbd6fae0a6ea8")
+	bech32Addr, _ := bech32.ConvertAndEncode(ctypes.Network.Bech32Prefixes(), x)
+	fmt.Println(bech32Addr)
+
 }
 
 func TestGetOpenOrder(t *testing.T) {
@@ -515,13 +566,11 @@ func TestGetDepth(t *testing.T) {
 
 func TestSendToken(t *testing.T) {
 	c := defaultClient()
-	ctypes.Network = ctypes.TestNetwork
-	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
+	ctypes.Network = ctypes.ProdNetwork
+	keyManager, err := keys.NewPrivateKeyManager("529473dc465bddd75bc0637b35e562380d09f7e7d0c7978f2081bd80de597773")
 	assert.NoError(t, err)
 	c.SetKeyManager(keyManager)
-	testacc, err := ctypes.AccAddressFromBech32(testAddress)
-	assert.NoError(t, err)
-	res, err := c.SendToken([]msg.Transfer{{testacc, []ctypes.Coin{{"BNB", 100000}}}}, rpc.Sync, transaction.WithMemo("123"))
+	res, err := c.TransferOut(msg.NewSmartChainAddress("0x85c876bbC11A22605414c046C253a8364b54224E"),ctypes.Coin{"TEST-825",100000000},1614259615,rpc.Commit)
 	assert.NoError(t, err)
 	bz, err := json.Marshal(res)
 	fmt.Println(string(bz))
