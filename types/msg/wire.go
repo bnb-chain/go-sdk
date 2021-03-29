@@ -72,6 +72,8 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(TinyTokenIssueMsg{}, "tokens/IssueTinyMsg", nil)
 	cdc.RegisterConcrete(SetURIMsg{}, "tokens/SetURIMsg", nil)
 	cdc.RegisterConcrete(ListMiniMsg{}, "dex/ListMiniMsg", nil)
+
+	cdc.RegisterConcrete(ListGrowthMarketMsg{}, "dex/ListGrowthMarketMsg", nil)
 }
 
 func init() {

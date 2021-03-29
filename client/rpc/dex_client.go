@@ -96,6 +96,8 @@ type DexClient interface {
 	SubmitProposal(title string, description string, proposalType msg.ProposalKind, initialDeposit types.Coins, votingPeriod time.Duration, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	Deposit(proposalID int64, amount types.Coins, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	Vote(proposalID int64, option msg.VoteOption, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+
+	ListGrowthMarketPair(baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 }
 
 func (c *HTTP) TxInfoSearch(query string, prove bool, page, perPage int) ([]Info, error) {
@@ -918,6 +920,17 @@ func (c *HTTP) Unbind(symbol string, syncType SyncType, options ...tx.Option) (*
 
 	unbindMsg := msg.NewUnbindMsg(fromAddr, symbol)
 	return c.Broadcast(unbindMsg, syncType, options...)
+}
+
+func (c *HTTP) ListGrowthMarketPair(baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	fromAddr := c.key.GetAddr()
+
+	lsitGrowthMarketMsg := msg.NewListGrowthMarketMsg(fromAddr, baseAssetSymbol, quoteAssetSymbol, initPrice)
+	return c.Broadcast(lsitGrowthMarketMsg, syncType, options...)
 }
 
 func (c *HTTP) Broadcast(m msg.Msg, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {

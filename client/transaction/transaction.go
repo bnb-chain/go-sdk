@@ -26,6 +26,7 @@ type TransactionClient interface {
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error)
 	BurnToken(symbol string, amount int64, sync bool, options ...Option) (*BurnTokenResult, error)
 	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, options ...Option) (*ListPairResult, error)
+	ListGrowthMarketPair(baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, options ...Option) (*ListGrowthMarketPairResult, error)
 	FreezeToken(symbol string, amount int64, sync bool, options ...Option) (*FreezeTokenResult, error)
 	UnfreezeToken(symbol string, amount int64, sync bool, options ...Option) (*UnfreezeTokenResult, error)
 	IssueToken(name, symbol string, supply int64, sync bool, mintable bool, options ...Option) (*IssueTokenResult, error)

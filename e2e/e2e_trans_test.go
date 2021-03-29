@@ -46,7 +46,7 @@ func TestTransProcess(t *testing.T) {
 	addFlags, err := client.AddAccountFlags([]ctypes.FlagOption{ctypes.TransferMemoCheckerFlag}, true)
 	assert.NoError(t, err)
 	fmt.Printf("Set account flags: %v \n", addFlags)
-	accn,_:=client.GetAccount(client.GetKeyManager().GetAddr().String())
+	accn, _ := client.GetAccount(client.GetKeyManager().GetAddr().String())
 	fmt.Println(accn)
 	setFlags, err := client.SetAccountFlags(0, true)
 	assert.NoError(t, err)
@@ -293,6 +293,26 @@ func TestTransProcess(t *testing.T) {
 	miniClosedOrders, err := client.GetMiniClosedOrders(ctypes.NewClosedOrdersQuery(testAccount1.String(), true).WithSymbol(miniTradeSymbol, nativeSymbol))
 	assert.NoError(t, err)
 	fmt.Printf("GetMiniClosedOrders: %v \n", miniClosedOrders)
+
+	//----   issue token ---------
+	issue2, err := client.IssueToken("Client-Token", "BC", 10000000000, true, true)
+	assert.NoError(t, err)
+	fmt.Printf("Issue token: %v\n", issue2)
+
+	//----   list mini trading pair on growth market---------
+	listOnGrowth, err := client.ListGrowthMarketPair(issue2.Symbol, nativeSymbol, 1000000000, true)
+	assert.NoError(t, err)
+	fmt.Printf("List pair on growth market: %v\n", listOnGrowth)
+
+	//----   issue mini token ---------
+	miniIssue2, err := client.IssueMiniToken("Mini-Client-Token", "MBC", 10000000000, true, true, "http://test.sdk")
+	assert.NoError(t, err)
+	fmt.Printf("Issue mini token: %v\n", miniIssue2)
+
+	//----   list mini trading pair on growth market---------
+	listMiniOnGrowth, err := client.ListGrowthMarketPair(miniIssue2.Symbol, nativeSymbol, 1000000000, true)
+	assert.NoError(t, err)
+	fmt.Printf("List mini pair on growth market: %v\n", listMiniOnGrowth)
 }
 
 func TestAtomicSwap(t *testing.T) {

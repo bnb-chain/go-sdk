@@ -717,3 +717,15 @@ func TestGetMiniTradePair(t *testing.T) {
 	bz, err := json.Marshal(trades)
 	fmt.Println(string(bz))
 }
+
+func TestListGrowthMarket(t *testing.T) {
+	c := defaultClient()
+	keyManager, err := keys.NewMnemonicKeyManager(mnemonic)
+	assert.NoError(t, err)
+	c.SetKeyManager(keyManager)
+	fmt.Println(keyManager.GetAddr().String())
+	result, err := c.ListGrowthMarketPair(testTradeSymbol, "BNB", 10000000, rpc.Commit)
+	assert.NoError(t, err)
+	bz, _ := json.Marshal(result)
+	fmt.Println(string(bz))
+}
