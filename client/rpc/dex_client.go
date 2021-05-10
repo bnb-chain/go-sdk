@@ -307,13 +307,16 @@ func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, erro
 	if err != nil {
 		return nil, err
 	}
+	// if offset > actual pair size, will receive error - unable to parse offset
+	// if limit is invalid (e.g., 0), will receive error - unable to parse limit
 	if !rawTradePairs.Response.IsOK() {
 		return nil, fmt.Errorf(rawTradePairs.Response.Log)
 	}
-	pairs := make([]types.TradingPair, 0)
+
 	if rawTradePairs.Response.GetValue() == nil {
-		return pairs, nil
+		return nil, errors.New("failed to fetch pairs")
 	}
+	pairs := make([]types.TradingPair, 0)
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
 	return pairs, err
 }
@@ -652,13 +655,16 @@ func (c *HTTP) GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, 
 	if err != nil {
 		return nil, err
 	}
+	// if offset > actual pair size, will receive error - unable to parse offset
+	// if limit is invalid (e.g., 0), will receive error - unable to parse limit
 	if !rawTradePairs.Response.IsOK() {
 		return nil, fmt.Errorf(rawTradePairs.Response.Log)
 	}
-	pairs := make([]types.TradingPair, 0)
+
 	if rawTradePairs.Response.GetValue() == nil {
-		return pairs, nil
+		return nil, errors.New("failed to fetch pairs")
 	}
+	pairs := make([]types.TradingPair, 0)
 	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
 	return pairs, err
 }
