@@ -297,13 +297,17 @@ func (c *HTTP) GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOr
 }
 
 func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
+	return queryPairs("dex/pairs", limit, offset, c)
+}
+
+func queryPairs(url string, limit int, offset int, c *HTTP) ([]sdk.TradingPair, error) {
 	if err := ValidateLimit(limit); err != nil {
 		return nil, err
 	}
 	if err := ValidateOffset(offset); err != nil {
 		return nil, err
 	}
-	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex/pairs/%d/%d", offset, limit), nil)
+	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("%s/%d/%d", url, offset, limit), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -645,28 +649,7 @@ func (c *HTTP) GetMiniTokenInfo(symbol string) (*types.MiniToken, error) {
 }
 
 func (c *HTTP) GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
-	if err := ValidateLimit(limit); err != nil {
-		return nil, err
-	}
-	if err := ValidateOffset(offset); err != nil {
-		return nil, err
-	}
-	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex-mini/pairs/%d/%d", offset, limit), nil)
-	if err != nil {
-		return nil, err
-	}
-	// if offset > actual pair size, will receive error - unable to parse offset
-	// if limit is invalid (e.g., 0), will receive error - unable to parse limit
-	if !rawTradePairs.Response.IsOK() {
-		return nil, fmt.Errorf(rawTradePairs.Response.Log)
-	}
-
-	if rawTradePairs.Response.GetValue() == nil {
-		return nil, errors.New("failed to fetch pairs")
-	}
-	pairs := make([]types.TradingPair, 0)
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
-	return pairs, err
+	return queryPairs("dex-mini/pairs", limit, offset, c)
 }
 
 func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
