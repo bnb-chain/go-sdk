@@ -12,6 +12,8 @@ import (
 	"github.com/binance-chain/go-sdk/common"
 )
 
+const maxTokenNameLength = 32
+
 // TokenIssueMsg def
 type TokenIssueMsg struct {
 	From        types.AccAddress `json:"from"`
@@ -43,8 +45,8 @@ func (msg TokenIssueMsg) ValidateBasic() error {
 		return fmt.Errorf("Invalid symbol %v", msg.Symbol)
 	}
 
-	if len(msg.Name) == 0 || len(msg.Name) > 20 {
-		return fmt.Errorf("Token name should have 1~20 characters")
+	if len(msg.Name) == 0 || len(msg.Name) > maxTokenNameLength {
+		return fmt.Errorf("Token name should have 1~%d characters", maxTokenNameLength)
 	}
 
 	if msg.TotalSupply <= 0 || msg.TotalSupply > MaxTotalSupply {
