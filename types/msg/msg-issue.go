@@ -49,7 +49,7 @@ func (msg TokenIssueMsg) ValidateBasic() error {
 		return fmt.Errorf("Token name should have 1~%d characters", maxTokenNameLength)
 	}
 
-	if msg.TotalSupply <= 0 || msg.TotalSupply > MaxTotalSupply {
+	if msg.TotalSupply < 0 || msg.TotalSupply > MaxTotalSupply {
 		return fmt.Errorf("Total supply should be <= " + string(MaxTotalSupply/int64(math.Pow10(int(Decimals)))))
 	}
 
