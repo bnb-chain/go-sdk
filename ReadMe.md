@@ -124,7 +124,7 @@ assert.True(t, bytes.Equal(encryPlain1, encryPlain2))
 ### Init Client
 
 ```GO
-import sdk "github.com/bnb-chain/go-sdk/client"
+import sdk "https://github.com/bnb-chain/go-sdk/tree/master/client"
 
 mnemonic := "lock globe panda armed mandate fabric couple dove climb step stove price recall decrease fire sail ring media enhance excite deny valid ceiling arm"
 //-----   Init KeyManager  -------------
