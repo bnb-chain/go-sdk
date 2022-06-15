@@ -17,7 +17,7 @@ const (
 	SideChainStakeMsgRoute = "stake"
 	SideChainAddrLen       = 20
 
-	MinDelegationAmount = 1e8
+	MinDelegationAmount = 1e7
 )
 
 type CreateSideChainValidatorMsg struct {
