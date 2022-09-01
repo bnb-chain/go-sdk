@@ -39,6 +39,10 @@ func (coin Coin) String() string {
 	return fmt.Sprintf("%v%v", coin.Amount, coin.Denom)
 }
 
+func (coin Coin) IsEqual(other Coin) bool {
+	return coin.Denom == other.Denom && coin.Amount == other.Amount
+}
+
 // Coins def
 type Coins []Coin
 

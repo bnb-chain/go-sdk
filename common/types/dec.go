@@ -131,6 +131,10 @@ func NewDecWithPrec(i, prec int64) Dec {
 	return Dec{c}
 }
 
+func NewDec(i int64) Dec {
+	return NewDecWithPrec(i, Precision)
+}
+
 // get the precision multiplier, do not mutate result
 func precisionMultiplier(prec int64) int64 {
 	if prec > Precision {
