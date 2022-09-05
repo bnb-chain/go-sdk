@@ -1,4 +1,4 @@
-# BNC Chain Go SDK
+# BNB Chain Go SDK
 
 The Binance Chain GO SDK provides a thin wrapper around the BNC Chain API for readonly endpoints, in addition to creating and submitting different transactions.
 It includes the following core components:
