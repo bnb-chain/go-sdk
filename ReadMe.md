@@ -1,6 +1,6 @@
-# BNB Chain Go SDK
+# BNB Beacon Chain Go SDK
 
-The Binance Chain GO SDK provides a thin wrapper around the BNB Chain API for readonly endpoints, in addition to creating and submitting different transactions.
+The BNB Beacon Chain GO SDK provides a thin wrapper around the BNB Beacon Chain API for readonly endpoints, in addition to creating and submitting different transactions.
 It includes the following core components:
 
 * **client** - implementations of Binance Chain transaction types and query, such as for transfers and trading.
