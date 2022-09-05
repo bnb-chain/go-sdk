@@ -146,14 +146,14 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 }
 
 func (c *HTTP) EditSideChainValidator(sideChainId string, description msg.Description, commissionRate *types.Dec,
-	sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	sideFeeAddr, sideConsAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
 
 	valOpAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideFeeAddr)
+	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideFeeAddr, sideConsAddr)
 
 	return c.Broadcast(m, syncType, options...)
 }
