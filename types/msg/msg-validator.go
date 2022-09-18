@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/tendermint/tendermint/crypto"
 )
 
 // Description - description fields for a validator
@@ -34,33 +33,20 @@ func (d Description) EnsureLength() (Description, error) {
 	return d, nil
 }
 
-// MsgCreateValidator - struct for bonding transactions
-type MsgCreateValidator struct {
-	Description   Description
-	Commission    types.CommissionMsg
-	DelegatorAddr types.AccAddress `json:"delegator_address"`
-	ValidatorAddr types.ValAddress `json:"validator_address"`
-	PubKey        crypto.PubKey    `json:"pubkey"`
-	Delegation    types.Coin       `json:"delegation"`
+type MsgCreateValidatorOpen struct {
+	Description   Description         `json:"description"`
+	Commission    types.CommissionMsg `json:"commission"`
+	DelegatorAddr types.AccAddress    `json:"delegator_address"`
+	ValidatorAddr types.ValAddress    `json:"validator_address"`
+	PubKey        string              `json:"pubkey"`
+	Delegation    types.Coin          `json:"delegation"`
 }
 
-type MsgCreateValidatorProposal struct {
-	MsgCreateValidator
-	ProposalId int64 `json:"proposal_id"`
-}
-
-func (msg MsgCreateValidatorProposal) GetSignBytes() []byte {
-	bz := MsgCdc.MustMarshalJSON(msg)
-	return MustSortJSON(bz)
-}
-
-func (msg MsgCreateValidatorProposal) Type() string { return "create_validator" }
-
-func (msg MsgCreateValidator) Route() string { return MsgRoute }
-func (msg MsgCreateValidator) Type() string  { return "create_validator_open" }
+func (msg MsgCreateValidatorOpen) Route() string { return MsgRoute }
+func (msg MsgCreateValidatorOpen) Type() string  { return "create_validator_open" }
 
 // Return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgCreateValidator) GetSigners() []types.AccAddress {
+func (msg MsgCreateValidatorOpen) GetSigners() []types.AccAddress {
 	// delegator is first signer so delegator pays fees
 	addrs := []types.AccAddress{msg.DelegatorAddr}
 
@@ -73,33 +59,17 @@ func (msg MsgCreateValidator) GetSigners() []types.AccAddress {
 }
 
 // get the bytes for the message signer to sign on
-func (msg MsgCreateValidator) GetSignBytes() []byte {
-	b, err := MsgCdc.MarshalJSON(struct {
-		Description
-		Commission    types.CommissionMsg
-		DelegatorAddr types.AccAddress `json:"delegator_address"`
-		ValidatorAddr types.ValAddress `json:"validator_address"`
-		PubKey        string           `json:"pubkey"`
-		Delegation    types.Coin       `json:"delegation"`
-	}{
-		Description:   msg.Description,
-		Commission:    msg.Commission,
-		ValidatorAddr: msg.ValidatorAddr,
-		PubKey:        types.MustBech32ifyConsPub(msg.PubKey),
-		Delegation:    msg.Delegation,
-	})
-	if err != nil {
-		panic(err)
-	}
+func (msg MsgCreateValidatorOpen) GetSignBytes() []byte {
+	b := MsgCdc.MustMarshalJSON(msg)
 	return MustSortJSON(b)
 }
 
-func (msg MsgCreateValidator) GetInvolvedAddresses() []types.AccAddress {
+func (msg MsgCreateValidatorOpen) GetInvolvedAddresses() []types.AccAddress {
 	return msg.GetSigners()
 }
 
 // quick validity check
-func (msg MsgCreateValidator) ValidateBasic() error {
+func (msg MsgCreateValidatorOpen) ValidateBasic() error {
 	if len(msg.DelegatorAddr) != types.AddrLen {
 		return fmt.Errorf("Expected delegator address length is %d, actual length is %d", types.AddrLen, len(msg.DelegatorAddr))
 	}
@@ -189,13 +159,13 @@ func (msg MsgRemoveValidator) GetInvolvedAddresses() []types.AccAddress {
 
 // MsgEditValidator - struct for editing a validator
 type MsgEditValidator struct {
-	Description
+	Description   Description      `json:"description"`
 	ValidatorAddr types.ValAddress `json:"address"`
 	// We pass a reference to the new commission rate as it's not mandatory to
 	// update. If not updated, the deserialized rate will be zero with no way to
 	// distinguish if an update was intended.
-	CommissionRate *types.Dec    `json:"commission_rate"`
-	PubKey         crypto.PubKey `json:"pubkey"`
+	CommissionRate *types.Dec `json:"commission_rate"`
+	PubKey         string     `json:"pubkey"`
 }
 
 //nolint
@@ -207,21 +177,7 @@ func (msg MsgEditValidator) GetSigners() []types.AccAddress {
 
 // get the bytes for the message signer to sign on
 func (msg MsgEditValidator) GetSignBytes() []byte {
-	var pubkey string
-	if msg.PubKey != nil {
-		pubkey = types.MustBech32ifyConsPub(msg.PubKey)
-	}
-	bz := MsgCdc.MustMarshalJSON(struct {
-		Description
-		ValidatorAddr  types.ValAddress `json:"validator_address"`
-		PubKey         string           `json:"pubkey,omitempty"`
-		CommissionRate *types.Dec       `json:"commission_rate,omitempty"`
-	}{
-		Description:    msg.Description,
-		ValidatorAddr:  msg.ValidatorAddr,
-		PubKey:         pubkey,
-		CommissionRate: msg.CommissionRate,
-	})
+	bz := MsgCdc.MustMarshalJSON(msg)
 	return MustSortJSON(bz)
 }
 
@@ -233,6 +189,12 @@ func (msg MsgEditValidator) ValidateBasic() error {
 
 	if msg.Description == (Description{}) {
 		return fmt.Errorf("transaction must include some information to modify")
+	}
+
+	if msg.PubKey != "" {
+		if _, err := types.GetConsPubKeyBech32(msg.PubKey); err != nil {
+			return fmt.Errorf("invalid PubKey: %v", err)
+		}
 	}
 
 	return nil

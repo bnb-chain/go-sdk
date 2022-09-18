@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/tendermint/crypto"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +28,7 @@ var (
 )
 
 type StakingClient interface {
-	CreateValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	CreateValidatorOpen(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	EditValidator(description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	Delegate(valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	Redelegate(valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
@@ -690,7 +689,7 @@ func decodeSideChainAddress(addr string) ([]byte, error) {
 	}
 }
 
-func (c *HTTP) CreateValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, pubkey crypto.PubKey,
+func (c *HTTP) CreateValidatorOpen(delegation types.Coin, description msg.Description, commission types.CommissionMsg, pubkey string,
 	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -699,7 +698,7 @@ func (c *HTTP) CreateValidator(delegation types.Coin, description msg.Descriptio
 	delegatorAddr := c.key.GetAddr()
 	validatorAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.MsgCreateValidator{
+	m := msg.MsgCreateValidatorOpen{
 		Description:   description,
 		Commission:    commission,
 		Delegation:    delegation,
@@ -711,7 +710,7 @@ func (c *HTTP) CreateValidator(delegation types.Coin, description msg.Descriptio
 	return c.Broadcast(m, syncType, options...)
 }
 
-func (c *HTTP) EditValidator(description msg.Description, commissionRate *types.Dec, pubkey crypto.PubKey,
+func (c *HTTP) EditValidator(description msg.Description, commissionRate *types.Dec, pubkey string,
 	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
