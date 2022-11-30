@@ -33,6 +33,7 @@ type StakingClient interface {
 	Delegate(valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	Redelegate(valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	Undelegate(valAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	Unjail(valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 
 	QueryValidator(valAddr types.ValAddress) (*types.Validator, error)
 	QueryTopValidators(top int) ([]types.Validator, error)
@@ -196,6 +197,16 @@ func (c *HTTP) SideChainUnbond(sideChainId string, valAddr types.ValAddress, amo
 	delAddr := c.key.GetAddr()
 
 	m := msg.NewSideChainUndelegateMsg(sideChainId, delAddr, valAddr, amount)
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) Unjail(valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	m := msg.MsgUnjail{ValidatorAddr: valAddr}
 
 	return c.Broadcast(m, syncType, options...)
 }
