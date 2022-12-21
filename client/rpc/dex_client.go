@@ -966,6 +966,26 @@ func (c *HTTP) Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, sy
 	return c.Broadcast(claimMsg, syncType, options...)
 }
 
+func (c *HTTP) GetLastTotalPower() (power *int64, err error) {
+	key := []byte{0x12}
+	bz, err := c.QueryStore(key, StakeStoreKey)
+	if err != nil {
+		return
+	}
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &power)
+	return
+}
+
+func (c *HTTP) GetOracleRelayers() (relayers []msg.OracleRelayer, err error) {
+	key := []byte{0x03}
+	bz, err := c.QueryStore(key, StakeStoreKey)
+	if err != nil {
+		return
+	}
+	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &relayers)
+	return
+}
+
 func (c *HTTP) GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error) {
 	key := []byte(msg.GetClaimId(chainId, msg.OracleChannelId, sequence))
 	bz, err := c.QueryStore(key, OracleStoreName)

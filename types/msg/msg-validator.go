@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/tendermint/tendermint/crypto"
 )
 
 // Description - description fields for a validator
@@ -34,26 +33,20 @@ func (d Description) EnsureLength() (Description, error) {
 	return d, nil
 }
 
-// MsgCreateValidator - struct for bonding transactions
-type MsgCreateValidator struct {
-	Description   Description
-	Commission    types.CommissionMsg
-	DelegatorAddr types.AccAddress `json:"delegator_address"`
-	ValidatorAddr types.ValAddress `json:"validator_address"`
-	PubKey        crypto.PubKey    `json:"pubkey"`
-	Delegation    types.Coin       `json:"delegation"`
+type MsgCreateValidatorOpen struct {
+	Description   Description         `json:"description"`
+	Commission    types.CommissionMsg `json:"commission"`
+	DelegatorAddr types.AccAddress    `json:"delegator_address"`
+	ValidatorAddr types.ValAddress    `json:"validator_address"`
+	PubKey        string              `json:"pubkey"`
+	Delegation    types.Coin          `json:"delegation"`
 }
 
-type MsgCreateValidatorProposal struct {
-	MsgCreateValidator
-	ProposalId int64 `json:"proposal_id"`
-}
-
-func (msg MsgCreateValidator) Route() string { return MsgRoute }
-func (msg MsgCreateValidator) Type() string  { return "create_validator" }
+func (msg MsgCreateValidatorOpen) Route() string { return MsgRoute }
+func (msg MsgCreateValidatorOpen) Type() string  { return "create_validator_open" }
 
 // Return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgCreateValidator) GetSigners() []types.AccAddress {
+func (msg MsgCreateValidatorOpen) GetSigners() []types.AccAddress {
 	// delegator is first signer so delegator pays fees
 	addrs := []types.AccAddress{msg.DelegatorAddr}
 
@@ -66,39 +59,25 @@ func (msg MsgCreateValidator) GetSigners() []types.AccAddress {
 }
 
 // get the bytes for the message signer to sign on
-func (msg MsgCreateValidator) GetSignBytes() []byte {
-	b, err := MsgCdc.MarshalJSON(struct {
-		Description
-		DelegatorAddr types.AccAddress `json:"delegator_address"`
-		ValidatorAddr types.ValAddress `json:"validator_address"`
-		PubKey        string           `json:"pubkey"`
-		Delegation    types.Coin       `json:"delegation"`
-	}{
-		Description:   msg.Description,
-		ValidatorAddr: msg.ValidatorAddr,
-		PubKey:        types.MustBech32ifyConsPub(msg.PubKey),
-		Delegation:    msg.Delegation,
-	})
-	if err != nil {
-		panic(err)
-	}
+func (msg MsgCreateValidatorOpen) GetSignBytes() []byte {
+	b := MsgCdc.MustMarshalJSON(msg)
 	return MustSortJSON(b)
 }
 
-func (msg MsgCreateValidator) GetInvolvedAddresses() []types.AccAddress {
+func (msg MsgCreateValidatorOpen) GetInvolvedAddresses() []types.AccAddress {
 	return msg.GetSigners()
 }
 
 // quick validity check
-func (msg MsgCreateValidator) ValidateBasic() error {
+func (msg MsgCreateValidatorOpen) ValidateBasic() error {
 	if len(msg.DelegatorAddr) != types.AddrLen {
 		return fmt.Errorf("Expected delegator address length is %d, actual length is %d", types.AddrLen, len(msg.DelegatorAddr))
 	}
 	if len(msg.ValidatorAddr) != types.AddrLen {
 		return fmt.Errorf("Expected validator address length is %d, actual length is %d", types.AddrLen, len(msg.ValidatorAddr))
 	}
-	if !(msg.Delegation.Amount > 0) {
-		return fmt.Errorf("DelegationAmount %d is invalid", msg.Delegation.Amount)
+	if msg.Delegation.Amount < 1e8 {
+		return fmt.Errorf("self delegation must not be less than 1e8")
 	}
 	if msg.Description == (Description{}) {
 		return fmt.Errorf("description must be included")
@@ -176,4 +155,170 @@ func (msg MsgRemoveValidator) ValidateBasic() error {
 
 func (msg MsgRemoveValidator) GetInvolvedAddresses() []types.AccAddress {
 	return []types.AccAddress{msg.LauncherAddr}
+}
+
+// MsgEditValidator - struct for editing a validator
+type MsgEditValidator struct {
+	Description   Description      `json:"description"`
+	ValidatorAddr types.ValAddress `json:"address"`
+	// We pass a reference to the new commission rate as it's not mandatory to
+	// update. If not updated, the deserialized rate will be zero with no way to
+	// distinguish if an update was intended.
+	CommissionRate *types.Dec `json:"commission_rate"`
+	PubKey         string     `json:"pubkey"`
+}
+
+//nolint
+func (msg MsgEditValidator) Route() string { return MsgRoute }
+func (msg MsgEditValidator) Type() string  { return "edit_validator" }
+func (msg MsgEditValidator) GetSigners() []types.AccAddress {
+	return []types.AccAddress{types.AccAddress(msg.ValidatorAddr)}
+}
+
+// get the bytes for the message signer to sign on
+func (msg MsgEditValidator) GetSignBytes() []byte {
+	bz := MsgCdc.MustMarshalJSON(msg)
+	return MustSortJSON(bz)
+}
+
+// quick validity check
+func (msg MsgEditValidator) ValidateBasic() error {
+	if msg.ValidatorAddr == nil {
+		return fmt.Errorf("nil validator address")
+	}
+
+	if msg.Description == (Description{}) {
+		return fmt.Errorf("transaction must include some information to modify")
+	}
+
+	if msg.PubKey != "" {
+		if _, err := types.GetConsPubKeyBech32(msg.PubKey); err != nil {
+			return fmt.Errorf("invalid PubKey: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (msg MsgEditValidator) GetInvolvedAddresses() []types.AccAddress {
+	return msg.GetSigners()
+}
+
+//______________________________________________________________________
+
+// MsgDelegate - struct for bonding transactions
+type MsgDelegate struct {
+	DelegatorAddr types.AccAddress `json:"delegator_addr"`
+	ValidatorAddr types.ValAddress `json:"validator_addr"`
+	Delegation    types.Coin       `json:"delegation"`
+}
+
+//nolint
+func (msg MsgDelegate) Route() string { return MsgRoute }
+func (msg MsgDelegate) Type() string  { return "delegate" }
+func (msg MsgDelegate) GetSigners() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr}
+}
+
+// get the bytes for the message signer to sign on
+func (msg MsgDelegate) GetSignBytes() []byte {
+	bz := MsgCdc.MustMarshalJSON(msg)
+	return MustSortJSON(bz)
+}
+
+// quick validity check
+func (msg MsgDelegate) ValidateBasic() error {
+	if msg.DelegatorAddr == nil {
+		return fmt.Errorf("delegator address is nil")
+	}
+	if msg.ValidatorAddr == nil {
+		return fmt.Errorf("validator address is nil")
+	}
+	if msg.Delegation.Amount < 1e8 {
+		return fmt.Errorf("delegation amount should not be less than 1e8")
+	}
+	return nil
+}
+
+func (msg MsgDelegate) GetInvolvedAddresses() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr, types.AccAddress(msg.ValidatorAddr)}
+}
+
+// MsgDelegate - struct for bonding transactions
+type MsgRedelegate struct {
+	DelegatorAddr    types.AccAddress `json:"delegator_addr"`
+	ValidatorSrcAddr types.ValAddress `json:"validator_src_addr"`
+	ValidatorDstAddr types.ValAddress `json:"validator_dst_addr"`
+	Amount           types.Coin       `json:"amount"`
+}
+
+//nolint
+func (msg MsgRedelegate) Route() string { return MsgRoute }
+func (msg MsgRedelegate) Type() string  { return "redelegate" }
+func (msg MsgRedelegate) GetSigners() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr}
+}
+
+// get the bytes for the message signer to sign on
+func (msg MsgRedelegate) GetSignBytes() []byte {
+	bz := MsgCdc.MustMarshalJSON(msg)
+	return MustSortJSON(bz)
+}
+
+func (msg MsgRedelegate) GetInvolvedAddresses() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr, types.AccAddress(msg.ValidatorSrcAddr), types.AccAddress(msg.DelegatorAddr)}
+}
+
+// ValidateBasic is used to quickly disqualify obviously invalid messages quickly
+func (msg MsgRedelegate) ValidateBasic() error {
+	if len(msg.DelegatorAddr) != types.AddrLen {
+		return fmt.Errorf("Expected delegator address length is %d, actual length is %d", types.AddrLen, len(msg.DelegatorAddr))
+	}
+	if len(msg.ValidatorSrcAddr) != types.AddrLen {
+		return fmt.Errorf("Expected validator source address length is %d, actual length is %d", types.AddrLen, len(msg.ValidatorSrcAddr))
+	}
+	if len(msg.ValidatorDstAddr) != types.AddrLen {
+		return fmt.Errorf("Expected validator destination address length is %d, actual length is %d", types.AddrLen, len(msg.ValidatorDstAddr))
+	}
+	if msg.Amount.Amount <= 0 {
+		return fmt.Errorf("Expected positive amount, actual amount is %v", msg.Amount.Amount)
+	}
+	return nil
+}
+
+type MsgUndelegate struct {
+	DelegatorAddr types.AccAddress `json:"delegator_addr"`
+	ValidatorAddr types.ValAddress `json:"validator_addr"`
+	Amount        types.Coin       `json:"amount"`
+}
+
+//nolint
+func (msg MsgUndelegate) Route() string { return MsgRoute }
+func (msg MsgUndelegate) Type() string  { return "undelegate" }
+func (msg MsgUndelegate) GetSigners() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr}
+}
+
+// get the bytes for the message signer to sign on
+func (msg MsgUndelegate) GetSignBytes() []byte {
+	bz := MsgCdc.MustMarshalJSON(msg)
+	return MustSortJSON(bz)
+}
+
+// quick validity check
+func (msg MsgUndelegate) ValidateBasic() error {
+	if len(msg.DelegatorAddr) != types.AddrLen {
+		return fmt.Errorf("Expected delegator address length is %d, actual length is %d", types.AddrLen, len(msg.DelegatorAddr))
+	}
+	if len(msg.ValidatorAddr) != types.AddrLen {
+		return fmt.Errorf("Expected validator address length is %d, actual length is %d", types.AddrLen, len(msg.ValidatorAddr))
+	}
+	if msg.Amount.Amount <= 0 {
+		return fmt.Errorf("undelegation amount must be positive: %d", msg.Amount.Amount)
+	}
+	return nil
+}
+
+func (msg MsgUndelegate) GetInvolvedAddresses() []types.AccAddress {
+	return []types.AccAddress{msg.DelegatorAddr, types.AccAddress(msg.ValidatorAddr)}
 }

@@ -242,6 +242,11 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 	}, nil
 }
 
+type OracleRelayer struct {
+	Address types.ValAddress `json:"address"`
+	Power   int64            `json:"power"`
+}
+
 //Validate and check if it's mini token
 func IsValidMiniTokenSymbol(symbol string) bool {
 	return ValidateMiniTokenSymbol(symbol) == nil

@@ -81,3 +81,10 @@ type QueryDelegatorParams struct {
 	BaseParams
 	DelegatorAddr AccAddress
 }
+
+type QueryRedelegationParams struct {
+	BaseParams
+	DelegatorAddr AccAddress
+	ValSrcAddr    ValAddress
+	ValDstAddr    ValAddress
+}

@@ -28,6 +28,26 @@ var (
 )
 
 type StakingClient interface {
+	CreateValidatorOpen(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	EditValidator(description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	Delegate(valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	Redelegate(valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	Undelegate(valAddr types.ValAddress, amount types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+	Unjail(valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
+
+	QueryValidator(valAddr types.ValAddress) (*types.Validator, error)
+	QueryTopValidators(top int) ([]types.Validator, error)
+	QueryDelegation(delAddr types.AccAddress, valAddr types.ValAddress) (*types.DelegationResponse, error)
+	QueryDelegations(delAddr types.AccAddress) ([]types.DelegationResponse, error)
+	QueryRedelegation(delAddr types.AccAddress, valSrcAddr types.ValAddress, valDstAddr types.ValAddress) (*types.Redelegation, error)
+	QueryRedelegations(delAddr types.AccAddress) ([]types.Redelegation, error)
+	QueryUnbondingDelegation(valAddr types.ValAddress, delAddr types.AccAddress) (*types.UnbondingDelegation, error)
+	QueryUnbondingDelegations(delAddr types.AccAddress) ([]types.UnbondingDelegation, error)
+	GetUnBondingDelegationsByValidator(valAddr types.ValAddress) ([]types.UnbondingDelegation, error)
+	GetRedelegationsByValidator(valAddr types.ValAddress) ([]types.Redelegation, error)
+	GetPool() (*types.Pool, error)
+	GetAllValidatorsCount(jailInvolved bool) (int, error)
+
 	CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg, sideChainId string, sideConsAddr []byte, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	EditSideChainValidator(sideChainId string, description msg.Description, commissionRate *types.Dec, sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
 	SideChainDelegate(sideChainId string, valAddr types.ValAddress, delegation types.Coin, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error)
@@ -72,6 +92,44 @@ type bechValidator struct {
 	SideChainId      string           `json:"side_chain_id,omitempty"`     // side chain id to distinguish different side chains
 	SideConsAddr     string           `json:"side_cons_addr,omitempty"`    // consensus address of the side chain validator, this replaces the `ConsPubKey`
 	SideFeeAddr      string           `json:"side_fee_addr,omitempty"`     // fee address on the side chain
+
+	StakeSnapshots   []types.Dec `json:"stake_snapshots"`   // staked tokens snapshot over a period of time, e.g. 30 days
+	AccumulatedStake types.Dec   `json:"accumulated_stake"` // accumulated stake, sum of StakeSnapshots
+}
+
+func (bv *bechValidator) toValidator() (*types.Validator, error) {
+	validator := types.Validator{
+		FeeAddr:            bv.FeeAddr,
+		OperatorAddr:       bv.OperatorAddr,
+		ConsPubKey:         bv.ConsPubKey,
+		Jailed:             bv.Jailed,
+		Status:             bv.Status,
+		Tokens:             bv.Tokens,
+		DelegatorShares:    bv.DelegatorShares,
+		Description:        bv.Description,
+		BondHeight:         bv.BondHeight,
+		BondIntraTxCounter: bv.BondIntraTxCounter,
+		UnbondingHeight:    bv.UnbondingHeight,
+		UnbondingMinTime:   bv.UnbondingMinTime,
+		Commission:         bv.Commission,
+		DistributionAddr:   bv.DistributionAddr,
+		StakeSnapshots:     bv.StakeSnapshots,
+		AccumulatedStake:   bv.AccumulatedStake,
+	}
+	if len(bv.SideChainId) != 0 {
+		validator.SideChainId = bv.SideChainId
+		if sideConsAddr, err := decodeSideChainAddress(bv.SideConsAddr); err != nil {
+			return nil, err
+		} else {
+			validator.SideConsAddr = sideConsAddr
+		}
+		if sideFeeAddr, err := decodeSideChainAddress(bv.SideFeeAddr); err != nil {
+			return nil, err
+		} else {
+			validator.SideFeeAddr = sideFeeAddr
+		}
+	}
+	return &validator, nil
 }
 
 func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.Description, commission types.CommissionMsg,
@@ -88,14 +146,14 @@ func (c *HTTP) CreateSideChainValidator(delegation types.Coin, description msg.D
 }
 
 func (c *HTTP) EditSideChainValidator(sideChainId string, description msg.Description, commissionRate *types.Dec,
-	sideFeeAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	sideFeeAddr, sideConsAddr []byte, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
 	}
 
 	valOpAddr := types.ValAddress(c.key.GetAddr())
 
-	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideFeeAddr)
+	m := msg.NewEditSideChainValidatorMsg(sideChainId, valOpAddr, description, commissionRate, sideFeeAddr, sideConsAddr)
 
 	return c.Broadcast(m, syncType, options...)
 }
@@ -139,6 +197,16 @@ func (c *HTTP) SideChainUnbond(sideChainId string, valAddr types.ValAddress, amo
 	delAddr := c.key.GetAddr()
 
 	m := msg.NewSideChainUndelegateMsg(sideChainId, delAddr, valAddr, amount)
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) Unjail(valAddr types.ValAddress, syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	m := msg.MsgUnjail{ValidatorAddr: valAddr}
 
 	return c.Broadcast(m, syncType, options...)
 }
@@ -630,4 +698,329 @@ func decodeSideChainAddress(addr string) ([]byte, error) {
 	} else {
 		return hex.DecodeString(addr)
 	}
+}
+
+func (c *HTTP) CreateValidatorOpen(delegation types.Coin, description msg.Description, commission types.CommissionMsg, pubkey string,
+	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	delegatorAddr := c.key.GetAddr()
+	validatorAddr := types.ValAddress(c.key.GetAddr())
+
+	m := msg.MsgCreateValidatorOpen{
+		Description:   description,
+		Commission:    commission,
+		Delegation:    delegation,
+		PubKey:        pubkey,
+		DelegatorAddr: delegatorAddr,
+		ValidatorAddr: validatorAddr,
+	}
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) EditValidator(description msg.Description, commissionRate *types.Dec, pubkey string,
+	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	valOpAddr := types.ValAddress(c.key.GetAddr())
+
+	m := msg.MsgEditValidator{
+		Description:    description,
+		CommissionRate: commissionRate,
+		PubKey:         pubkey,
+		ValidatorAddr:  valOpAddr,
+	}
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) Delegate(valAddr types.ValAddress, delegation types.Coin, syncType SyncType,
+	options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	delAddr := c.key.GetAddr()
+
+	m := msg.MsgDelegate{
+		DelegatorAddr: delAddr,
+		ValidatorAddr: valAddr,
+		Delegation:    delegation,
+	}
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) Redelegate(valSrcAddr types.ValAddress, valDstAddr types.ValAddress, amount types.Coin,
+	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	if bytes.Equal(valSrcAddr, valDstAddr) {
+		return nil, fmt.Errorf("cannot redelegate to the same validator")
+	}
+
+	delAddr := c.key.GetAddr()
+
+	m := msg.MsgRedelegate{
+		DelegatorAddr:    delAddr,
+		ValidatorSrcAddr: valSrcAddr,
+		ValidatorDstAddr: valDstAddr,
+		Amount:           amount,
+	}
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) Undelegate(valAddr types.ValAddress, amount types.Coin, syncType SyncType,
+	options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+
+	delAddr := c.key.GetAddr()
+
+	m := msg.MsgUndelegate{
+		DelegatorAddr: delAddr,
+		ValidatorAddr: valAddr,
+		Amount:        amount,
+	}
+
+	return c.Broadcast(m, syncType, options...)
+}
+
+func (c *HTTP) QueryValidator(valAddr types.ValAddress) (*types.Validator, error) {
+	params := types.QueryValidatorParams{
+		ValidatorAddr: valAddr,
+	}
+
+	bz, err := json.Marshal(params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.QueryWithData("custom/stake/validator", bz)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	var bv bechValidator
+	if err = c.cdc.UnmarshalJSON(res, &bv); err != nil {
+		return nil, err
+	}
+	validator, err := bv.toValidator()
+	if err != nil {
+		return nil, err
+	}
+	return validator, nil
+}
+
+func (c *HTTP) QueryTopValidators(top int) ([]types.Validator, error) {
+	if top > 50 || top < 1 {
+		return nil, fmt.Errorf("top must be between 1 and 50")
+	}
+
+	params := types.QueryTopValidatorsParams{
+		Top: top,
+	}
+
+	bz, err := json.Marshal(params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.QueryWithData("custom/stake/topValidators", bz)
+	if err != nil {
+		return nil, err
+	}
+
+	var validators = make([]types.Validator, 0)
+
+	if len(res) == 0 {
+		return validators, nil
+	}
+
+	var bvs []bechValidator
+	if err = c.cdc.UnmarshalJSON(res, &bvs); err != nil {
+		return nil, err
+	}
+
+	for _, v := range bvs {
+		validator, err := v.toValidator()
+		if err != nil {
+			return nil, err
+		}
+		validators = append(validators, *validator)
+	}
+
+	return validators, nil
+}
+
+func (c *HTTP) QueryDelegation(delAddr types.AccAddress, valAddr types.ValAddress) (*types.DelegationResponse, error) {
+	return c.QuerySideChainDelegation("", delAddr, valAddr)
+}
+
+func (c *HTTP) QueryDelegations(delAddr types.AccAddress) ([]types.DelegationResponse, error) {
+	return c.QuerySideChainDelegations("", delAddr)
+}
+
+func (c *HTTP) QueryRedelegation(delAddr types.AccAddress, valSrcAddr types.ValAddress,
+	valDstAddr types.ValAddress) (*types.Redelegation, error) {
+	params := types.QueryRedelegationParams{
+		DelegatorAddr: delAddr,
+		ValSrcAddr:    valSrcAddr,
+		ValDstAddr:    valDstAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/redelegation", bz)
+	if err != nil {
+		return nil, err
+	}
+	var red types.Redelegation
+	err = c.cdc.UnmarshalJSON(res, &red)
+	return &red, err
+}
+
+//Query all redelegations records for one delegator
+func (c *HTTP) QueryRedelegations(delAddr types.AccAddress) ([]types.Redelegation, error) {
+	params := types.QueryDelegatorParams{
+		DelegatorAddr: delAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/delegatorRedelegations", bz)
+	if err != nil {
+		return nil, err
+	}
+	var reds []types.Redelegation
+	err = c.cdc.UnmarshalJSON(res, &reds)
+	return reds, err
+}
+
+//Query an unbonding-delegation record based on delegator and validator address
+func (c *HTTP) QueryUnbondingDelegation(valAddr types.ValAddress, delAddr types.AccAddress) (*types.UnbondingDelegation, error) {
+	params := types.QueryBondsParams{
+		DelegatorAddr: delAddr,
+		ValidatorAddr: valAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/unbondingDelegation", bz)
+	if err != nil {
+		return nil, err
+	}
+	var ub types.UnbondingDelegation
+	err = c.cdc.UnmarshalJSON(res, &ub)
+	return &ub, err
+}
+
+//Query all unbonding-delegations records for one delegator
+func (c *HTTP) QueryUnbondingDelegations(delAddr types.AccAddress) ([]types.UnbondingDelegation, error) {
+	params := types.QueryDelegatorParams{
+		DelegatorAddr: delAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/delegatorUnbondingDelegations", bz)
+	if err != nil {
+		return nil, err
+	}
+	var ubds []types.UnbondingDelegation
+	err = c.cdc.UnmarshalJSON(res, &ubds)
+	return ubds, err
+}
+
+func (c *HTTP) GetUnBondingDelegationsByValidator(valAddr types.ValAddress) ([]types.UnbondingDelegation, error) {
+	params := types.QueryValidatorParams{
+		ValidatorAddr: valAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/validatorUnbondingDelegations", bz)
+	if err != nil {
+		return nil, err
+	}
+	var ubds []types.UnbondingDelegation
+	err = c.cdc.UnmarshalJSON(res, &ubds)
+	return ubds, err
+}
+
+func (c *HTTP) GetRedelegationsByValidator(valAddr types.ValAddress) ([]types.Redelegation, error) {
+	params := types.QueryValidatorParams{
+		ValidatorAddr: valAddr,
+	}
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	res, err := c.QueryWithData("custom/stake/validatorRedelegations", bz)
+	if err != nil {
+		return nil, err
+	}
+	var reds []types.Redelegation
+	err = c.cdc.UnmarshalJSON(res, &reds)
+	return reds, err
+}
+
+func (c *HTTP) GetPool() (*types.Pool, error) {
+	params := types.NewBaseParams("")
+
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	path := "custom/stake/pool"
+	response, err := c.QueryWithData(path, bz)
+
+	if err != nil {
+		return nil, err
+	}
+	var pool types.Pool
+	err = c.cdc.UnmarshalJSON(response, &pool)
+	return &pool, err
+}
+
+func (c *HTTP) GetAllValidatorsCount(jailInvolved bool) (int, error) {
+	params := types.NewBaseParams("")
+
+	bz, err := json.Marshal(params)
+	if err != nil {
+		return 0, err
+	}
+
+	path := "custom/stake/allUnJailValidatorsCount"
+	if jailInvolved {
+		path = "custom/stake/allValidatorsCount"
+	}
+	response, err := c.QueryWithData(path, bz)
+
+	if err != nil {
+		return 0, err
+	}
+
+	count := strings.ReplaceAll(string(response), "\"", "")
+
+	return strconv.Atoi(count)
 }

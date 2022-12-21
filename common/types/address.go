@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
 
 	"github.com/tendermint/tendermint/crypto"
 
@@ -148,4 +149,18 @@ func MustBech32ifyConsPub(pub crypto.PubKey) string {
 // Bech32PrefixConsPub prefixfor a given consensus node's PubKey.
 func Bech32ifyConsPub(pub crypto.PubKey) (string, error) {
 	return bech32.ConvertAndEncode(bech32PrefixConsPub, pub.Bytes())
+}
+
+func GetConsPubKeyBech32(pubkey string) (pk crypto.PubKey, err error) {
+	bz, err := GetFromBech32(pubkey, bech32PrefixConsPub)
+	if err != nil {
+		return nil, err
+	}
+
+	pk, err = cryptoAmino.PubKeyFromBytes(bz)
+	if err != nil {
+		return nil, err
+	}
+
+	return pk, nil
 }
