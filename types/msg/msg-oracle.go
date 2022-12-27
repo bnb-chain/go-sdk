@@ -142,6 +142,20 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 		AckCrossChainPackageType:     noneExistPackageProto,
 		FailAckCrossChainPackageType: noneExistPackageProto,
 	},
+	sdk.IbcChannelID(4): {
+		SynCrossChainPackageType: func() interface{} {
+			return new(MirrorSynPackage)
+		},
+		AckCrossChainPackageType:     noneExistPackageProto,
+		FailAckCrossChainPackageType: noneExistPackageProto,
+	},
+	sdk.IbcChannelID(5): {
+		SynCrossChainPackageType: func() interface{} {
+			return new(MirrorSyncSynPackage)
+		},
+		AckCrossChainPackageType:     noneExistPackageProto,
+		FailAckCrossChainPackageType: noneExistPackageProto,
+	},
 	sdk.IbcChannelID(8): {
 		SynCrossChainPackageType: noneExistPackageProto,
 		AckCrossChainPackageType: func() interface{} {
@@ -167,6 +181,15 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 		AckCrossChainPackageType:     noneExistPackageProto,
 		FailAckCrossChainPackageType: noneExistPackageProto,
 	},
+	sdk.IbcChannelID(16): {
+		SynCrossChainPackageType: func() interface{} {
+			return new(CrossStakeSynPackageFromBSC)
+		},
+		AckCrossChainPackageType: func() interface{} {
+			return new(CrossStakeRefundPackage)
+		},
+		FailAckCrossChainPackageType: noneExistPackageProto,
+	},
 }
 
 type ApproveBindSynPackage struct {
@@ -177,7 +200,7 @@ type ApproveBindSynPackage struct {
 type BindSynPackage struct {
 	PackageType     uint8
 	Bep2TokenSymbol [32]byte
-	ContractAddr    [20]byte
+	ContractAddr    SmartChainAddress
 	TotalSupply     *big.Int
 	PeggyAmount     *big.Int
 	Decimals        uint8
@@ -187,26 +210,46 @@ type BindSynPackage struct {
 type TransferOutRefundPackage struct {
 	Bep2TokenSymbol [32]byte
 	RefundAmount    *big.Int
-	RefundAddr      []byte
+	RefundAddr      sdk.AccAddress
 	RefundReason    uint32
 }
 
 type TransferOutSynPackage struct {
 	Bep2TokenSymbol [32]byte
-	ContractAddress [20]byte
+	ContractAddress SmartChainAddress
 	Amount          *big.Int
-	Recipient       [20]byte
-	RefundAddress   []byte
+	Recipient       SmartChainAddress
+	RefundAddress   sdk.AccAddress
 	ExpireTime      uint64
 }
 
 type TransferInSynPackage struct {
 	Bep2TokenSymbol   [32]byte
-	ContractAddress   [20]byte
+	ContractAddress   SmartChainAddress
 	Amounts           []*big.Int
-	ReceiverAddresses [][]byte
-	RefundAddresses   [][20]byte
+	ReceiverAddresses []sdk.AccAddress
+	RefundAddresses   []SmartChainAddress
 	ExpireTime        uint64
+}
+
+type MirrorSynPackage struct {
+	MirrorSender     SmartChainAddress
+	ContractAddr     SmartChainAddress
+	BEP20Name        [32]byte
+	BEP20Symbol      [32]byte
+	BEP20TotalSupply *big.Int
+	BEP20Decimals    uint8
+	MirrorFee        *big.Int
+	ExpireTime       uint64
+}
+
+type MirrorSyncSynPackage struct {
+	SyncSender       SmartChainAddress
+	ContractAddr     SmartChainAddress
+	BEP2Symbol       [32]byte
+	BEP20TotalSupply *big.Int
+	SyncFee          *big.Int
+	ExpireTime       uint64
 }
 
 type CommonAckPackage struct {
@@ -236,6 +279,18 @@ type SideDowntimeSlashPackage struct {
 	SideHeight    uint64 `json:"side_height"`
 	SideChainId   uint16 `json:"side_chain_id"`
 	SideTimestamp uint64 `json:"side_timestamp"`
+}
+
+type CrossStakeSynPackageFromBSC struct {
+	EventType   uint8
+	ParamsBytes []byte
+}
+
+type CrossStakeRefundPackage struct {
+	EventType uint8
+	Recipient SmartChainAddress
+	Amount    *big.Int
+	ErrorCode uint32
 }
 
 type CrossChainPackage struct {
