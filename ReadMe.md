@@ -1,24 +1,21 @@
-# BNC Chain Go SDK
+# BNB Beacon Chain Go SDK
 
-The Binance Chain GO SDK provides a thin wrapper around the BNC Chain API for readonly endpoints, in addition to creating and submitting different transactions.
+The BNB Beacon Chain GO SDK provides a thin wrapper around the BNB Beacon Chain API for readonly endpoints, in addition to creating and submitting different transactions.
 It includes the following core components:
 
-* **client** - implementations of Binance Chain transaction types and query, such as for transfers and trading.
+* **client** - implementations of BNB Beacon Chain transaction types and query, such as for transfers and trading.
 * **common** - core cryptographic functions, uuid functions and other useful functions.
 * **e2e** - end-to-end test package for go-sdk developer. For common users, it is also a good reference to use go-sdk. 
 * **keys** - implement `KeyManage` to manage private key and accounts.
-* **types** - core type of Binance Chain, such as `coin`, `account`, `tx` and `msg`.
-
-## Disclaimer
-**This branch is under active development, all subject to potential future change without notification and not ready for production use. The code and security audit have not been fully completed and not ready for any bug bounty.**
+* **types** - core type of BNB Beacon Chain, such as `coin`, `account`, `tx` and `msg`.
 
 ## Install
 
 ### Requirement
 
-Go version above 1.11
+Go version above 1.17
 
-### Use go mod(recommend)
+### Use go mod
 
 Add "github.com/bnb-chain/go-sdk" dependency into your go.mod file. Example:
 ```go
@@ -28,7 +25,7 @@ require (
 replace github.com/tendermint/go-amino => github.com/bnb-chain/bnc-go-amino v0.14.1-binance.1
 ```
 
-**NOTE**: Please make sure you use binance-chain amino repo instead of tendermint amino.
+**NOTE**: Please make sure you use bnb-chain amino repo instead of tendermint amino.
 
 ## Usage 
 
@@ -69,7 +66,7 @@ NewLedgerKeyManager(path ledger.DerivationPath) (KeyManager, error)
 - NewMnemonicPathKeyManager. The difference between `NewMnemonicKeyManager` is that you can use custom keypath to generate different `keyManager` while using the same mnemonic. 5 levels in BIP44 path: "purpose' / coin_type' / account' / change / address_index", "purpose' / coin_type'" is fixed as "44'/714'/", you can customize the rest part. 
 - NewKeyStoreKeyManager. You should provide a keybase json file and you password, you can download the key base json file when your create a wallet account.
 - NewPrivateKeyManager. You should provide a Hex encoded string of your private key.
-- NewLedgerKeyManager. You must have a ledger device with binance ledger app and connect it to your machine.
+- NewLedgerKeyManager. You must have a ledger device with BNB Beacon Chain ledger app and connect it to your machine.
 
 Examples:
 
@@ -147,27 +144,27 @@ If you want broadcast some transactions, like send coins, create orders or cance
 
 ### Example
 
-Create a `buy` order: 
+Create a `sent` transaction: 
 ```go
-createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, txmsg.OrderSide.BUY, 100000000, 100000000, true)
+client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true)
 ```
 
 If want to attach memo or source to the transaction, more `WithSource` and `WithMemo` options are required:
 ```go
-createOrderResult, err := client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
+client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true, transaction.WithSource(100),transaction.WithMemo("test memo"))
 ```
 
 In some scenarios, continuously send multi transactions very fast. Before the previous transaction being included in the chain, the next transaction is being sent, to avoid sequence mismatch error, option `WithAcNumAndSequence` is required:
 ```
 acc,err:=client.GetAccount(client.GetKeyManager().GetAddr().String())
-_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence))
-_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+1))
-_, err = client.CreateOrder(tradeSymbol, nativeSymbol, msg.OrderSide.BUY, 100000000, 100000000, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+2))
+_, err = client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence))
+_, err = client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+1))
+_, err = client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true, transaction.WithAcNumAndSequence(acc.Number,acc.Sequence+2))
 ```
 
 For more API usage documentation, please check the [wiki](https://github.com/bnb-chain/go-sdk/wiki)..
 
-## RPC Client(Beta)
+## RPC Client
 RPC endpoints may be used to interact with a node directly over HTTP or websockets. Using RPC, you may perform low-level 
 operations like executing ABCI queries, viewing network/consensus state or broadcasting a transaction against full node or
 light client.
