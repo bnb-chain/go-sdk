@@ -144,7 +144,7 @@ If you want broadcast some transactions, like send coins, create orders or cance
 
 ### Example
 
-Create a `sent` transaction: 
+Create a `SendToken` transaction: 
 ```go
 client.SendToken([]msg.Transfer{{testAccount, []ctypes.Coin{{nativeSymbol, 100000000}}}}, true)
 ```
