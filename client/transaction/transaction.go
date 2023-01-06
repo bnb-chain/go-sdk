@@ -97,7 +97,7 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCo
 
 	// special logic for createOrder, to save account query
 	if orderMsg, ok := m.(msg.CreateOrderMsg); ok {
-		orderMsg.ID = msg.GenerateOrderID(signMsg.Sequence+1, c.keyManager.GetAddr())
+		orderMsg.Id = msg.GenerateOrderID(signMsg.Sequence+1, c.keyManager.GetAddr())
 		signMsg.Msgs[0] = orderMsg
 	}
 

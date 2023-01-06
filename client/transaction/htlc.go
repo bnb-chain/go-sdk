@@ -41,8 +41,8 @@ func (c *client) DepositHTLT(swapID []byte, amount types.Coins,
 	fromAddr := c.keyManager.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
-		swapID,
 		amount,
+		swapID,
 	)
 	commit, err := c.broadcastMsg(depositHTLTMsg, sync, options...)
 	if err != nil {

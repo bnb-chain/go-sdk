@@ -14,6 +14,7 @@ import (
 	gtypes "github.com/bnb-chain/go-sdk/types"
 	"github.com/bnb-chain/go-sdk/types/msg"
 	"github.com/bnb-chain/go-sdk/types/tx"
+	cTypes "github.com/cosmos/cosmos-sdk/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -726,8 +727,8 @@ func (c *HTTP) DepositHTLT(recipient types.AccAddress, swapID []byte, amount typ
 	fromAddr := c.key.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
-		swapID,
 		amount,
+		swapID,
 	)
 	return c.Broadcast(depositHTLTMsg, syncType, options...)
 }
@@ -961,7 +962,7 @@ func (c *HTTP) Claim(chainId sdk.IbcChainID, sequence uint64, payload []byte, sy
 
 	fromAddr := c.key.GetAddr()
 
-	claimMsg := msg.NewClaimMsg(chainId, sequence, payload, fromAddr)
+	claimMsg := msg.NewClaimMsg(cTypes.ChainID(chainId), sequence, payload, fromAddr)
 
 	return c.Broadcast(claimMsg, syncType, options...)
 }
@@ -987,7 +988,7 @@ func (c *HTTP) GetOracleRelayers() (relayers []msg.OracleRelayer, err error) {
 }
 
 func (c *HTTP) GetProphecy(chainId sdk.IbcChainID, sequence int64) (*msg.Prophecy, error) {
-	key := []byte(msg.GetClaimId(chainId, msg.OracleChannelId, sequence))
+	key := []byte(msg.GetClaimId(cTypes.ChainID(chainId), msg.OracleChannelId, uint64(sequence)))
 	bz, err := c.QueryStore(key, OracleStoreName)
 	if err != nil {
 		return nil, err
@@ -1065,7 +1066,7 @@ func (c *HTTP) sign(m msg.Msg, options ...tx.Option) ([]byte, error) {
 
 	// special logic for createOrder, to save account query
 	if orderMsg, ok := m.(msg.CreateOrderMsg); ok {
-		orderMsg.ID = msg.GenerateOrderID(signMsg.Sequence+1, c.key.GetAddr())
+		orderMsg.Id = msg.GenerateOrderID(signMsg.Sequence+1, c.key.GetAddr())
 		signMsg.Msgs[0] = orderMsg
 	}
 

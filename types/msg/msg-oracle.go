@@ -1,114 +1,80 @@
 package msg
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 
 	"github.com/bnb-chain/go-sdk/common/rlp"
+	bridgeTypes "github.com/bnb-chain/node/plugins/bridge/types"
+	"github.com/cosmos/cosmos-sdk/types"
+	oracleTypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
+	paramHubTypes "github.com/cosmos/cosmos-sdk/x/paramHub/types"
+	sidechainTypes "github.com/cosmos/cosmos-sdk/x/sidechain/types"
+	slashingTypes "github.com/cosmos/cosmos-sdk/x/slashing"
+	crossStake "github.com/cosmos/cosmos-sdk/x/stake/cross_stake"
+	stakeTypes "github.com/cosmos/cosmos-sdk/x/stake/types"
+
 	sdk "github.com/bnb-chain/go-sdk/common/types"
 )
 
 const (
-	RouteOracle = "oracle"
-
-	ClaimMsgType = "oracleClaim"
-
-	OracleChannelId sdk.IbcChannelID = 0x00
+	RouteOracle     = oracleTypes.RouteOracle
+	ClaimMsgType    = oracleTypes.ClaimMsgType
+	OracleChannelId = oracleTypes.RelayPackagesChannelId
 )
 
 const (
-	CrossChainFeeLength = 32
-	PackageTypeLength   = 1
-	PackageHeaderLength = CrossChainFeeLength + PackageTypeLength
+	CrossChainFeeLength = sidechainTypes.CrossChainFeeLength
+	PackageTypeLength   = sidechainTypes.PackageTypeLength
+	PackageHeaderLength = sidechainTypes.PackageHeaderLength
 )
 
-func GetClaimId(chainId sdk.IbcChainID, channelId sdk.IbcChannelID, sequence int64) string {
-	return fmt.Sprintf("%d:%d:%d", chainId, channelId, sequence)
-}
+var (
+	GetClaimId  = oracleTypes.GetClaimId
+	NewClaim    = oracleTypes.NewClaim
+	NewClaimMsg = oracleTypes.NewClaimMsg
+)
 
-// Claim contains an arbitrary claim with arbitrary content made by a given validator
-type Claim struct {
-	ID               string         `json:"id"`
-	ValidatorAddress sdk.ValAddress `json:"validator_address"`
-	Content          string         `json:"content"`
-}
+type (
+	Claim    = oracleTypes.Claim
+	ClaimMsg = oracleTypes.ClaimMsg
+	Package  = oracleTypes.Package
+	Packages = oracleTypes.Packages
 
-// NewClaim returns a new Claim
-func NewClaim(id string, validatorAddress sdk.ValAddress, content string) Claim {
-	return Claim{
-		ID:               id,
-		ValidatorAddress: validatorAddress,
-		Content:          content,
-	}
-}
-
-type ClaimMsg struct {
-	ChainId          sdk.IbcChainID `json:"chain_id"`
-	Sequence         uint64         `json:"sequence"`
-	Payload          []byte         `json:"payload"`
-	ValidatorAddress sdk.AccAddress `json:"validator_address"`
-}
-
-type Packages []Package
-
-type Package struct {
-	ChannelId sdk.IbcChannelID
-	Sequence  uint64
-	Payload   []byte
-}
-
-func NewClaimMsg(ChainId sdk.IbcChainID, sequence uint64, payload []byte, validatorAddr sdk.AccAddress) ClaimMsg {
-	return ClaimMsg{
-		ChainId:          ChainId,
-		Sequence:         sequence,
-		Payload:          payload,
-		ValidatorAddress: validatorAddr,
-	}
-}
-
-// nolint
-func (msg ClaimMsg) Route() string { return RouteOracle }
-func (msg ClaimMsg) Type() string  { return ClaimMsgType }
-func (msg ClaimMsg) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.ValidatorAddress}
-}
-
-func (msg ClaimMsg) String() string {
-	return fmt.Sprintf("Claim{%v#%v#%v%v%x}",
-		msg.ChainId, msg.Sequence, msg.ValidatorAddress.String(), msg.Payload)
-}
-
-// GetSignBytes - Get the bytes for the message signer to sign on
-func (msg ClaimMsg) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
-func (msg ClaimMsg) GetInvolvedAddresses() []sdk.AccAddress {
-	return msg.GetSigners()
-}
-
-// ValidateBasic is used to quickly disqualify obviously invalid messages quickly
-func (msg ClaimMsg) ValidateBasic() error {
-	if len(msg.Payload) < PackageHeaderLength {
-		return fmt.Errorf("length of payload is less than %d", PackageHeaderLength)
-	}
-	if len(msg.ValidatorAddress) != sdk.AddrLen {
-		return fmt.Errorf("address length should be %d", sdk.AddrLen)
-	}
-	return nil
-}
-
-type CrossChainPackageType uint8
+	CrossChainPackageType = types.CrossChainPackageType
+)
 
 const (
-	SynCrossChainPackageType     CrossChainPackageType = 0x00
-	AckCrossChainPackageType     CrossChainPackageType = 0x01
-	FailAckCrossChainPackageType CrossChainPackageType = 0x02
+	SynCrossChainPackageType     = types.SynCrossChainPackageType
+	AckCrossChainPackageType     = types.AckCrossChainPackageType
+	FailAckCrossChainPackageType = types.FailAckCrossChainPackageType
+)
+
+type (
+	ApproveBindSynPackage       = bridgeTypes.ApproveBindSynPackage
+	BindSynPackage              = bridgeTypes.BindSynPackage
+	TransferOutRefundPackage    = bridgeTypes.TransferOutRefundPackage
+	TransferOutSynPackage       = bridgeTypes.TransferOutSynPackage
+	TransferInSynPackage        = bridgeTypes.TransferInSynPackage
+	MirrorSynPackage            = bridgeTypes.MirrorSynPackage
+	MirrorSyncSynPackage        = bridgeTypes.MirrorSyncSynPackage
+	CommonAckPackage            = sidechainTypes.CommonAckPackage
+	IbcValidatorSetPackage      = stakeTypes.IbcValidatorSetPackage
+	IbcValidator                = stakeTypes.IbcValidator
+	CrossParamChange            = paramHubTypes.CSCParamChange
+	SideDowntimeSlashPackage    = slashingTypes.SideDowntimeSlashPackage
+	CrossStakeSynPackageFromBSC = crossStake.CrossStakeSynPackageFromBSC
+	CrossStakeRefundPackage     = stakeTypes.CrossStakeRefundPackage
+)
+
+type CrossChainPackage struct {
+	PackageType CrossChainPackageType
+	RelayFee    big.Int
+	Content     interface{}
+}
+
+var (
+	DecodePackageHeader = sidechainTypes.DecodePackageHeader
 )
 
 func noneExistPackageProto() interface{} {
@@ -192,113 +158,6 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 	},
 }
 
-type ApproveBindSynPackage struct {
-	Status          uint32
-	Bep2TokenSymbol [32]byte
-}
-
-type BindSynPackage struct {
-	PackageType     uint8
-	Bep2TokenSymbol [32]byte
-	ContractAddr    SmartChainAddress
-	TotalSupply     *big.Int
-	PeggyAmount     *big.Int
-	Decimals        uint8
-	ExpireTime      uint64
-}
-
-type TransferOutRefundPackage struct {
-	Bep2TokenSymbol [32]byte
-	RefundAmount    *big.Int
-	RefundAddr      sdk.AccAddress
-	RefundReason    uint32
-}
-
-type TransferOutSynPackage struct {
-	Bep2TokenSymbol [32]byte
-	ContractAddress SmartChainAddress
-	Amount          *big.Int
-	Recipient       SmartChainAddress
-	RefundAddress   sdk.AccAddress
-	ExpireTime      uint64
-}
-
-type TransferInSynPackage struct {
-	Bep2TokenSymbol   [32]byte
-	ContractAddress   SmartChainAddress
-	Amounts           []*big.Int
-	ReceiverAddresses []sdk.AccAddress
-	RefundAddresses   []SmartChainAddress
-	ExpireTime        uint64
-}
-
-type MirrorSynPackage struct {
-	MirrorSender     SmartChainAddress
-	ContractAddr     SmartChainAddress
-	BEP20Name        [32]byte
-	BEP20Symbol      [32]byte
-	BEP20TotalSupply *big.Int
-	BEP20Decimals    uint8
-	MirrorFee        *big.Int
-	ExpireTime       uint64
-}
-
-type MirrorSyncSynPackage struct {
-	SyncSender       SmartChainAddress
-	ContractAddr     SmartChainAddress
-	BEP2Symbol       [32]byte
-	BEP20TotalSupply *big.Int
-	SyncFee          *big.Int
-	ExpireTime       uint64
-}
-
-type CommonAckPackage struct {
-	Code uint32
-}
-
-type IbcValidatorSetPackage struct {
-	Type         uint8
-	ValidatorSet []IbcValidator
-}
-
-type IbcValidator struct {
-	ConsAddr []byte
-	FeeAddr  []byte
-	DistAddr []byte
-	Power    uint64
-}
-
-type CrossParamChange struct {
-	Key    string
-	Value  []byte
-	Target []byte
-}
-
-type SideDowntimeSlashPackage struct {
-	SideConsAddr  []byte `json:"side_cons_addr"`
-	SideHeight    uint64 `json:"side_height"`
-	SideChainId   uint16 `json:"side_chain_id"`
-	SideTimestamp uint64 `json:"side_timestamp"`
-}
-
-type CrossStakeSynPackageFromBSC struct {
-	EventType   uint8
-	ParamsBytes []byte
-}
-
-type CrossStakeRefundPackage struct {
-	EventType uint8
-	Recipient SmartChainAddress
-	Amount    *big.Int
-	ErrorCode uint32
-}
-
-type CrossChainPackage struct {
-	PackageType CrossChainPackageType
-	RelayFee    big.Int
-	Content     interface{}
-}
-
 func ParseClaimPayload(payload []byte) ([]CrossChainPackage, error) {
 	packages := Packages{}
 	err := rlp.DecodeBytes(payload, &packages)
@@ -330,14 +189,4 @@ func ParseClaimPayload(payload []byte) ([]CrossChainPackage, error) {
 		})
 	}
 	return decodedPackage, nil
-}
-
-func DecodePackageHeader(packageHeader []byte) (packageType CrossChainPackageType, relayFee big.Int, err error) {
-	if len(packageHeader) < PackageHeaderLength {
-		err = fmt.Errorf("length of packageHeader is less than %d", PackageHeaderLength)
-		return
-	}
-	packageType = CrossChainPackageType(packageHeader[0])
-	relayFee.SetBytes(packageHeader[PackageTypeLength : CrossChainFeeLength+PackageTypeLength])
-	return
 }

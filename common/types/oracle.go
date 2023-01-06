@@ -2,10 +2,13 @@ package types
 
 import (
 	"encoding/binary"
+
+	ctypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/sidechain"
 )
 
-type IbcChannelID uint8
-type IbcChainID uint16
+type IbcChannelID = ctypes.ChannelID
+type IbcChainID ctypes.ChainID
 
 const (
 	prefixLength         = 1
@@ -14,10 +17,10 @@ const (
 )
 
 var (
-	SideChainStorePrefixByIdKey = []byte{0x01} // prefix for each key to a side chain store prefix, by side chain id
+	SideChainStorePrefixByIdKey = sidechain.SideChainStorePrefixByIdKey
 
-	PrefixForSendSequenceKey    = []byte{0xf0}
-	PrefixForReceiveSequenceKey = []byte{0xf1}
+	PrefixForSendSequenceKey    = sidechain.PrefixForSendSequenceKey
+	PrefixForReceiveSequenceKey = sidechain.PrefixForReceiveSequenceKey
 )
 
 func GetReceiveSequenceKey(destIbcChainID IbcChainID, channelID IbcChannelID) []byte {
