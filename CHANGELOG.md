@@ -1,15 +1,15 @@
 # Changelog
 ## 1.3.0
 IMPROVEMENT
-[\#170](https://github.com/bnb-chain/go-sdk/pull/170) types: set the types to the origin package alias and remove trade client
+* [\#170](https://github.com/bnb-chain/go-sdk/pull/170) types: set the types to the origin package alias and remove trade client
 
 ## 1.2.9
 IMPROVEMENT
-[\#168](https://github.com/bnb-chain/go-sdk/pull/168) type: add more oracle claim type
+* [\#168](https://github.com/bnb-chain/go-sdk/pull/168) type: add more oracle claim type
 
 ## 1.2.8
 FEATURE
-[\#164](https://github.com/bnb-chain/go-sdk/pull/164) feat: impl bep159 txs cli and queries
+* [\#164](https://github.com/bnb-chain/go-sdk/pull/164) feat: impl bep159 txs cli and queries
 
 ## 1.2.7
 * [\#160](https://github.com/bnb-chain/go-sdk/pull/160)  [RPC]  Support minimal 0.1 BNB staking
