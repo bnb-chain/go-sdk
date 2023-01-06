@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/binance-chain/go-sdk/common/rlp"
-	sdk "github.com/binance-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/common/rlp"
+	sdk "github.com/bnb-chain/go-sdk/common/types"
 )
 
 const (

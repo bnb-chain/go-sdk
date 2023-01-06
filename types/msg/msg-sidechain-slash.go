@@ -3,11 +3,11 @@ package msg
 import (
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/common/types"
 )
 
 const (
-	TypeMsgSideChainUnjail      = "side_chain_unjail"
+	TypeMsgSideChainUnjail = "side_chain_unjail"
 
 	SideChainSlashMsgRoute = "slashing"
 )

@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/common/types"
 
 	"github.com/pkg/errors"
 
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/bnb-chain/go-sdk/common"
 )
 
 // constants

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/binance-chain/go-sdk/client"
-	"github.com/binance-chain/go-sdk/common/ledger"
-	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/client"
+	"github.com/bnb-chain/go-sdk/common/ledger"
+	"github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/keys"
+	"github.com/bnb-chain/go-sdk/types/msg"
 )
 
 // To run this example, please make sure your key address have more than 1:BNB on testnet

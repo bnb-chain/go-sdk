@@ -2,7 +2,8 @@ package msg
 
 import (
 	"fmt"
-	sdk "github.com/binance-chain/go-sdk/common/types"
+
+	sdk "github.com/bnb-chain/go-sdk/common/types"
 )
 
 // name to identify transaction types

@@ -1,7 +1,7 @@
 package tx
 
 import (
-	"github.com/binance-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/msg"
 )
 
 const Source int64 = 0

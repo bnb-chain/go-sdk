@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/types/tx"
 	"github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	abci "github.com/tendermint/tendermint/types"

@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/common/types"
 
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/bnb-chain/go-sdk/common/types"
+
+	"github.com/bnb-chain/go-sdk/common"
 )
 
 const (

@@ -5,12 +5,10 @@ github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 h1:xJ4a3vCFaGF/jqvzLMYoU8P317H5OQ+Via4RmuPwCS0=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
-github.com/binance-chain/bnc-go-amino v0.14.1-binance.1 h1:RU33Toj/38sztKjcJTdziUIL0MBoMF7Xt1gQ3bT2zK0=
-github.com/binance-chain/bnc-go-amino v0.14.1-binance.1/go.mod h1:yaElUUxWtv/TC/ldGtlKAvS1vKwokxgJ1d97I+6is80=
-github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1 h1:8mAtw1Tp/BhhTrsXmXM60H1fihcvcKLfo2ZSxShaXKw=
-github.com/binance-chain/ledger-cosmos-go v0.9.9-binance.1/go.mod h1:FI6WAujuiBpoSavYreux2zTKyrUkngXDlRJczxsDK5M=
-github.com/binance-chain/ledger-go v0.9.1 h1:OjKbhUSq19jmMVqdnmkczjSD7qH4UtW4KY2IhsKnvfM=
-github.com/binance-chain/ledger-go v0.9.1/go.mod h1:Nd1Y0OY+m7C50kNEL4+LIH8Lj9DA9CbCLrv54t6fF1g=
+github.com/bnb-chain/bnc-go-amino v0.14.1-binance.1 h1:9fbKnQSCHA7+GhSQYKWwbjPbdX5fcblOJDgpme9bYhM=
+github.com/bnb-chain/bnc-go-amino v0.14.1-binance.1/go.mod h1:LiCO7jev+3HwLGAiN9gpD0z+jTz95RqgSavbse55XOY=
+github.com/bnb-chain/ledger-go v0.9.1 h1:NqrQwEALzcwkRzGCLhXAT9R8Ns5u6kJ33+WCIXwBM2w=
+github.com/bnb-chain/ledger-go v0.9.1/go.mod h1:EeUZBE/ZbIVOrb4PaSyx1Qz8WvNVG5QJfbw3LSqKv4Q=
 github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d/go.mod h1:d3C0AkH6BRcvO8T0UEPu53cnw4IbV63x1bEjildYhO0=
 github.com/btcsuite/btcd v0.20.1-beta h1:Ik4hyJqN8Jfyv3S4AGBOmyouMsYE3EdYODkMbQjwPGw=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=
@@ -132,6 +130,8 @@ github.com/tendermint/tm-db v0.1.1 h1:G3Xezy3sOk9+ekhjZ/kjArYIs1SmwV+1OUgNkj7RgV
 github.com/tendermint/tm-db v0.1.1/go.mod h1:0cPKWu2Mou3IlxecH+MEUSYc1Ch537alLe6CpFrKzgw=
 github.com/zondax/hid v0.9.0 h1:eiT3P6vNxAEVxXMw66eZUAAnU2zD33JBkfG/EnfAKl8=
 github.com/zondax/hid v0.9.0/go.mod h1:l5wttcP0jwtdLjqjMMWFVEE7d1zO0jvSPA9OPZxWpEM=
+github.com/zondax/ledger-cosmos-go v0.9.9 h1:dNjv4W56/uQzUGZ54iXw6bp/UJZPLeBQHLF9r0sVh6s=
+github.com/zondax/ledger-cosmos-go v0.9.9/go.mod h1:uhu/ldrtzhUH7RoWoTKK4MxBi/CXfyViVA0OCYTiHdM=
 go.etcd.io/bbolt v1.3.3 h1:MUGmc65QhB3pIlaQ5bB4LwqSj6GIonVJXpZiaKNyaKk=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 golang.org/x/crypto v0.0.0-20170930174604-9419663f5a44/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

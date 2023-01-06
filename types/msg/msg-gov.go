@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/common/types"
 	"github.com/pkg/errors"
 	"github.com/tendermint/go-amino"
 )

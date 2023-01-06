@@ -5,12 +5,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/binance-chain/go-sdk/client/rpc"
-	ctypes "github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/client/rpc"
+	ctypes "github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/keys"
+	"github.com/bnb-chain/go-sdk/types"
+	"github.com/bnb-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/tx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,18 +19,18 @@ var (
 	sOnceClient         = sync.Once{}
 	sTestClientInstance *rpc.HTTP
 
-	jackAddress        = "bnb1lrzg56jhtkqu7fmca3394vdx00r7apx4gwvj6w"
-	jackMnemonic       = "orphan thing pelican flee spray sense sketch dutch opinion vessel fringe surround hurt theory hospital provide foil love stock vast shrug detail harbor pattern"
+	jackAddress  = "bnb1lrzg56jhtkqu7fmca3394vdx00r7apx4gwvj6w"
+	jackMnemonic = "orphan thing pelican flee spray sense sketch dutch opinion vessel fringe surround hurt theory hospital provide foil love stock vast shrug detail harbor pattern"
 
-	roseAddress  	   = "bnb1rxnydtfjccaz2tck7wrentntdylrnnqzmvqvwn"
-	roseMnemonic 	   = "earth hamster near become enlist degree foil crucial weapon poverty mad purity chest lucky equal jazz pony either knee cloud drive badge jacket caught"
+	roseAddress  = "bnb1rxnydtfjccaz2tck7wrentntdylrnnqzmvqvwn"
+	roseMnemonic = "earth hamster near become enlist degree foil crucial weapon poverty mad purity chest lucky equal jazz pony either knee cloud drive badge jacket caught"
 
-	markAddress		   = "bnb1sh4cfzvcut9nywffs6gs5zkyt4pzeej6k84klt"
-	markMnemonic	   = "depend water drink monitor earn praise permit autumn board cable impact wink wolf sting middle misery bridge stamp close very robust slam annual verify"
+	markAddress  = "bnb1sh4cfzvcut9nywffs6gs5zkyt4pzeej6k84klt"
+	markMnemonic = "depend water drink monitor earn praise permit autumn board cable impact wink wolf sting middle misery bridge stamp close very robust slam annual verify"
 
-	chainId 		   = "test-chain-qUlw6e"
-	valAddress 		   = "bva1lrzg56jhtkqu7fmca3394vdx00r7apx4gjdzy2"
-	valAddress2 	   = "bva1rxnydtfjccaz2tck7wrentntdylrnnqzmspush"
+	chainId     = "test-chain-qUlw6e"
+	valAddress  = "bva1lrzg56jhtkqu7fmca3394vdx00r7apx4gjdzy2"
+	valAddress2 = "bva1rxnydtfjccaz2tck7wrentntdylrnnqzmspush"
 )
 
 func rpcClient() *rpc.HTTP {
@@ -101,8 +101,8 @@ func TestEditSideChainValidator(t *testing.T) {
 	rate, _ := ctypes.NewDecFromStr("2")
 
 	sideFeeAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
-
-	res, err := c.EditSideChainValidator(types.RialtoNet, des, &rate, sideFeeAddr, rpc.Sync, tx.WithChainID(chainId))
+	consAddr := FromHex("0xd1B22dCC24C55f4d728E7aaA5c9b5a22e1512C08")
+	res, err := c.EditSideChainValidator(types.RialtoNet, des, &rate, sideFeeAddr, consAddr, rpc.Sync, tx.WithChainID(chainId))
 
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -167,8 +167,8 @@ func TestQuerySideChainValidator(t *testing.T) {
 	res, err := c.QuerySideChainValidator(types.RialtoNet, valAddr)
 
 	if res == nil {
-		   assert.Equal(t, rpc.EmptyResultError, err)
-	}else{
+		assert.Equal(t, rpc.EmptyResultError, err)
+	} else {
 		assert.NotNil(t, res.OperatorAddr)
 	}
 }
@@ -189,7 +189,7 @@ func TestQuerySideChainDelegation(t *testing.T) {
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
-	}else{
+	} else {
 		assert.NotNil(t, res.ValidatorAddr)
 	}
 }
@@ -214,7 +214,7 @@ func TestQuerySideChainRelegation(t *testing.T) {
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
-	}else{
+	} else {
 		assert.NotNil(t, res.DelegatorAddr)
 	}
 }
@@ -237,7 +237,7 @@ func TestQuerySideChainUnbondingDelegation(t *testing.T) {
 
 	if res == nil {
 		assert.Equal(t, rpc.EmptyResultError, err)
-	}else{
+	} else {
 		assert.NotNil(t, res.DelegatorAddr)
 	}
 }

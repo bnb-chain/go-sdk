@@ -1,12 +1,12 @@
 package ledger
 
 import (
-	"github.com/binance-chain/go-sdk/common/types"
-	ledgergo "github.com/binance-chain/ledger-cosmos-go"
+	"github.com/bnb-chain/go-sdk/common/types"
 	"github.com/btcsuite/btcd/btcec"
 	tmbtcec "github.com/tendermint/btcd/btcec"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	ledgergo "github.com/zondax/ledger-cosmos-go"
 )
 
 var (
