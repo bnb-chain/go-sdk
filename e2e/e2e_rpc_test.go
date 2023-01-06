@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/tendermint/types"
 	"math/rand"
 	"os/exec"
 	"strconv"
@@ -23,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
+	"github.com/tendermint/tendermint/types"
 )
 
 var (
