@@ -1,102 +1,70 @@
 package msg
 
 import (
-	"encoding/binary"
-	"encoding/hex"
-	"encoding/json"
-	"strings"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/bsc/rlp"
 
-	"golang.org/x/crypto/sha3"
-
-	"github.com/pkg/errors"
-	"github.com/tendermint/tendermint/crypto/tmhash"
-
-	"github.com/binance-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/node/plugins/tokens/swap"
+	cTypes "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SortJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
-// are removed.
-// This method can be used to canonicalize JSON to be returned by GetSignBytes,
-// e.g. for the ledger integration.
-// If the passed JSON isn't valid it will return an error.
-func SortJSON(toSortJSON []byte) ([]byte, error) {
-	var c interface{}
-	err := json.Unmarshal(toSortJSON, &c)
+var (
+	SortJSON            = cTypes.SortJSON
+	MustSortJSON        = cTypes.MustSortJSON
+	CalculateRandomHash = swap.CalculateRandomHash
+	CalculateSwapID     = swap.CalculateSwapID
+	HexAddress          = cTypes.HexAddress
+	HexEncode           = cTypes.HexEncode
+	HexDecode           = cTypes.HexDecode
+	Has0xPrefix         = cTypes.Has0xPrefix
+)
+
+func noneExistPackageProto() interface{} {
+	panic("should not exist such package")
+}
+
+func ParseClaimPayload(payload []byte) ([]CrossChainPackage, error) {
+	packages := Packages{}
+	err := rlp.DecodeBytes(payload, &packages)
 	if err != nil {
 		return nil, err
 	}
-	js, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-	return js, nil
-}
-
-// MustSortJSON is like SortJSON but panic if an error occurs, e.g., if
-// the passed JSON isn't valid.
-func MustSortJSON(toSortJSON []byte) []byte {
-	js, err := SortJSON(toSortJSON)
-	if err != nil {
-		panic(err)
-	}
-	return js
-}
-
-func CalculateRandomHash(randomNumber []byte, timestamp int64) []byte {
-	data := make([]byte, RandomNumberLength+Int64Size)
-	copy(data[:RandomNumberLength], randomNumber)
-	binary.BigEndian.PutUint64(data[RandomNumberLength:], uint64(timestamp))
-	return tmhash.Sum(data)
-}
-
-func CalculateSwapID(randomNumberHash []byte, sender types.AccAddress, senderOtherChain string) []byte {
-	senderOtherChain = strings.ToLower(senderOtherChain)
-	data := randomNumberHash
-	data = append(data, []byte(sender)...)
-	data = append(data, []byte(senderOtherChain)...)
-	return tmhash.Sum(data)
-}
-
-func HexAddress(a []byte) string {
-	if len(a) == 0 {
-		return ""
-	}
-	unchecksummed := hex.EncodeToString(a[:])
-	sha := sha3.NewLegacyKeccak256()
-	sha.Write([]byte(unchecksummed))
-	hash := sha.Sum(nil)
-
-	result := []byte(unchecksummed)
-	for i := 0; i < len(result); i++ {
-		hashByte := hash[i/2]
-		if i%2 == 0 {
-			hashByte = hashByte >> 4
-		} else {
-			hashByte &= 0xf
+	decodedPackage := make([]CrossChainPackage, 0, len(packages))
+	for _, pack := range packages {
+		ptype, relayerFee, err := DecodePackageHeader(pack.Payload)
+		if err != nil {
+			return nil, err
 		}
-		if result[i] > '9' && hashByte > 7 {
-			result[i] -= 32
+		if _, exist := protoMetrics[pack.ChannelId]; !exist {
+			return nil, fmt.Errorf("channnel id do not exist")
 		}
+		proto, exist := protoMetrics[pack.ChannelId][ptype]
+		if !exist || proto == nil {
+			return nil, fmt.Errorf("package type do not exist")
+		}
+		content := proto()
+		err = rlp.DecodeBytes(pack.Payload[PackageHeaderLength:], content)
+		if err != nil {
+			return nil, err
+		}
+		decodedPackage = append(decodedPackage, CrossChainPackage{
+			PackageType: ptype,
+			RelayFee:    relayerFee,
+			Content:     content,
+		})
 	}
-	return "0x" + string(result)
+	return decodedPackage, nil
 }
 
-func HexEncode(b []byte) string {
-	enc := make([]byte, len(b)*2+2)
-	copy(enc, "0x")
-	hex.Encode(enc[2:], b)
-	return string(enc)
-}
+func CreateSendMsg(from types.AccAddress, fromCoins types.Coins, transfers []Transfer) SendMsg {
+	input := NewInput(from, fromCoins)
 
-// Decode decodes a hex string with 0x prefix.
-func HexDecode(input string) ([]byte, error) {
-	if !Has0xPrefix(input) {
-		return nil, errors.New("hex string must have 0x prefix")
+	output := make([]Output, 0, len(transfers))
+	for _, t := range transfers {
+		t.Coins = t.Coins.Sort()
+		output = append(output, NewOutput(t.ToAddr, t.Coins))
 	}
-	return hex.DecodeString(input[2:])
-}
-
-// has0xPrefix validates str begins with '0x' or '0X'.
-func Has0xPrefix(input string) bool {
-	return len(input) >= 2 && input[0] == '0' && (input[1] == 'x' || input[1] == 'X')
+	msg := NewMsgSend([]Input{input}, output)
+	return msg
 }

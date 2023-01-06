@@ -42,7 +42,3 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 
 	return b, nil
 }
-
-func IsAlphaNum(s string) bool {
-	return isAlphaNumFunc(s)
-}

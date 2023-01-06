@@ -1,9 +1,9 @@
 package transaction
 
 import (
-	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/tx"
 )
 
 type HTLTResult struct {
@@ -41,8 +41,8 @@ func (c *client) DepositHTLT(swapID []byte, amount types.Coins,
 	fromAddr := c.keyManager.GetAddr()
 	depositHTLTMsg := msg.NewDepositHTLTMsg(
 		fromAddr,
-		swapID,
 		amount,
+		swapID,
 	)
 	commit, err := c.broadcastMsg(depositHTLTMsg, sync, options...)
 	if err != nil {

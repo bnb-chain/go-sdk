@@ -1,7 +1,9 @@
 package types
 
-type FlagOption uint64
+import "github.com/bnb-chain/node/plugins/account/scripts"
+
+type FlagOption = uint64
 
 const (
-	TransferMemoCheckerFlag FlagOption = 0x0000000000000001
+	TransferMemoCheckerFlag = scripts.TransferMemoCheckerFlag
 )

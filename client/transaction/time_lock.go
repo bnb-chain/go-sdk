@@ -3,9 +3,9 @@ package transaction
 import (
 	"strconv"
 
-	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/tx"
 )
 
 type TimeLockResult struct {
@@ -44,18 +44,18 @@ func (c *client) TimeUnLock(id int64, sync bool, options ...Option) (*TimeUnLock
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(unlockMsg, sync, options...)
-	if err != nil {
-		return nil, err
+	commit, err2 := c.broadcastMsg(unlockMsg, sync, options...)
+	if err2 != nil {
+		return nil, err2
 	}
 	var lockId int64
 	if commit.Ok && sync {
-		lockId, err = strconv.ParseInt(string(commit.Data), 10, 64)
-		if err != nil {
-			return nil, err
+		lockId, err2 = strconv.ParseInt(string(commit.Data), 10, 64)
+		if err2 != nil {
+			return nil, err2
 		}
 	}
-	return &TimeUnLockResult{*commit, lockId}, err
+	return &TimeUnLockResult{*commit, lockId}, nil
 }
 
 type TimeReLockResult struct {
@@ -71,16 +71,16 @@ func (c *client) TimeReLock(id int64, description string, amount types.Coins, lo
 	if err != nil {
 		return nil, err
 	}
-	commit, err := c.broadcastMsg(relockMsg, sync, options...)
-	if err != nil {
-		return nil, err
+	commit, err2 := c.broadcastMsg(relockMsg, sync, options...)
+	if err2 != nil {
+		return nil, err2
 	}
 	var lockId int64
 	if commit.Ok && sync {
-		lockId, err = strconv.ParseInt(string(commit.Data), 10, 64)
-		if err != nil {
-			return nil, err
+		lockId, err2 = strconv.ParseInt(string(commit.Data), 10, 64)
+		if err2 != nil {
+			return nil, err2
 		}
 	}
-	return &TimeReLockResult{*commit, lockId}, err
+	return &TimeReLockResult{*commit, lockId}, nil
 }

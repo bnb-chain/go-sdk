@@ -6,7 +6,6 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 )
 
-// Account definition
 type ResultStatus struct {
 	NodeInfo      NodeInfo      `json:"node_info"`
 	SyncInfo      SyncInfo      `json:"sync_info"`

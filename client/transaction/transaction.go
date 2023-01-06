@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/binance-chain/go-sdk/client/basic"
-	"github.com/binance-chain/go-sdk/client/query"
-	"github.com/binance-chain/go-sdk/common/types"
-	"github.com/binance-chain/go-sdk/keys"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/client/basic"
+	"github.com/bnb-chain/go-sdk/client/query"
+	"github.com/bnb-chain/go-sdk/common/types"
+	"github.com/bnb-chain/go-sdk/keys"
+	"github.com/bnb-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/tx"
 )
 
 type Option = tx.Option
@@ -22,7 +22,9 @@ var (
 )
 
 type TransactionClient interface {
+	// CreateOrder deprecated
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool, options ...Option) (*CreateOrderResult, error)
+	// CancelOrder deprecated
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error)
 	BurnToken(symbol string, amount int64, sync bool, options ...Option) (*BurnTokenResult, error)
 	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, options ...Option) (*ListPairResult, error)
@@ -97,7 +99,7 @@ func (c *client) broadcastMsg(m msg.Msg, sync bool, options ...Option) (*tx.TxCo
 
 	// special logic for createOrder, to save account query
 	if orderMsg, ok := m.(msg.CreateOrderMsg); ok {
-		orderMsg.ID = msg.GenerateOrderID(signMsg.Sequence+1, c.keyManager.GetAddr())
+		orderMsg.Id = msg.GenerateOrderID(signMsg.Sequence+1, c.keyManager.GetAddr())
 		signMsg.Msgs[0] = orderMsg
 	}
 

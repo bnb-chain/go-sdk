@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/binance-chain/go-sdk/common"
-	"github.com/binance-chain/go-sdk/types/msg"
-	"github.com/binance-chain/go-sdk/types/tx"
+	"github.com/bnb-chain/go-sdk/common"
+	"github.com/bnb-chain/go-sdk/types/msg"
+	"github.com/bnb-chain/go-sdk/types/tx"
 )
 
 type CreateOrderResult struct {
@@ -14,6 +14,7 @@ type CreateOrderResult struct {
 	OrderId string
 }
 
+// CreateOrder deprecated
 func (c *client) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool, options ...Option) (*CreateOrderResult, error) {
 	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")

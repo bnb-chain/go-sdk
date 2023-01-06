@@ -1,299 +1,159 @@
 package msg
 
 import (
-	"encoding/json"
-	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
-
-	"github.com/binance-chain/go-sdk/common/types"
-
-	"github.com/pkg/errors"
-
-	"github.com/binance-chain/go-sdk/common"
+	"github.com/bnb-chain/node/plugins/account"
+	bTypes "github.com/bnb-chain/node/plugins/bridge/types"
+	"github.com/bnb-chain/node/plugins/dex/order"
+	dexTypes "github.com/bnb-chain/node/plugins/dex/types"
+	"github.com/bnb-chain/node/plugins/tokens/burn"
+	"github.com/bnb-chain/node/plugins/tokens/freeze"
+	"github.com/bnb-chain/node/plugins/tokens/issue"
+	"github.com/bnb-chain/node/plugins/tokens/ownership"
+	"github.com/bnb-chain/node/plugins/tokens/seturi"
+	"github.com/bnb-chain/node/plugins/tokens/swap"
+	"github.com/bnb-chain/node/plugins/tokens/timelock"
+	cTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	oracleTypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	stakeTypes "github.com/cosmos/cosmos-sdk/x/stake/types"
 )
 
-// constants
-const (
-	DotBSuffix                    = ".B"
-	NativeToken                   = "BNB"
-	NativeTokenDotBSuffixed       = "BNB" + DotBSuffix
-	Decimals                int8  = 8
-	MaxTotalSupply          int64 = 9000000000000000000 // 90 billions with 8 decimal digits
+// Msg definition
+type (
+	SmartChainAddress = cTypes.SmartChainAddress
 
-	TokenSymbolMaxLen          = 8
-	TokenSymbolMinLen          = 2
-	TokenSymbolTxHashSuffixLen = 3
+	// bridge module
+	BindMsg        = bTypes.BindMsg
+	TransferOutMsg = bTypes.TransferOutMsg
+	UnbindMsg      = bTypes.UnbindMsg
 
-	MiniTokenSymbolMaxLen          = 8
-	MiniTokenSymbolMinLen          = 2
-	MiniTokenSymbolSuffixLen       = 4
-	MiniTokenSymbolMSuffix         = "M"
-	MiniTokenSymbolTxHashSuffixLen = 3
-	MaxMiniTokenNameLength         = 32
-	MaxTokenURILength              = 2048
+	// token module
+	TokenBurnMsg         = burn.BurnMsg
+	DexListMsg           = dexTypes.ListMsg
+	ListMiniMsg          = dexTypes.ListMiniMsg
+	TokenFreezeMsg       = freeze.FreezeMsg
+	TokenUnfreezeMsg     = freeze.UnfreezeMsg
+	TokenIssueMsg        = issue.IssueMsg
+	MiniTokenIssueMsg    = issue.IssueMiniMsg
+	TinyTokenIssueMsg    = issue.IssueTinyMsg
+	MintMsg              = issue.MintMsg
+	SendMsg              = bank.MsgSend
+	SetURIMsg            = seturi.SetURIMsg
+	TimeLockMsg          = timelock.TimeLockMsg
+	TimeRelockMsg        = timelock.TimeRelockMsg
+	TimeUnlockMsg        = timelock.TimeUnlockMsg
+	TransferOwnershipMsg = ownership.TransferOwnershipMsg
+
+	// gov module
+	SubmitProposalMsg          = gov.MsgSubmitProposal
+	DepositMsg                 = gov.MsgDeposit
+	VoteMsg                    = gov.MsgVote
+	SideChainSubmitProposalMsg = gov.MsgSideChainSubmitProposal
+	SideChainDepositMsg        = gov.MsgSideChainDeposit
+	SideChainVoteMsg           = gov.MsgSideChainVote
+
+	// atomic swap module
+	HTLTMsg        = swap.HTLTMsg
+	DepositHTLTMsg = swap.DepositHTLTMsg
+	ClaimHTLTMsg   = swap.ClaimHTLTMsg
+	RefundHTLTMsg  = swap.RefundHTLTMsg
+
+	// oracle claim module
+	Claim    = oracleTypes.Claim
+	ClaimMsg = oracleTypes.ClaimMsg
+
+	// trade module
+	CreateOrderMsg = order.NewOrderMsg
+	CancelOrderMsg = order.CancelOrderMsg
+
+	// account module
+	SetAccountFlagsMsg = account.SetAccountFlagsMsg
+
+	// slash module
+	MsgSideChainUnjail = slashing.MsgSideChainUnjail
+	MsgUnjail          = slashing.MsgUnjail
+
+	// stake module
+	CreateSideChainValidatorMsg = stakeTypes.MsgCreateSideChainValidator
+	EditSideChainValidatorMsg   = stakeTypes.MsgEditSideChainValidator
+	SideChainDelegateMsg        = stakeTypes.MsgSideChainDelegate
+	SideChainRedelegateMsg      = stakeTypes.MsgSideChainRedelegate
+	SideChainUndelegateMsg      = stakeTypes.MsgSideChainUndelegate
+	MsgCreateValidatorOpen      = stakeTypes.MsgCreateValidatorOpen
+	MsgRemoveValidator          = stakeTypes.MsgRemoveValidator
+	MsgEditValidator            = stakeTypes.MsgEditValidator
+	MsgDelegate                 = stakeTypes.MsgDelegate
+	MsgRedelegate               = stakeTypes.MsgRedelegate
+	MsgUndelegate               = stakeTypes.MsgUndelegate
 )
 
-// Msg - Transactions messages must fulfill the Msg
-type Msg interface {
-	// Return the message type.
-	// Must be alphanumeric or empty.
-	Route() string
+var (
+	NewSmartChainAddress = cTypes.NewSmartChainAddress
 
-	// Returns a human-readable string for the message, intended for utilization
-	// within tags
-	Type() string
+	// bridge module
+	NewBindMsg        = bTypes.NewBindMsg
+	NewTransferOutMsg = bTypes.NewTransferOutMsg
+	NewUnbindMsg      = bTypes.NewUnbindMsg
 
-	// ValidateBasic does a simple validation check that
-	// doesn't require access to any other information.
-	ValidateBasic() error
+	// token module
+	NewTokenBurnMsg         = burn.NewMsg
+	NewDexListMsg           = dexTypes.NewListMsg
+	NewListMiniMsg          = dexTypes.NewListMiniMsg
+	NewFreezeMsg            = freeze.NewFreezeMsg
+	NewUnfreezeMsg          = freeze.NewUnfreezeMsg
+	NewTokenIssueMsg        = issue.NewIssueMsg
+	NewMiniTokenIssueMsg    = issue.NewIssueMiniMsg
+	NewTinyTokenIssueMsg    = issue.NewIssueTinyMsg
+	NewMintMsg              = issue.NewMintMsg
+	NewMsgSend              = bank.NewMsgSend
+	NewSetUriMsg            = seturi.NewSetUriMsg
+	NewTimeLockMsg          = timelock.NewTimeLockMsg
+	NewTimeRelockMsg        = timelock.NewTimeRelockMsg
+	NewTimeUnlockMsg        = timelock.NewTimeUnlockMsg
+	NewTransferOwnershipMsg = ownership.NewTransferOwnershipMsg
 
-	// Get the canonical byte representation of the Msg.
-	GetSignBytes() []byte
+	// gov module
+	NewDepositMsg                 = gov.NewMsgDeposit
+	NewMsgVote                    = gov.NewMsgVote
+	NewMsgSubmitProposal          = gov.NewMsgSubmitProposal
+	NewSideChainSubmitProposalMsg = gov.NewMsgSideChainSubmitProposal
+	NewSideChainDepositMsg        = gov.NewMsgSideChainDeposit
+	NewSideChainVoteMsg           = gov.NewMsgSideChainVote
 
-	// Signers returns the addrs of signers that must sign.
-	// CONTRACT: All signatures must be present to be valid.
-	// CONTRACT: Returns addrs in some deterministic order.
-	GetSigners() []types.AccAddress
+	// atomic swap module
+	NewHTLTMsg        = swap.NewHTLTMsg
+	NewDepositHTLTMsg = swap.NewDepositHTLTMsg
+	NewClaimHTLTMsg   = swap.NewClaimHTLTMsg
+	NewRefundHTLTMsg  = swap.NewRefundHTLTMsg
 
-	// Get involved addresses of this msg so that we can publish account balance change
-	GetInvolvedAddresses() []types.AccAddress
-}
+	// oracle claim module
+	NewClaim    = oracleTypes.NewClaim
+	NewClaimMsg = oracleTypes.NewClaimMsg
 
-// ValidateSymbol utility
-func ValidateSymbol(symbol string) error {
-	if len(symbol) == 0 {
-		return errors.New("suffixed token symbol cannot be empty")
-	}
+	// trade module
+	NewCreateOrderMsg = order.NewNewOrderMsg
+	NewCancelOrderMsg = order.NewCancelOrderMsg
 
-	// suffix exception for native token (less drama in existing tests)
-	if symbol == NativeToken ||
-		symbol == NativeTokenDotBSuffixed {
-		return nil
-	}
+	// account module
+	NewSetAccountFlagsMsg = account.NewSetAccountFlagsMsg
 
-	parts, err := splitSuffixedTokenSymbol(symbol)
-	if err != nil {
-		return err
-	}
+	// slash module
+	NewMsgSideChainUnjail = slashing.NewMsgSideChainUnjail
+	NewMsgUnjail          = slashing.NewMsgUnjail
 
-	symbolPart := parts[0]
-
-	// since the native token was given a suffix exception above, do not allow it to have a suffix
-	if symbolPart == NativeToken ||
-		symbolPart == NativeTokenDotBSuffixed {
-		return errors.New("native token symbol should not be suffixed with tx hash")
-	}
-
-	if strings.HasSuffix(symbolPart, DotBSuffix) {
-		symbolPart = strings.TrimSuffix(symbolPart, DotBSuffix)
-	}
-
-	// check len without .B suffix
-	if len(symbolPart) < TokenSymbolMinLen {
-		return fmt.Errorf("token symbol part is too short, got %d chars", len(symbolPart))
-	}
-	if len(symbolPart) > TokenSymbolMaxLen {
-		return fmt.Errorf("token symbol part is too long, got %d chars", len(symbolPart))
-	}
-
-	if !common.IsAlphaNum(symbolPart) {
-		return errors.New("token symbol part should be alphanumeric")
-	}
-
-	txHashPart := parts[1]
-
-	if len(txHashPart) != TokenSymbolTxHashSuffixLen {
-		return fmt.Errorf("token symbol tx hash suffix must be %d chars in length, got %d", TokenSymbolTxHashSuffixLen, len(txHashPart))
-	}
-
-	// prohibit non-hexadecimal chars in the suffix part
-	isHex, err := regexp.MatchString(fmt.Sprintf("[0-9A-F]{%d}", TokenSymbolTxHashSuffixLen), txHashPart)
-	if err != nil {
-		return err
-	}
-	if !isHex {
-		return fmt.Errorf("token symbol tx hash suffix must be hex with a length of %d", TokenSymbolTxHashSuffixLen)
-	}
-
-	return nil
-}
-
-func splitSuffixedTokenSymbol(suffixed string) ([]string, error) {
-	// as above, the native token symbol is given an exception - it is not required to be suffixed
-	if suffixed == NativeToken ||
-		suffixed == NativeTokenDotBSuffixed {
-		return []string{suffixed, ""}, nil
-	}
-
-	split := strings.SplitN(suffixed, "-", 2)
-
-	if len(split) != 2 {
-		return nil, errors.New("suffixed token symbol must contain a hyphen ('-')")
-	}
-
-	if strings.Contains(split[1], "-") {
-		return nil, errors.New("suffixed token symbol must contain just one hyphen ('-')")
-	}
-
-	return split, nil
-}
-
-type StatusText int
-
-const (
-	PendingStatusText StatusText = iota
-	SuccessStatusText
-	FailedStatusText
+	// stake module
+	NewCreateSideChainValidatorMsg           = stakeTypes.NewMsgCreateSideChainValidator
+	NewMsgCreateSideChainValidatorOnBehalfOf = stakeTypes.NewMsgCreateSideChainValidatorOnBehalfOf
+	NewEditSideChainValidatorMsg             = stakeTypes.NewMsgEditSideChainValidator
+	NewSideChainDelegateMsg                  = stakeTypes.NewMsgSideChainDelegate
+	NewSideChainRedelegateMsg                = stakeTypes.NewMsgSideChainRedelegate
+	NewSideChainUndelegateMsg                = stakeTypes.NewMsgSideChainUndelegate
+	NewMsgCreateValidatorOpen                = stakeTypes.NewMsgRemoveValidator
+	NewMsgRemoveValidator                    = stakeTypes.NewMsgRemoveValidator
+	NewMsgEditValidator                      = stakeTypes.NewMsgEditValidator
+	NewMsgDelegate                           = stakeTypes.NewMsgDelegate
+	NewMsgRedelegate                         = stakeTypes.NewMsgRedelegate
+	NewMsgUndelegate                         = stakeTypes.NewMsgUndelegate
 )
-
-var StatusTextToString = [...]string{"pending", "success", "failed"}
-var StringToStatusText = map[string]StatusText{
-	"pending": PendingStatusText,
-	"success": SuccessStatusText,
-	"failed":  FailedStatusText,
-}
-
-func (text StatusText) String() string {
-	return StatusTextToString[text]
-}
-
-func (text StatusText) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%v\"", text.String())), nil
-}
-
-func (text *StatusText) UnmarshalJSON(b []byte) error {
-	var j string
-	err := json.Unmarshal(b, &j)
-	if err != nil {
-		return err
-	}
-	stringKey, err := strconv.Unquote(string(b))
-	if err != nil {
-		return err
-	}
-	// Note that if the string cannot be found then it will be set to the zero value, 'pending' in this case.
-	*text = StringToStatusText[stringKey]
-	return nil
-}
-
-type Status struct {
-	Text       StatusText `json:"text"`
-	FinalClaim string     `json:"final_claim"`
-}
-
-type Prophecy struct {
-	ID     string `json:"id"`
-	Status Status `json:"status"`
-
-	//WARNING: Mappings are nondeterministic in Amino,
-	// an so iterating over them could result in consensus failure. New code should not iterate over the below 2 mappings.
-
-	//This is a mapping from a claim to the list of validators that made that claim.
-	ClaimValidators map[string][]types.ValAddress `json:"claim_validators"`
-	//This is a mapping from a validator bech32 address to their claim
-	ValidatorClaims map[string]string `json:"validator_claims"`
-}
-
-// DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
-type DBProphecy struct {
-	ID              string `json:"id"`
-	Status          Status `json:"status"`
-	ValidatorClaims []byte `json:"validator_claims"`
-}
-
-// SerializeForDB serializes a prophecy into a DBProphecy
-func (prophecy Prophecy) SerializeForDB() (DBProphecy, error) {
-	validatorClaims, err := json.Marshal(prophecy.ValidatorClaims)
-	if err != nil {
-		return DBProphecy{}, err
-	}
-
-	return DBProphecy{
-		ID:              prophecy.ID,
-		Status:          prophecy.Status,
-		ValidatorClaims: validatorClaims,
-	}, nil
-}
-
-// DeserializeFromDB deserializes a DBProphecy into a prophecy
-func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
-	var validatorClaims map[string]string
-	if err := json.Unmarshal(dbProphecy.ValidatorClaims, &validatorClaims); err != nil {
-		return Prophecy{}, err
-	}
-
-	var claimValidators = map[string][]types.ValAddress{}
-	for addr, claim := range validatorClaims {
-		valAddr, err := types.ValAddressFromBech32(addr)
-		if err != nil {
-			panic(fmt.Errorf("unmarshal validator address err, address=%s", addr))
-		}
-		claimValidators[claim] = append(claimValidators[claim], valAddr)
-	}
-
-	return Prophecy{
-		ID:              dbProphecy.ID,
-		Status:          dbProphecy.Status,
-		ClaimValidators: claimValidators,
-		ValidatorClaims: validatorClaims,
-	}, nil
-}
-
-type OracleRelayer struct {
-	Address types.ValAddress `json:"address"`
-	Power   int64            `json:"power"`
-}
-
-//Validate and check if it's mini token
-func IsValidMiniTokenSymbol(symbol string) bool {
-	return ValidateMiniTokenSymbol(symbol) == nil
-}
-
-func ValidateMiniTokenSymbol(symbol string) error {
-	if len(symbol) == 0 {
-		return errors.New("suffixed token symbol cannot be empty")
-	}
-
-	parts, err := splitSuffixedTokenSymbol(symbol)
-	if err != nil {
-		return err
-	}
-
-	symbolPart := parts[0]
-
-	// check len without suffix
-	if len(symbolPart) < MiniTokenSymbolMinLen {
-		return fmt.Errorf("mini-token symbol part is too short, got %d chars", len(symbolPart))
-	}
-	if len(symbolPart) > MiniTokenSymbolMaxLen {
-		return fmt.Errorf("mini-token symbol part is too long, got %d chars", len(symbolPart))
-	}
-
-	if !common.IsAlphaNum(symbolPart) {
-		return errors.New("mini-token symbol part should be alphanumeric")
-	}
-
-	suffixPart := parts[1]
-
-	if len(suffixPart) != MiniTokenSymbolSuffixLen {
-		return fmt.Errorf("mini-token symbol suffix must be %d chars in length, got %d", MiniTokenSymbolSuffixLen, len(suffixPart))
-	}
-
-	if suffixPart[len(suffixPart)-1:] != MiniTokenSymbolMSuffix {
-		return fmt.Errorf("mini-token symbol suffix must end with M")
-	}
-
-	// prohibit non-hexadecimal chars in the suffix part
-	isHex, err := regexp.MatchString(fmt.Sprintf("[0-9A-F]{%d}M", MiniTokenSymbolTxHashSuffixLen), suffixPart)
-	if err != nil {
-		return err
-	}
-	if !isHex {
-		return fmt.Errorf("mini-token symbol tx hash suffix must be hex with a length of %d", MiniTokenSymbolTxHashSuffixLen)
-	}
-
-	return nil
-}
