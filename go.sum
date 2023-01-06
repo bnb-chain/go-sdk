@@ -33,8 +33,8 @@ github.com/bnb-chain/bnc-tendermint-iavl v0.12.0-binance.4/go.mod h1:Zmh8GRdNJB8
 github.com/bnb-chain/ledger-cosmos-go v0.9.9-binance.3 h1:a+QLVLaP32v9gfRDKHH2AcRkzYLTWbC8UxYTJkXRSec=
 github.com/bnb-chain/ledger-cosmos-go v0.9.9-binance.3/go.mod h1:TULULYTvPuWBxFIZFy6KjJaxJzbHeUderYNB1YhD6N0=
 github.com/bnb-chain/ledger-go v0.9.1/go.mod h1:EeUZBE/ZbIVOrb4PaSyx1Qz8WvNVG5QJfbw3LSqKv4Q=
-github.com/bnb-chain/node v0.10.2-0.20230106025145-d81e60667739 h1:ALKzkix/m+sGXOrdgPYX82KbiKsjQRdUTI+oVQOaaEI=
-github.com/bnb-chain/node v0.10.2-0.20230106025145-d81e60667739/go.mod h1:kqwX0JL7zII95oBLj5muozaHfQ66wX7gNR8PeYdkMug=
+github.com/bnb-chain/node v0.10.6 h1:a31ehuh5At5AWAMpY9MtshbO7jnfDewvtqrn481FCPA=
+github.com/bnb-chain/node v0.10.6/go.mod h1:kqwX0JL7zII95oBLj5muozaHfQ66wX7gNR8PeYdkMug=
 github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d/go.mod h1:d3C0AkH6BRcvO8T0UEPu53cnw4IbV63x1bEjildYhO0=
 github.com/btcsuite/btcd v0.20.1-beta h1:Ik4hyJqN8Jfyv3S4AGBOmyouMsYE3EdYODkMbQjwPGw=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=

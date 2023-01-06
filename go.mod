@@ -3,7 +3,7 @@ module github.com/bnb-chain/go-sdk
 go 1.17
 
 require (
-	github.com/bnb-chain/node v0.10.2-0.20230106025145-d81e60667739
+	github.com/bnb-chain/node v0.10.6
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/cosmos/cosmos-sdk v0.25.0
