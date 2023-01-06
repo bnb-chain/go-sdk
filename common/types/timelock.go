@@ -1,21 +1,11 @@
 package types
 
-import "time"
+import (
+	"github.com/bnb-chain/node/plugins/tokens/timelock"
+)
 
-type TimeLockRecord struct {
-	Id          int64     `json:"id"`
-	Description string    `json:"description"`
-	Amount      Coins     `json:"amount"`
-	LockTime    time.Time `json:"lock_time"`
-}
-
-// Params for query 'custom/timelock/timelocks'
-type QueryTimeLocksParams struct {
-	Account AccAddress
-}
-
-// Params for query 'custom/timelock/timelock'
-type QueryTimeLockParams struct {
-	Account AccAddress
-	Id      int64
-}
+type (
+	TimeLockRecord       = timelock.TimeLockRecord
+	QueryTimeLocksParams = timelock.QueryTimeLocksParams
+	QueryTimeLockParams  = timelock.QueryTimeLockParams
+)

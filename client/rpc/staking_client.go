@@ -13,6 +13,7 @@ import (
 	"github.com/bnb-chain/go-sdk/types/msg"
 	"github.com/bnb-chain/go-sdk/types/tx"
 	"github.com/tendermint/go-amino"
+	"github.com/tendermint/tendermint/crypto"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -72,7 +73,7 @@ type StakingClient interface {
 type bechValidator struct {
 	FeeAddr      types.AccAddress `json:"fee_addr"`                   // the bech32 address for fee collection
 	OperatorAddr types.ValAddress `json:"operator_address"`           // the bech32 address of the validator's operator
-	ConsPubKey   string           `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
+	ConsPubKey   crypto.PubKey    `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
 	Jailed       bool             `json:"jailed"`                     // has the validator been jailed from bonded status?
 
 	Status          types.BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)
