@@ -6,10 +6,6 @@ import (
 )
 
 const (
-	OperateFeeType  = paramHubTypes.OperateFeeType
-	TransferFeeType = paramHubTypes.TransferFeeType
-	DexFeeType      = paramHubTypes.DexFeeType
-
 	FeeForProposer = types.FeeForProposer
 	FeeForAll      = types.FeeForAll
 	FeeFree        = types.FeeFree

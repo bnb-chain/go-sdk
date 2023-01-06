@@ -6,7 +6,6 @@ import (
 	"github.com/bnb-chain/go-sdk/client/basic"
 	"github.com/bnb-chain/go-sdk/client/query"
 	"github.com/bnb-chain/go-sdk/client/transaction"
-	"github.com/bnb-chain/go-sdk/client/websocket"
 	"github.com/bnb-chain/go-sdk/common/types"
 	"github.com/bnb-chain/go-sdk/keys"
 )
@@ -14,7 +13,6 @@ import (
 // dexClient wrapper
 type dexClient struct {
 	query.QueryClient
-	websocket.WSClient
 	transaction.TransactionClient
 	basic.BasicClient
 }
@@ -23,7 +21,6 @@ type dexClient struct {
 type DexClient interface {
 	basic.BasicClient
 	query.QueryClient
-	websocket.WSClient
 	transaction.TransactionClient
 }
 
@@ -32,27 +29,25 @@ func init() {
 }
 
 func NewDexClientWithApiKey(baseUrl string, network types.ChainNetwork, keyManager keys.KeyManager, apiKey string) (DexClient, error) {
-	types.Network = network
+	types.SetNetwork(network)
 	c := basic.NewClient(baseUrl+"/internal", apiKey)
-	w := websocket.NewClient(c)
 	q := query.NewClient(c)
 	n, err := q.GetNodeInfo()
 	if err != nil {
 		return nil, err
 	}
 	t := transaction.NewClient(n.NodeInfo.Network, keyManager, q, c)
-	return &dexClient{BasicClient: c, QueryClient: q, TransactionClient: t, WSClient: w}, nil
+	return &dexClient{BasicClient: c, QueryClient: q, TransactionClient: t}, nil
 }
 
 func NewDexClient(baseUrl string, network types.ChainNetwork, keyManager keys.KeyManager) (DexClient, error) {
-	types.Network = network
+	types.SetNetwork(network)
 	c := basic.NewClient(baseUrl, "")
-	w := websocket.NewClient(c)
 	q := query.NewClient(c)
 	n, err := q.GetNodeInfo()
 	if err != nil {
 		return nil, err
 	}
 	t := transaction.NewClient(n.NodeInfo.Network, keyManager, q, c)
-	return &dexClient{BasicClient: c, QueryClient: q, TransactionClient: t, WSClient: w}, nil
+	return &dexClient{BasicClient: c, QueryClient: q, TransactionClient: t}, nil
 }

@@ -22,7 +22,9 @@ var (
 )
 
 type TransactionClient interface {
+	// CreateOrder deprecated
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, sync bool, options ...Option) (*CreateOrderResult, error)
+	// CancelOrder deprecated
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error)
 	BurnToken(symbol string, amount int64, sync bool, options ...Option) (*BurnTokenResult, error)
 	ListPair(proposalId int64, baseAssetSymbol string, quoteAssetSymbol string, initPrice int64, sync bool, options ...Option) (*ListPairResult, error)

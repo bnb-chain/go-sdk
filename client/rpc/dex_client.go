@@ -49,9 +49,6 @@ type DexClient interface {
 	GetBalances(addr types.AccAddress) ([]types.TokenBalance, error)
 	GetBalance(addr types.AccAddress, symbol string) (*types.TokenBalance, error)
 	GetFee() ([]types.FeeParam, error)
-	GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error)
-	GetTradingPairs(offset int, limit int) ([]types.TradingPair, error)
-	GetDepth(tradePair string, level int) (*types.OrderBook, error)
 	GetProposals(status types.ProposalStatus, numLatest int64) ([]types.Proposal, error)
 	GetSideChainProposals(status types.ProposalStatus, numLatest int64, sideChainId string) ([]types.Proposal, error)
 	GetSideChainProposal(proposalId int64, sideChainId string) (types.Proposal, error)
@@ -65,11 +62,12 @@ type DexClient interface {
 
 	ListAllMiniTokens(offset int, limit int) ([]types.MiniToken, error)
 	GetMiniTokenInfo(symbol string) (*types.MiniToken, error)
-	GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error)
 
 	SetKeyManager(k keys.KeyManager)
 	SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	// CreateOrder deprecated
 	CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
+	// CancelOrder deprecated
 	CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
 	HTLT(recipient types.AccAddress, recipientOtherChain, senderOtherChain string, randomNumberHash []byte, timestamp int64,
 		amount types.Coins, expectedIncome string, heightSpan int64, crossChain bool, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error)
@@ -274,73 +272,6 @@ func (c *HTTP) GetFee() ([]types.FeeParam, error) {
 	return fees, err
 }
 
-func (c *HTTP) GetOpenOrders(addr types.AccAddress, pair string) ([]types.OpenOrder, error) {
-	if err := ValidatePair(pair); err != nil {
-		return nil, err
-	}
-	rawOrders, err := c.ABCIQuery(fmt.Sprintf("dex/openorders/%s/%s", pair, addr), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawOrders.Response.IsOK() {
-		return nil, fmt.Errorf(rawOrders.Response.Log)
-	}
-	bz := rawOrders.Response.GetValue()
-	openOrders := make([]types.OpenOrder, 0)
-	if bz == nil {
-		return openOrders, nil
-	}
-	if err := c.cdc.UnmarshalBinaryLengthPrefixed(bz, &openOrders); err != nil {
-		return nil, err
-	} else {
-		return openOrders, nil
-	}
-}
-
-func (c *HTTP) GetTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
-	if err := ValidateLimit(limit); err != nil {
-		return nil, err
-	}
-	if err := ValidateOffset(offset); err != nil {
-		return nil, err
-	}
-	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex/pairs/%d/%d", offset, limit), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawTradePairs.Response.IsOK() {
-		return nil, fmt.Errorf(rawTradePairs.Response.Log)
-	}
-	pairs := make([]types.TradingPair, 0)
-	if rawTradePairs.Response.GetValue() == nil {
-		return pairs, nil
-	}
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
-	return pairs, err
-}
-
-func (c *HTTP) GetDepth(tradePair string, level int) (*types.OrderBook, error) {
-	if err := ValidatePair(tradePair); err != nil {
-		return nil, err
-	}
-	if err := ValidateDepthLevel(level); err != nil {
-		return nil, err
-	}
-	rawDepth, err := c.ABCIQuery(fmt.Sprintf("dex/orderbook/%s/%d", tradePair, level), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawDepth.Response.IsOK() {
-		return nil, fmt.Errorf(rawDepth.Response.Log)
-	}
-	var ob types.OrderBook
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawDepth.Response.GetValue(), &ob)
-	if err != nil {
-		return nil, err
-	}
-	return &ob, nil
-}
-
 func (c *HTTP) GetTimelocks(addr types.AccAddress) ([]types.TimeLockRecord, error) {
 
 	params := types.QueryTimeLocksParams{
@@ -516,7 +447,7 @@ func (c *HTTP) GetSwapByID(swapID types.SwapBytes) (types.AtomicSwap, error) {
 		return types.AtomicSwap{}, err
 	}
 
-	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapid"), bz)
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", "atomicSwap", "swapid"), bz)
 	if err != nil {
 		return types.AtomicSwap{}, err
 	}
@@ -551,7 +482,7 @@ func (c *HTTP) GetSwapByCreator(creatorAddr string, offset int64, limit int64) (
 		return nil, err
 	}
 
-	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swapcreator"), bz)
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", "atomicSwap", "swapcreator"), bz)
 	if err != nil {
 		return nil, err
 	}
@@ -585,7 +516,7 @@ func (c *HTTP) GetSwapByRecipient(recipientAddr string, offset int64, limit int6
 		return nil, err
 	}
 
-	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", msg.AtomicSwapRoute, "swaprecipient"), bz)
+	resp, err := c.ABCIQuery(fmt.Sprintf("custom/%s/%s", "atomicSwap", "swaprecipient"), bz)
 	if err != nil {
 		return nil, err
 	}
@@ -642,28 +573,6 @@ func (c *HTTP) GetMiniTokenInfo(symbol string) (*types.MiniToken, error) {
 	return token, err
 }
 
-func (c *HTTP) GetMiniTradingPairs(offset int, limit int) ([]types.TradingPair, error) {
-	if err := ValidateLimit(limit); err != nil {
-		return nil, err
-	}
-	if err := ValidateOffset(offset); err != nil {
-		return nil, err
-	}
-	rawTradePairs, err := c.ABCIQuery(fmt.Sprintf("dex-mini/pairs/%d/%d", offset, limit), nil)
-	if err != nil {
-		return nil, err
-	}
-	if !rawTradePairs.Response.IsOK() {
-		return nil, fmt.Errorf(rawTradePairs.Response.Log)
-	}
-	pairs := make([]types.TradingPair, 0)
-	if rawTradePairs.Response.GetValue() == nil {
-		return pairs, nil
-	}
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(rawTradePairs.Response.GetValue(), &pairs)
-	return pairs, err
-}
-
 func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -679,6 +588,7 @@ func (c *HTTP) SendToken(transfers []msg.Transfer, syncType SyncType, options ..
 
 }
 
+// CreateOrder deprecated
 func (c *HTTP) CreateOrder(baseAssetSymbol, quoteAssetSymbol string, op int8, price, quantity int64, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError
@@ -869,6 +779,7 @@ func (c *HTTP) Vote(proposalID int64, option msg.VoteOption, syncType SyncType, 
 	return c.Broadcast(msg, syncType, options...)
 }
 
+// CancelOrder deprecated
 func (c *HTTP) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, syncType SyncType, options ...tx.Option) (*core_types.ResultBroadcastTx, error) {
 	if c.key == nil {
 		return nil, KeyMissingError

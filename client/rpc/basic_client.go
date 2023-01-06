@@ -59,7 +59,7 @@ type EventsClient interface {
 }
 
 func NewRPCClient(nodeURI string, network ntypes.ChainNetwork) *HTTP {
-	ntypes.Network = network
+	ntypes.SetNetwork(network)
 	return NewHTTP(nodeURI, "/websocket")
 }
 

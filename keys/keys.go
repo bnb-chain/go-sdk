@@ -28,7 +28,7 @@ const (
 )
 
 type KeyManager interface {
-	Sign(tx.StdSignMsg) ([]byte, error)
+	Sign(msg tx.StdSignMsg) ([]byte, error)
 	GetPrivKey() crypto.PrivKey
 	GetAddr() ctypes.AccAddress
 

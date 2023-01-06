@@ -21,6 +21,14 @@ const (
 
 var Network = ProdNetwork
 
+func SetNetwork(network ChainNetwork) {
+	Network = network
+	if network != ProdNetwork {
+		sdkConfig := types.GetConfig()
+		sdkConfig.SetBech32PrefixForAccount("tbnb", "bnbp")
+	}
+}
+
 func (this ChainNetwork) Bech32Prefixes() string {
 	switch this {
 	case TestNetwork:
@@ -36,8 +44,11 @@ func (this ChainNetwork) Bech32Prefixes() string {
 	}
 }
 
-func (this ChainNetwork) Bech32ValidatorAddrPrefix() string {
-	return "bva"
+func init() {
+	sdkConfig := types.GetConfig()
+	sdkConfig.SetBech32PrefixForAccount("bnb", "bnbp")
+	sdkConfig.SetBech32PrefixForValidator("bva", "bvap")
+	sdkConfig.SetBech32PrefixForConsensusNode("bca", "bcap")
 }
 
 var (

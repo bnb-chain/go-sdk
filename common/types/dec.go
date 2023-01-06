@@ -4,12 +4,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
-// number of decimal places
-const (
-	Precision            = types.Precision
-	DecimalPrecisionBits = types.DecimalPrecisionBits
-)
-
 type Dec = types.Dec
 
 var (

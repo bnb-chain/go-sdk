@@ -12,6 +12,7 @@ type CancelOrderResult struct {
 	tx.TxCommitResult
 }
 
+// CancelOrder deprecated
 func (c *client) CancelOrder(baseAssetSymbol, quoteAssetSymbol, refId string, sync bool, options ...Option) (*CancelOrderResult, error) {
 	if baseAssetSymbol == "" || quoteAssetSymbol == "" {
 		return nil, fmt.Errorf("BaseAssetSymbol or QuoteAssetSymbol is missing. ")

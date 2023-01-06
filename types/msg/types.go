@@ -1,53 +1,97 @@
 package msg
 
 import (
-	"fmt"
 	"math/big"
 
-	"github.com/bnb-chain/go-sdk/common/rlp"
+	sdk "github.com/bnb-chain/go-sdk/common/types"
 	bridgeTypes "github.com/bnb-chain/node/plugins/bridge/types"
-	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/bnb-chain/node/plugins/dex/order"
+	cTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/ibc"
 	oracleTypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	paramHubTypes "github.com/cosmos/cosmos-sdk/x/paramHub/types"
 	sidechainTypes "github.com/cosmos/cosmos-sdk/x/sidechain/types"
 	slashingTypes "github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/stake"
 	crossStake "github.com/cosmos/cosmos-sdk/x/stake/cross_stake"
 	stakeTypes "github.com/cosmos/cosmos-sdk/x/stake/types"
-
-	sdk "github.com/bnb-chain/go-sdk/common/types"
-)
-
-const (
-	RouteOracle     = oracleTypes.RouteOracle
-	ClaimMsgType    = oracleTypes.ClaimMsgType
-	OracleChannelId = oracleTypes.RelayPackagesChannelId
-)
-
-const (
-	CrossChainFeeLength = sidechainTypes.CrossChainFeeLength
-	PackageTypeLength   = sidechainTypes.PackageTypeLength
-	PackageHeaderLength = sidechainTypes.PackageHeaderLength
-)
-
-var (
-	GetClaimId  = oracleTypes.GetClaimId
-	NewClaim    = oracleTypes.NewClaim
-	NewClaimMsg = oracleTypes.NewClaimMsg
 )
 
 type (
-	Claim    = oracleTypes.Claim
-	ClaimMsg = oracleTypes.ClaimMsg
+	Msg = cTypes.Msg
+)
+
+// ===================  gov module ====================
+const (
+	OptionEmpty      = gov.OptionEmpty
+	OptionYes        = gov.OptionYes
+	OptionAbstain    = gov.OptionAbstain
+	OptionNo         = gov.OptionNo
+	OptionNoWithVeto = gov.OptionNoWithVeto
+
+	ProposalTypeNil             = gov.ProposalTypeNil
+	ProposalTypeText            = gov.ProposalTypeText
+	ProposalTypeParameterChange = gov.ProposalTypeParameterChange
+	ProposalTypeSoftwareUpgrade = gov.ProposalTypeSoftwareUpgrade
+	ProposalTypeListTradingPair = gov.ProposalTypeListTradingPair
+	ProposalTypeFeeChange       = gov.ProposalTypeFeeChange
+
+	ProposalTypeSCParamsChange  = gov.ProposalTypeSCParamsChange
+	ProposalTypeCSCParamsChange = gov.ProposalTypeCSCParamsChange
+)
+
+type (
+	VoteOption   = gov.VoteOption
+	ProposalKind = gov.ProposalKind
+
+	ListTradingPairParams = gov.ListTradingPairParams
+)
+
+type (
+	SCParam        = paramHubTypes.SCParam
+	SCChangeParams = paramHubTypes.SCChangeParams
+	CSCParamChange = paramHubTypes.CSCParamChange
+	IbcParams      = ibc.Params
+	OracleParams   = oracleTypes.Params
+	SlashParams    = slashingTypes.Params
+	StakeParams    = stake.Params
+)
+
+// ===================  trade module ====================
+var (
+	OrderSide       = order.Side
+	GenerateOrderID = order.GenerateOrderID
+)
+
+// ===================  oracle module ====================
+const (
+	OracleChannelId     = oracleTypes.RelayPackagesChannelId
+	PackageHeaderLength = sidechainTypes.PackageHeaderLength
+
+	SynCrossChainPackageType     = cTypes.SynCrossChainPackageType
+	AckCrossChainPackageType     = cTypes.AckCrossChainPackageType
+	FailAckCrossChainPackageType = cTypes.FailAckCrossChainPackageType
+)
+
+var (
+	GetClaimId          = oracleTypes.GetClaimId
+	DecodePackageHeader = sidechainTypes.DecodePackageHeader
+)
+
+type (
 	Package  = oracleTypes.Package
 	Packages = oracleTypes.Packages
 
-	CrossChainPackageType = types.CrossChainPackageType
+	CrossChainPackageType = cTypes.CrossChainPackageType
 )
 
-const (
-	SynCrossChainPackageType     = types.SynCrossChainPackageType
-	AckCrossChainPackageType     = types.AckCrossChainPackageType
-	FailAckCrossChainPackageType = types.FailAckCrossChainPackageType
+type (
+	Status        = oracleTypes.Status
+	Prophecy      = oracleTypes.Prophecy
+	DBProphecy    = oracleTypes.DBProphecy
+	OracleRelayer = stakeTypes.OracleRelayer
 )
 
 type (
@@ -71,14 +115,6 @@ type CrossChainPackage struct {
 	PackageType CrossChainPackageType
 	RelayFee    big.Int
 	Content     interface{}
-}
-
-var (
-	DecodePackageHeader = sidechainTypes.DecodePackageHeader
-)
-
-func noneExistPackageProto() interface{} {
-	panic("should not exist such package")
 }
 
 // package type
@@ -158,35 +194,23 @@ var protoMetrics = map[sdk.IbcChannelID]map[CrossChainPackageType]func() interfa
 	},
 }
 
-func ParseClaimPayload(payload []byte) ([]CrossChainPackage, error) {
-	packages := Packages{}
-	err := rlp.DecodeBytes(payload, &packages)
-	if err != nil {
-		return nil, err
-	}
-	decodedPackage := make([]CrossChainPackage, 0, len(packages))
-	for _, pack := range packages {
-		ptype, relayerFee, err := DecodePackageHeader(pack.Payload)
-		if err != nil {
-			return nil, err
-		}
-		if _, exist := protoMetrics[pack.ChannelId]; !exist {
-			return nil, fmt.Errorf("channnel id do not exist")
-		}
-		proto, exist := protoMetrics[pack.ChannelId][ptype]
-		if !exist || proto == nil {
-			return nil, fmt.Errorf("package type do not exist")
-		}
-		content := proto()
-		err = rlp.DecodeBytes(pack.Payload[PackageHeaderLength:], content)
-		if err != nil {
-			return nil, err
-		}
-		decodedPackage = append(decodedPackage, CrossChainPackage{
-			PackageType: ptype,
-			RelayFee:    relayerFee,
-			Content:     content,
-		})
-	}
-	return decodedPackage, nil
+// ===================  bank module ====================
+type (
+	Input  = bank.Input
+	Output = bank.Output
+)
+
+var (
+	NewInput  = bank.NewInput
+	NewOutput = bank.NewOutput
+)
+
+type Transfer struct {
+	ToAddr cTypes.AccAddress
+	Coins  cTypes.Coins
 }
+
+// ===================  staking module ====================
+type (
+	Description = stakeTypes.Description
+)

@@ -8,7 +8,7 @@ import (
 )
 
 type IbcChannelID = ctypes.ChannelID
-type IbcChainID ctypes.ChainID
+type IbcChainID = ctypes.ChainID
 
 const (
 	prefixLength         = 1

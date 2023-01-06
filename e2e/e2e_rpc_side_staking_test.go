@@ -42,7 +42,7 @@ func rpcClient() *rpc.HTTP {
 
 func getRpcClientWithKeyManager() *rpc.HTTP {
 	c := rpcClient()
-	ctypes.Network = ctypes.ProdNetwork
+	ctypes.SetNetwork(ctypes.ProdNetwork)
 	keyManager, _ := keys.NewMnemonicKeyManager(jackMnemonic)
 	c.SetKeyManager(keyManager)
 	return c

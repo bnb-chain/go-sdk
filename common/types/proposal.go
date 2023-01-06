@@ -6,7 +6,7 @@ import (
 
 type ProposalKind = gov.ProposalKind
 
-//nolint
+// nolint
 const (
 	ProposalTypeNil                  = gov.ProposalTypeNil
 	ProposalTypeText                 = gov.ProposalTypeText
@@ -29,7 +29,7 @@ var (
 
 type ProposalStatus = gov.ProposalStatus
 
-//nolint
+// nolint
 const (
 	StatusNil           = gov.StatusNil
 	StatusDepositPeriod = gov.StatusDepositPeriod
@@ -44,10 +44,10 @@ var (
 )
 
 type (
-	TallyResult          gov.TallyResult
-	Proposal             gov.Proposal
-	TextProposal         gov.TextProposal
-	BaseParams           gov.BaseParams
-	QueryProposalsParams gov.QueryProposalsParams
+	TallyResult          = gov.TallyResult
+	Proposal             = gov.Proposal
+	TextProposal         = gov.TextProposal
+	BaseParams           = gov.BaseParams
+	QueryProposalsParams = gov.QueryProposalsParams
 	QueryProposalParams  = gov.QueryProposalParams
 )

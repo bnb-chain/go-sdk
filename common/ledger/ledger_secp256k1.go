@@ -1,8 +1,8 @@
 package ledger
 
 import (
-	"github.com/bnb-chain/go-sdk/common/types"
 	"github.com/btcsuite/btcd/btcec"
+	stypes "github.com/cosmos/cosmos-sdk/types"
 	tmbtcec "github.com/tendermint/btcd/btcec"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
@@ -67,7 +67,7 @@ func (pkl PrivKeyLedgerSecp256k1) Bytes() []byte {
 }
 
 func (pkl PrivKeyLedgerSecp256k1) ShowSignAddr() error {
-	return pkl.ledger.ShowAddressSECP256K1(pkl.path, types.Network.Bech32Prefixes())
+	return pkl.ledger.ShowAddressSECP256K1(pkl.path, stypes.GetConfig().GetBech32AccountAddrPrefix())
 }
 
 func (pkl PrivKeyLedgerSecp256k1) Sign(msg []byte) ([]byte, error) {

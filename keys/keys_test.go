@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/bnb-chain/go-sdk/types/tx"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -13,7 +14,6 @@ import (
 
 	ctypes "github.com/bnb-chain/go-sdk/common/types"
 	"github.com/bnb-chain/go-sdk/types/msg"
-	"github.com/bnb-chain/go-sdk/types/tx"
 )
 
 func TestRecoveryFromKeyWordsNoError(t *testing.T) {
