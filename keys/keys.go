@@ -121,7 +121,7 @@ func (m *keyManager) recoveryFromMnemonic(mnemonic, keyPath string) error {
 	if err != nil {
 		return err
 	}
-	priKey := secp256k1.PrivKeySecp256k1(derivedPriv)
+	priKey := secp256k1.PrivKeySecp256k1(derivedPriv[:])
 	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func (m *keyManager) recoveryFromKeyStore(keystoreFile string, auth string) erro
 	}
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], keyBytes[:32])
-	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
+	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray[:])
 	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
@@ -172,7 +172,7 @@ func (m *keyManager) recoveryFromPrivateKey(privateKey string) error {
 	}
 	var keyBytesArray [32]byte
 	copy(keyBytesArray[:], priBytes[:32])
-	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray)
+	priKey := secp256k1.PrivKeySecp256k1(keyBytesArray[:])
 	addr := ctypes.AccAddress(priKey.PubKey().Address())
 	m.addr = addr
 	m.privKey = priKey
