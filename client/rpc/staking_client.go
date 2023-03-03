@@ -12,8 +12,8 @@ import (
 	"github.com/bnb-chain/go-sdk/common/types"
 	"github.com/bnb-chain/go-sdk/types/msg"
 	"github.com/bnb-chain/go-sdk/types/tx"
+	ctypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -73,7 +73,7 @@ type StakingClient interface {
 type bechValidator struct {
 	FeeAddr      types.AccAddress `json:"fee_addr"`                   // the bech32 address for fee collection
 	OperatorAddr types.ValAddress `json:"operator_address"`           // the bech32 address of the validator's operator
-	ConsPubKey   crypto.PubKey    `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
+	ConsPubKey   string           `json:"consensus_pubkey,omitempty"` // the bech32 consensus public key of the validator
 	Jailed       bool             `json:"jailed"`                     // has the validator been jailed from bonded status?
 
 	Status          types.BondStatus `json:"status"`           // validator status (bonded/unbonding/unbonded)
@@ -99,10 +99,15 @@ type bechValidator struct {
 }
 
 func (bv *bechValidator) toValidator() (*types.Validator, error) {
+	consKey, err := ctypes.GetConsPubKeyBech32(bv.ConsPubKey)
+
+	if err != nil {
+		return nil, err
+	}
 	validator := types.Validator{
 		FeeAddr:            bv.FeeAddr,
 		OperatorAddr:       bv.OperatorAddr,
-		ConsPubKey:         bv.ConsPubKey,
+		ConsPubKey:         consKey,
 		Jailed:             bv.Jailed,
 		Status:             bv.Status,
 		Tokens:             bv.Tokens,
@@ -284,40 +289,12 @@ func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types
 	if err = c.cdc.UnmarshalJSON(res, &bvs); err != nil {
 		return nil, err
 	}
-
 	for _, v := range bvs {
-		validator := types.Validator{
-			FeeAddr:            v.FeeAddr,
-			OperatorAddr:       v.OperatorAddr,
-			ConsPubKey:         v.ConsPubKey,
-			Jailed:             v.Jailed,
-			Status:             v.Status,
-			Tokens:             v.Tokens,
-			DelegatorShares:    v.DelegatorShares,
-			Description:        v.Description,
-			BondHeight:         v.BondHeight,
-			BondIntraTxCounter: v.BondIntraTxCounter,
-			UnbondingHeight:    v.UnbondingHeight,
-			UnbondingMinTime:   v.UnbondingMinTime,
-			Commission:         v.Commission,
+		validator, err := v.toValidator()
+		if err != nil {
+			return nil, err
 		}
-
-		if len(v.SideChainId) != 0 {
-			validator.DistributionAddr = v.DistributionAddr
-			validator.SideChainId = v.SideChainId
-			if sideConsAddr, err := decodeSideChainAddress(v.SideConsAddr); err != nil {
-				return nil, err
-			} else {
-				validator.SideConsAddr = sideConsAddr
-			}
-			if sideFeeAddr, err := decodeSideChainAddress(v.SideFeeAddr); err != nil {
-				return nil, err
-			} else {
-				validator.SideFeeAddr = sideFeeAddr
-			}
-		}
-
-		validators = append(validators, validator)
+		validators = append(validators, *validator)
 	}
 
 	return validators, nil
