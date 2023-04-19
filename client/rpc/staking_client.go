@@ -263,33 +263,35 @@ func (c *HTTP) SideChainUnjail(sideChainId string, valAddr types.ValAddress, syn
 
 // Query a validator
 func (c *HTTP) QuerySideChainValidator(sideChainId string, valAddr types.ValAddress) (*types.Validator, error) {
-	storePrefix, err := c.getSideChainStorePrefixKey(sideChainId)
+	params := types.QueryValidatorParams{
+		BaseParams:    types.NewBaseParams(sideChainId),
+		ValidatorAddr: valAddr,
+	}
+
+	bz, err := json.Marshal(params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	key := append(storePrefix, getValidatorKey(valAddr)...)
-
-	bz, err := c.QueryStore(key, StakeStoreKey)
-
+	res, err := c.QueryWithData("custom/stake/validator", bz)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(bz) == 0 {
-		return nil, EmptyResultError
+	if len(res) == 0 {
+		return nil, nil
 	}
 
-	var validator types.Validator
-
-	err = c.cdc.UnmarshalBinaryLengthPrefixed(bz, &validator)
-
+	var bv bechValidator
+	if err = c.cdc.UnmarshalJSON(res, &bv); err != nil {
+		return nil, err
+	}
+	validator, err := bv.toValidator()
 	if err != nil {
 		return nil, err
 	}
-
-	return &validator, nil
+	return validator, nil
 }
 
 func (c *HTTP) QuerySideChainTopValidators(sideChainId string, top int) ([]types.Validator, error) {
