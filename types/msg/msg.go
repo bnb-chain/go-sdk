@@ -76,17 +76,19 @@ type (
 	MsgUnjail          = slashing.MsgUnjail
 
 	// stake module
-	CreateSideChainValidatorMsg = stakeTypes.MsgCreateSideChainValidator
-	EditSideChainValidatorMsg   = stakeTypes.MsgEditSideChainValidator
-	SideChainDelegateMsg        = stakeTypes.MsgSideChainDelegate
-	SideChainRedelegateMsg      = stakeTypes.MsgSideChainRedelegate
-	SideChainUndelegateMsg      = stakeTypes.MsgSideChainUndelegate
-	MsgCreateValidatorOpen      = stakeTypes.MsgCreateValidatorOpen
-	MsgRemoveValidator          = stakeTypes.MsgRemoveValidator
-	MsgEditValidator            = stakeTypes.MsgEditValidator
-	MsgDelegate                 = stakeTypes.MsgDelegate
-	MsgRedelegate               = stakeTypes.MsgRedelegate
-	MsgUndelegate               = stakeTypes.MsgUndelegate
+	CreateSideChainValidatorMsg             = stakeTypes.MsgCreateSideChainValidator
+	MsgCreateSideChainValidatorWithVoteAddr = stakeTypes.MsgCreateSideChainValidatorWithVoteAddr
+	EditSideChainValidatorMsg               = stakeTypes.MsgEditSideChainValidator
+	MsgEditSideChainValidatorWithVoteAddr   = stakeTypes.MsgEditSideChainValidatorWithVoteAddr
+	SideChainDelegateMsg                    = stakeTypes.MsgSideChainDelegate
+	SideChainRedelegateMsg                  = stakeTypes.MsgSideChainRedelegate
+	SideChainUndelegateMsg                  = stakeTypes.MsgSideChainUndelegate
+	MsgCreateValidatorOpen                  = stakeTypes.MsgCreateValidatorOpen
+	MsgRemoveValidator                      = stakeTypes.MsgRemoveValidator
+	MsgEditValidator                        = stakeTypes.MsgEditValidator
+	MsgDelegate                             = stakeTypes.MsgDelegate
+	MsgRedelegate                           = stakeTypes.MsgRedelegate
+	MsgUndelegate                           = stakeTypes.MsgUndelegate
 )
 
 var (
