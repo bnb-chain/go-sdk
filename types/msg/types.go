@@ -106,7 +106,7 @@ type (
 	IbcValidatorSetPackage      = stakeTypes.IbcValidatorSetPackage
 	IbcValidator                = stakeTypes.IbcValidator
 	CrossParamChange            = paramHubTypes.CSCParamChange
-	SideDowntimeSlashPackage    = slashingTypes.SideDowntimeSlashPackage
+	SideDowntimeSlashPackage    = slashingTypes.SideSlashPackage
 	CrossStakeSynPackageFromBSC = crossStake.CrossStakeSynPackageFromBSC
 	CrossStakeRefundPackage     = stakeTypes.CrossStakeRefundPackage
 )

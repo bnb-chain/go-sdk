@@ -76,17 +76,19 @@ type (
 	MsgUnjail          = slashing.MsgUnjail
 
 	// stake module
-	CreateSideChainValidatorMsg = stakeTypes.MsgCreateSideChainValidator
-	EditSideChainValidatorMsg   = stakeTypes.MsgEditSideChainValidator
-	SideChainDelegateMsg        = stakeTypes.MsgSideChainDelegate
-	SideChainRedelegateMsg      = stakeTypes.MsgSideChainRedelegate
-	SideChainUndelegateMsg      = stakeTypes.MsgSideChainUndelegate
-	MsgCreateValidatorOpen      = stakeTypes.MsgCreateValidatorOpen
-	MsgRemoveValidator          = stakeTypes.MsgRemoveValidator
-	MsgEditValidator            = stakeTypes.MsgEditValidator
-	MsgDelegate                 = stakeTypes.MsgDelegate
-	MsgRedelegate               = stakeTypes.MsgRedelegate
-	MsgUndelegate               = stakeTypes.MsgUndelegate
+	CreateSideChainValidatorMsg             = stakeTypes.MsgCreateSideChainValidator
+	MsgCreateSideChainValidatorWithVoteAddr = stakeTypes.MsgCreateSideChainValidatorWithVoteAddr
+	EditSideChainValidatorMsg               = stakeTypes.MsgEditSideChainValidator
+	MsgEditSideChainValidatorWithVoteAddr   = stakeTypes.MsgEditSideChainValidatorWithVoteAddr
+	SideChainDelegateMsg                    = stakeTypes.MsgSideChainDelegate
+	SideChainRedelegateMsg                  = stakeTypes.MsgSideChainRedelegate
+	SideChainUndelegateMsg                  = stakeTypes.MsgSideChainUndelegate
+	MsgCreateValidatorOpen                  = stakeTypes.MsgCreateValidatorOpen
+	MsgRemoveValidator                      = stakeTypes.MsgRemoveValidator
+	MsgEditValidator                        = stakeTypes.MsgEditValidator
+	MsgDelegate                             = stakeTypes.MsgDelegate
+	MsgRedelegate                           = stakeTypes.MsgRedelegate
+	MsgUndelegate                           = stakeTypes.MsgUndelegate
 )
 
 var (
@@ -144,16 +146,19 @@ var (
 	NewMsgUnjail          = slashing.NewMsgUnjail
 
 	// stake module
-	NewCreateSideChainValidatorMsg           = stakeTypes.NewMsgCreateSideChainValidator
-	NewMsgCreateSideChainValidatorOnBehalfOf = stakeTypes.NewMsgCreateSideChainValidatorOnBehalfOf
-	NewEditSideChainValidatorMsg             = stakeTypes.NewMsgEditSideChainValidator
-	NewSideChainDelegateMsg                  = stakeTypes.NewMsgSideChainDelegate
-	NewSideChainRedelegateMsg                = stakeTypes.NewMsgSideChainRedelegate
-	NewSideChainUndelegateMsg                = stakeTypes.NewMsgSideChainUndelegate
-	NewMsgCreateValidatorOpen                = stakeTypes.NewMsgRemoveValidator
-	NewMsgRemoveValidator                    = stakeTypes.NewMsgRemoveValidator
-	NewMsgEditValidator                      = stakeTypes.NewMsgEditValidator
-	NewMsgDelegate                           = stakeTypes.NewMsgDelegate
-	NewMsgRedelegate                         = stakeTypes.NewMsgRedelegate
-	NewMsgUndelegate                         = stakeTypes.NewMsgUndelegate
+	NewCreateSideChainValidatorMsg                       = stakeTypes.NewMsgCreateSideChainValidator
+	NewCreateSideChainValidatorMsgWithVoteAddr           = stakeTypes.NewMsgCreateSideChainValidatorWithVoteAddr
+	NewMsgCreateSideChainValidatorOnBehalfOf             = stakeTypes.NewMsgCreateSideChainValidatorOnBehalfOf
+	NewMsgCreateSideChainValidatorOnBehalfOfWithVoteAddr = stakeTypes.NewMsgCreateSideChainValidatorWithVoteAddrOnBehalfOf
+	NewEditSideChainValidatorMsg                         = stakeTypes.NewMsgEditSideChainValidator
+	NewEditSideChainValidatorMsgWithVoteAddr             = stakeTypes.NewMsgEditSideChainValidatorWithVoteAddr
+	NewSideChainDelegateMsg                              = stakeTypes.NewMsgSideChainDelegate
+	NewSideChainRedelegateMsg                            = stakeTypes.NewMsgSideChainRedelegate
+	NewSideChainUndelegateMsg                            = stakeTypes.NewMsgSideChainUndelegate
+	NewMsgCreateValidatorOpen                            = stakeTypes.NewMsgRemoveValidator
+	NewMsgRemoveValidator                                = stakeTypes.NewMsgRemoveValidator
+	NewMsgEditValidator                                  = stakeTypes.NewMsgEditValidator
+	NewMsgDelegate                                       = stakeTypes.NewMsgDelegate
+	NewMsgRedelegate                                     = stakeTypes.NewMsgRedelegate
+	NewMsgUndelegate                                     = stakeTypes.NewMsgUndelegate
 )
