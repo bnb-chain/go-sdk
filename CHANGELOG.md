@@ -1,4 +1,14 @@
 # Changelog
+
+## 1.3.2
+FEATURE
+* [\#183](https://github.com/bnb-chain/go-sdk/pull/183) feat: implement bep126 queries
+
+## 1.3.1
+IMPROVEMENT
+* [\#178](https://github.com/bnb-chain/go-sdk/pull/178) dep: bump the version of btcd to v2.3.2
+
+
 ## 1.3.0
 IMPROVEMENT
 * [\#170](https://github.com/bnb-chain/go-sdk/pull/170) types: set the types to the origin package alias and remove trade client
