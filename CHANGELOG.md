@@ -51,7 +51,7 @@ CHAIN UPGRADE
 * [\#99](https://github.com/bnb-chain/go-sdk/pull/99) [BUILD] upgrade version of btcd to avoid retag issue 
 
 ## v1.2.0
-* [\#93](https://github.com/bnb-chain/go-sdk/pull/93) [BREAKING] uprade to binance chain release 0.6.3
+* [\#93](https://github.com/bnb-chain/go-sdk/pull/93) [BREAKING] uprade to BNB Chain release 0.6.3
 
 ## v1.1.3
 * [\#81](https://github.com/bnb-chain/go-sdk/pull/81) [TX] support swap on a single chain 
