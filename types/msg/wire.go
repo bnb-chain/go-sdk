@@ -40,7 +40,7 @@ func RegisterCodec(cdc *amino.Codec) {
 
 	cdc.RegisterConcrete(DexListMsg{}, "dex/ListMsg", nil)
 	cdc.RegisterConcrete(MintMsg{}, "tokens/MintMsg", nil)
-	//Must use cosmos-sdk.
+	// Must use cosmos-sdk.
 	cdc.RegisterConcrete(SendMsg{}, "cosmos-sdk/Send", nil)
 
 	cdc.RegisterConcrete(SubmitProposalMsg{}, "cosmos-sdk/MsgSubmitProposal", nil)
@@ -63,6 +63,7 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(SideChainDelegateMsg{}, "cosmos-sdk/MsgSideChainDelegate", nil)
 	cdc.RegisterConcrete(SideChainRedelegateMsg{}, "cosmos-sdk/MsgSideChainRedelegate", nil)
 	cdc.RegisterConcrete(SideChainUndelegateMsg{}, "cosmos-sdk/MsgSideChainUndelegate", nil)
+	cdc.RegisterConcrete(SideChainStakeMigrationMsg{}, "cosmos-sdk/MsgSideChainStakeMigration", nil)
 	cdc.RegisterConcrete(MsgSideChainUnjail{}, "cosmos-sdk/MsgSideChainUnjail", nil)
 	cdc.RegisterConcrete(MsgUnjail{}, "cosmos-sdk/MsgUnjail", nil)
 

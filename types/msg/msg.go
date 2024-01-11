@@ -83,6 +83,7 @@ type (
 	SideChainDelegateMsg                    = stakeTypes.MsgSideChainDelegate
 	SideChainRedelegateMsg                  = stakeTypes.MsgSideChainRedelegate
 	SideChainUndelegateMsg                  = stakeTypes.MsgSideChainUndelegate
+	SideChainStakeMigrationMsg              = stakeTypes.MsgSideChainStakeMigration
 	MsgCreateValidatorOpen                  = stakeTypes.MsgCreateValidatorOpen
 	MsgRemoveValidator                      = stakeTypes.MsgRemoveValidator
 	MsgEditValidator                        = stakeTypes.MsgEditValidator
