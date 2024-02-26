@@ -89,6 +89,7 @@ type (
 	MsgDelegate                             = stakeTypes.MsgDelegate
 	MsgRedelegate                           = stakeTypes.MsgRedelegate
 	MsgUndelegate                           = stakeTypes.MsgUndelegate
+	MsgSideChainStakeMigration              = stakeTypes.MsgSideChainStakeMigration
 )
 
 var (

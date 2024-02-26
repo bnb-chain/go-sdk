@@ -55,6 +55,7 @@ func RegisterCodec(cdc *amino.Codec) {
 	cdc.RegisterConcrete(MsgDelegate{}, "cosmos-sdk/MsgDelegate", nil)
 	cdc.RegisterConcrete(MsgRedelegate{}, "cosmos-sdk/MsgRedelegate", nil)
 	cdc.RegisterConcrete(MsgUndelegate{}, "cosmos-sdk/MsgUndelegate", nil)
+	cdc.RegisterConcrete(MsgSideChainStakeMigration{}, "cosmos-sdk/MsgSideChainStakeMigration", nil)
 
 	cdc.RegisterConcrete(CreateSideChainValidatorMsg{}, "cosmos-sdk/MsgCreateSideChainValidator", nil)
 	cdc.RegisterConcrete(MsgCreateSideChainValidatorWithVoteAddr{}, "cosmos-sdk/MsgCreateSideChainValidatorWithVoteAddr", nil)
