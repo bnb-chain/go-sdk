@@ -808,6 +808,26 @@ func (c *HTTP) Undelegate(valAddr types.ValAddress, amount types.Coin, syncType 
 	return c.Broadcast(m, syncType, options...)
 }
 
+func (c *HTTP) SideChainStakeMigration(
+	valAddr types.ValAddress,
+	operatorAddr, delegatorAddr msg.SmartChainAddress,
+	amount types.Coin,
+	syncType SyncType, options ...tx.Option) (*coretypes.ResultBroadcastTx, error) {
+	if c.key == nil {
+		return nil, KeyMissingError
+	}
+	delAddr := c.key.GetAddr()
+	m := msg.MsgSideChainStakeMigration{
+		ValidatorSrcAddr: valAddr,
+		ValidatorDstAddr: operatorAddr,
+		DelegatorAddr:    delegatorAddr,
+		RefundAddr:       delAddr,
+		Amount:           amount,
+	}
+
+	return c.Broadcast(m, syncType, options...)
+}
+
 func (c *HTTP) QueryValidator(valAddr types.ValAddress) (*types.Validator, error) {
 	params := types.QueryValidatorParams{
 		ValidatorAddr: valAddr,
